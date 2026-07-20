@@ -46,7 +46,7 @@ import java.util.stream.IntStream;
     /**
      * Constructs a Golomb Ruler problem with {@code n} marks and no known optimal value.
      *
-     * @param n the number of marks to place on the ruler.
+     * @param n the number of marks to place on the ruler
      */
 <span class="fc" id="L51">    public GRProblem(int n) {</span>
 <span class="fc" id="L52">        this.n = n;</span>
@@ -55,8 +55,8 @@ import java.util.stream.IntStream;
     /**
      * Constructs a Golomb Ruler problem with {@code n} marks and a known optimal length.
      *
-     * @param n       the number of marks to place on the ruler.
-     * @param optimal the known optimal length of the ruler.
+     * @param n       the number of marks to place on the ruler
+     * @param optimal the known optimal length of the ruler
      */
 <span class="fc" id="L61">    public GRProblem(int n, double optimal) {</span>
 <span class="fc" id="L62">        this.n = n;</span>
@@ -66,7 +66,7 @@ import java.util.stream.IntStream;
     /**
      * Returns a human-readable representation of the problem instance.
      *
-     * @return a string describing the Golomb Ruler instance.
+     * @return a string describing the Golomb Ruler instance
      */
     @Override
     public String toString() {
@@ -77,7 +77,7 @@ import java.util.stream.IntStream;
      * Returns the number of variables in the problem.
      * For a ruler with {@code n} marks, there are {@code n - 1} decision variables.
      *
-     * @return the number of decision variables.
+     * @return the number of decision variables
      */
     @Override
     public int nbVars() {
@@ -87,7 +87,7 @@ import java.util.stream.IntStream;
     /**
      * Returns the initial state of the problem, containing only the first mark at position 0.
      *
-     * @return the initial {@link GRState}.
+     * @return the initial {@link GRState}
      */
     @Override
     public GRState initialState() {
@@ -100,7 +100,7 @@ import java.util.stream.IntStream;
     /**
      * Returns the initial cost (always 0).
      *
-     * @return the initial cost value.
+     * @return the initial cost value
      */
     @Override
     public double initialValue() {
@@ -114,9 +114,9 @@ import java.util.stream.IntStream;
      * duplicates an already existing distance.
      * &lt;/p&gt;
      *
-     * @param state the current state of the ruler.
-     * @param var   the index of the variable being expanded.
-     * @return an iterator over the feasible next mark positions.
+     * @param state the current state of the ruler
+     * @param var   the index of the variable being expanded
+     * @return an iterator over the feasible next mark positions
      */
     @Override
     public Iterator&lt;Integer&gt; domain(GRState state, int var) {
@@ -135,9 +135,9 @@ import java.util.stream.IntStream;
      * The new state updates the set of marks and the set of pairwise distances.
      * &lt;/p&gt;
      *
-     * @param state    the current state.
-     * @param decision the decision representing the position of the new mark.
-     * @return a new {@link GRState} representing the updated configuration.
+     * @param state    the current state
+     * @param decision the decision representing the position of the new mark
+     * @return a new {@link GRState} representing the updated configuration
      */
     @Override
     public GRState transition(GRState state, Decision decision) {
@@ -165,9 +165,9 @@ import java.util.stream.IntStream;
      * and the previous one.
      * &lt;/p&gt;
      *
-     * @param state    the current state.
-     * @param decision the decision leading to the next mark placement.
-     * @return the incremental cost, equal to {@code decision.val() - state.getLastMark()}.
+     * @param state    the current state
+     * @param decision the decision leading to the next mark placement
+     * @return the incremental cost, equal to {@code decision.val() - state.getLastMark()}
      */
     @Override
     public double transitionCost(GRState state, Decision decision) {

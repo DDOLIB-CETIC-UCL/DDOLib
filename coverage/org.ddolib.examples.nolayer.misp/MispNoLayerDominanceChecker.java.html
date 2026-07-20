@@ -8,66 +8,72 @@ import java.util.*;
  * Dominance checker for the Maximum Independent Set Problem (MISP).
  * Assumes a minimization framework where lower values (more negative weights) are better.
  */
-<span class="fc" id="L11">public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker&lt;MispState&gt; {</span>
+public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker&lt;MispState&gt; {
 
 <span class="fc" id="L13">    private final Map&lt;Integer, List&lt;DominanceEntry&gt;&gt; entriesByCardinality = new HashMap&lt;&gt;();</span>
 
+    /**
+     * Creates a new instance of this dominance checker.
+     */
+<span class="fc" id="L18">    public MispNoLayerDominanceChecker() {</span>
+<span class="fc" id="L19">    }</span>
+
     @Override
     public boolean updateDominance(MispState state, double value) {
-<span class="fc" id="L17">        BitSet currentNodes = state.remainingNodes();</span>
-<span class="fc" id="L18">        int card = currentNodes.cardinality();</span>
+<span class="fc" id="L23">        BitSet currentNodes = state.remainingNodes();</span>
+<span class="fc" id="L24">        int card = currentNodes.cardinality();</span>
 
         // 1. Check if the new state 'currentNodes' is dominated by any existing entry 's1'
         // An entry can dominate currentNodes only if it has AT LEAST as many remaining nodes
-<span class="fc bfc" id="L22" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : entriesByCardinality.entrySet()) {</span>
-<span class="fc bfc" id="L23" title="All 2 branches covered.">            if (mapEntry.getKey() &gt;= card) {</span>
-<span class="fc bfc" id="L24" title="All 2 branches covered.">                for (DominanceEntry entry : mapEntry.getValue()) {</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : entriesByCardinality.entrySet()) {</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">            if (mapEntry.getKey() &gt;= card) {</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">                for (DominanceEntry entry : mapEntry.getValue()) {</span>
                     // entry.value &lt;= value means the existing entry has a better or equal cost
-<span class="fc bfc" id="L26" title="All 4 branches covered.">                    if (entry.value &lt;= value &amp;&amp; isSubset(currentNodes, entry.remainingNodes)) {</span>
-<span class="fc" id="L27">                        return true; // The new state is dominated, discard it</span>
+<span class="fc bfc" id="L32" title="All 4 branches covered.">                    if (entry.value &lt;= value &amp;&amp; isSubset(currentNodes, entry.remainingNodes)) {</span>
+<span class="fc" id="L33">                        return true; // The new state is dominated, discard it</span>
                     }
-<span class="fc" id="L29">                }</span>
+<span class="fc" id="L35">                }</span>
             }
-<span class="fc" id="L31">        }</span>
+<span class="fc" id="L37">        }</span>
 
         // 2. Remove existing entries that are dominated by the new state 'currentNodes'
         // The new state can dominate an entry only if it has AT MOST as many remaining nodes
-<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : entriesByCardinality.entrySet()) {</span>
-<span class="fc bfc" id="L36" title="All 2 branches covered.">            if (mapEntry.getKey() &lt;= card) {</span>
-<span class="fc" id="L37">                mapEntry.getValue().removeIf(entry -&gt;</span>
-<span class="fc bfc" id="L38" title="All 4 branches covered.">                        value &lt;= entry.value &amp;&amp; isSubset(entry.remainingNodes, currentNodes)</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : entriesByCardinality.entrySet()) {</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">            if (mapEntry.getKey() &lt;= card) {</span>
+<span class="fc" id="L43">                mapEntry.getValue().removeIf(entry -&gt;</span>
+<span class="fc bfc" id="L44" title="All 4 branches covered.">                        value &lt;= entry.value &amp;&amp; isSubset(entry.remainingNodes, currentNodes)</span>
                 );
             }
-<span class="fc" id="L41">        }</span>
+<span class="fc" id="L47">        }</span>
 
         // 3. Add the new state to entries (Safe from self-deletion)
-<span class="fc" id="L44">        entriesByCardinality.computeIfAbsent(card, k -&gt; new ArrayList&lt;&gt;()).add(new DominanceEntry(currentNodes, value));</span>
+<span class="fc" id="L50">        entriesByCardinality.computeIfAbsent(card, k -&gt; new ArrayList&lt;&gt;()).add(new DominanceEntry(currentNodes, value));</span>
 
-<span class="fc" id="L46">        return false;</span>
+<span class="fc" id="L52">        return false;</span>
     }
 
     @Override
     public void clear() {
-<span class="fc" id="L51">        entriesByCardinality.clear();</span>
-<span class="fc" id="L52">    }</span>
+<span class="fc" id="L57">        entriesByCardinality.clear();</span>
+<span class="fc" id="L58">    }</span>
 
     /**
      * Checks if the 'child' BitSet is a subset of the 'parent' BitSet.
      */
     private boolean isSubset(BitSet child, BitSet parent) {
-<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (int i = child.nextSetBit(0); i &gt;= 0; i = child.nextSetBit(i + 1)) {</span>
-<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (!parent.get(i)) {</span>
-<span class="fc" id="L60">                return false;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (int i = child.nextSetBit(0); i &gt;= 0; i = child.nextSetBit(i + 1)) {</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (!parent.get(i)) {</span>
+<span class="fc" id="L66">                return false;</span>
             }
         }
-<span class="fc" id="L63">        return true;</span>
+<span class="fc" id="L69">        return true;</span>
     }
 
     private record DominanceEntry(BitSet remainingNodes, double value) {
-<span class="fc" id="L67">        DominanceEntry(BitSet remainingNodes, double value) {</span>
-<span class="fc" id="L68">            this.remainingNodes = (BitSet) remainingNodes.clone();</span>
-<span class="fc" id="L69">            this.value = value;</span>
-<span class="fc" id="L70">        }</span>
+<span class="fc" id="L73">        DominanceEntry(BitSet remainingNodes, double value) {</span>
+<span class="fc" id="L74">            this.remainingNodes = (BitSet) remainingNodes.clone();</span>
+<span class="fc" id="L75">            this.value = value;</span>
+<span class="fc" id="L76">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -16,8 +16,20 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Entry point for solving the Golomb Ruler Problem (GRP) using the nolayer DDO algorithm.
+ */
 public class GRDdoMain {
 
+    private GRDdoMain() {
+    }
+
+    /**
+     * Entry point of the program. Builds a Golomb Ruler problem instance and solves it using the
+     * DDO algorithm.
+     *
+     * @param args optional command-line argument giving the ruler order; if omitted, order 10 is used
+     */
     public static void main(String[] args) {
         int order = args.length == 0 ? 10 : Integer.parseInt(args[0]);
         final GRProblem problem = new GRProblem(order);
@@ -95,7 +107,7 @@ public class GRDdoMain {
 
 abstract class GRDdoModel extends GRModel implements DdoModel&lt;GRState&gt; {
     public GRDdoModel(GRProblem problem) {
-<span class="nc" id="L98">        super(problem);</span>
-<span class="nc" id="L99">    }</span>
+<span class="nc" id="L110">        super(problem);</span>
+<span class="nc" id="L111">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

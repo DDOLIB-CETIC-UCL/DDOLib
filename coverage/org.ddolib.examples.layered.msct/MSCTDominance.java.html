@@ -27,7 +27,14 @@ import org.ddolib.layered.modeling.Dominance;
  * boolean result = dominance.isDominatedOrEqual(s1, s2); // true, since s2.currentTime() is less than s1.currentTime()
  * &lt;/pre&gt;
  */
-<span class="fc" id="L30">public class MSCTDominance implements Dominance&lt;MSCTState&gt; {</span>
+public class MSCTDominance implements Dominance&lt;MSCTState&gt; {
+
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+<span class="fc" id="L35">    public MSCTDominance() {</span>
+<span class="fc" id="L36">    }</span>
+
     /**
      * Returns a key used for grouping states before applying dominance checks.
      * &lt;p&gt;
@@ -36,12 +43,12 @@ import org.ddolib.layered.modeling.Dominance;
      * This can be customized for efficiency in larger problems.
      * &lt;/p&gt;
      *
-     * @param state the state from which to extract the key.
-     * @return an integer key representing the group of comparable states (always {@code 0} here).
+     * @param state the state from which to extract the key
+     * @return an integer key representing the group of comparable states (always {@code 0} here)
      */
     @Override
     public Integer getKey(MSCTState state) {
-<span class="fc" id="L44">        return 0;</span>
+<span class="fc" id="L51">        return 0;</span>
     }
 
     /**
@@ -56,13 +63,13 @@ import org.ddolib.layered.modeling.Dominance;
      * This indicates that {@code state2} represents a better (or equivalent) scheduling situation,
      * making {@code state1} redundant in the search process.
      *
-     * @param state1 the first state to test for dominance.
-     * @param state2 the second state, potentially dominating the first.
-     * @return {@code true} if {@code state1} is dominated or equal to {@code state2}; {@code false} otherwise.
+     * @param state1 the first state to test for dominance
+     * @param state2 the second state, potentially dominating the first
+     * @return {@code true} if {@code state1} is dominated or equal to {@code state2}; {@code false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(MSCTState state1, MSCTState state2) {
-<span class="fc bfc" id="L65" title="All 4 branches covered.">        return state1.remainingJobs().equals(state2.remainingJobs()) &amp;&amp; state2.currentTime() &lt;= state1.currentTime();</span>
+<span class="fc bfc" id="L72" title="All 4 branches covered.">        return state1.remainingJobs().equals(state2.remainingJobs()) &amp;&amp; state2.currentTime() &lt;= state1.currentTime();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -6,41 +6,56 @@ import java.util.Objects;
  * State of a runway : last landing time and last aircraft's class
  */
 public class RunwayState implements Comparable&lt;RunwayState&gt; {
-    // Previous landing time
+    /**
+     * The previous landing time on this runway.
+     */
     public int prevTime;
-    // Previous class of aircraft that landed
+    /**
+     * The class of the previous aircraft that landed on this runway.
+     */
     public int prevClass;
 
-<span class="fc" id="L14">    public RunwayState(int prevClass, int prevTime) {</span>
-<span class="fc" id="L15">        this.prevClass = prevClass;</span>
-<span class="fc" id="L16">        this.prevTime = prevTime;</span>
-<span class="fc" id="L17">    }</span>
+    /**
+     * Creates a new runway state.
+     *
+     * @param prevClass the class of the previous aircraft that landed
+     * @param prevTime  the previous landing time
+     */
+<span class="fc" id="L24">    public RunwayState(int prevClass, int prevTime) {</span>
+<span class="fc" id="L25">        this.prevClass = prevClass;</span>
+<span class="fc" id="L26">        this.prevTime = prevTime;</span>
+<span class="fc" id="L27">    }</span>
 
-<span class="fc" id="L19">    public RunwayState(RunwayState other) {</span>
-<span class="fc" id="L20">        prevTime = other.prevTime;</span>
-<span class="fc" id="L21">        prevClass = other.prevClass;</span>
-<span class="fc" id="L22">    }</span>
+    /**
+     * Creates a copy of the given runway state.
+     *
+     * @param other the runway state to copy
+     */
+<span class="fc" id="L34">    public RunwayState(RunwayState other) {</span>
+<span class="fc" id="L35">        prevTime = other.prevTime;</span>
+<span class="fc" id="L36">        prevClass = other.prevClass;</span>
+<span class="fc" id="L37">    }</span>
 
     @Override
     public int compareTo(RunwayState o) {
-<span class="nc" id="L26">        return Integer.compare(prevTime, o.prevTime);</span>
+<span class="nc" id="L41">        return Integer.compare(prevTime, o.prevTime);</span>
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L31">        return &quot;PT: &quot; + prevTime + &quot; PC : &quot; + prevClass;</span>
+<span class="fc" id="L46">        return &quot;PT: &quot; + prevTime + &quot; PC : &quot; + prevClass;</span>
     }
 
     @Override
     public boolean equals(Object o) {
-<span class="pc bpc" id="L36" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
-<span class="fc" id="L37">        RunwayState that = (RunwayState) o;</span>
-<span class="fc bfc" id="L38" title="All 4 branches covered.">        return prevTime == that.prevTime &amp;&amp; prevClass == that.prevClass;</span>
+<span class="pc bpc" id="L51" title="2 of 4 branches missed.">        if (o == null || getClass() != o.getClass()) return false;</span>
+<span class="fc" id="L52">        RunwayState that = (RunwayState) o;</span>
+<span class="fc bfc" id="L53" title="All 4 branches covered.">        return prevTime == that.prevTime &amp;&amp; prevClass == that.prevClass;</span>
     }
 
     @Override
     public int hashCode() {
-<span class="fc" id="L43">        return Objects.hash(prevTime, prevClass);</span>
+<span class="fc" id="L58">        return Objects.hash(prevTime, prevClass);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

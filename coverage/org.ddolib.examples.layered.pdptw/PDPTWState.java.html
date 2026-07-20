@@ -83,29 +83,51 @@ public class PDPTWState {
 <span class="fc" id="L83">        return (that.allToVisit.equals(this.allToVisit));</span>
     }
 
+    /**
+     * Builds a singleton {@link BitSet} containing only the given value.
+     *
+     * @param singletonValue the value to set in the returned set
+     * @return a new {@link BitSet} with only {@code singletonValue} set
+     */
     public BitSet singleton(int singletonValue) {
-<span class="fc" id="L87">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
-<span class="fc" id="L88">        toReturn.set(singletonValue);</span>
-<span class="fc" id="L89">        return toReturn;</span>
+<span class="fc" id="L93">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="fc" id="L94">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L95">        return toReturn;</span>
     }
 
+    /**
+     * Formats a possibly imprecise value as either a single number, when {@code min}
+     * and {@code max} are equal, or as an interval {@code [min;max]} otherwise.
+     *
+     * @param min the lower bound of the value
+     * @param max the upper bound of the value
+     * @return the formatted value
+     */
     public String printInterval(double min, double max) {
-<span class="pc bpc" id="L93" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
-<span class="nc" id="L94">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
+<span class="nc" id="L108">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
     }
 
+    /**
+     * Formats a possibly imprecise value as either a single number, when {@code min}
+     * and {@code max} are equal, or as an interval {@code [min;max]} otherwise.
+     *
+     * @param min the lower bound of the value
+     * @param max the upper bound of the value
+     * @return the formatted value
+     */
     public String printInterval(int min, int max) {
-<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
-<span class="nc" id="L99">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
+<span class="nc" id="L121">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L104">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
-<span class="fc" id="L105">        closedToVisit.xor(openToVisit);</span>
-<span class="fc" id="L106">        return &quot;PDState(current:&quot; + current + &quot; currentTime:&quot; + printInterval(minCurrentTime, maxCurrentTime)</span>
+<span class="fc" id="L126">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
+<span class="fc" id="L127">        closedToVisit.xor(openToVisit);</span>
+<span class="fc" id="L128">        return &quot;PDState(current:&quot; + current + &quot; currentTime:&quot; + printInterval(minCurrentTime, maxCurrentTime)</span>
                 + &quot; openToVisit:&quot; + openToVisit + &quot; closedToVisit:&quot; + closedToVisit + &quot; allToVisit:&quot; + allToVisit
-<span class="fc" id="L108">                + &quot; content:&quot; + printInterval(minContent, maxContent) + &quot;)&quot;;</span>
+<span class="fc" id="L130">                + &quot; content:&quot; + printInterval(minContent, maxContent) + &quot;)&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

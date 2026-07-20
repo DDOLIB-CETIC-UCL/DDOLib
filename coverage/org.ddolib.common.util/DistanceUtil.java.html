@@ -7,7 +7,11 @@ import static java.lang.Math.*;
 /**
  * Utility methods for common distance metrics used by clustering and heuristics.
  */
-<span class="nc" id="L10">public class DistanceUtil {</span>
+public class DistanceUtil {
+
+    private DistanceUtil() {
+        // utility class, not meant to be instantiated
+    }
 
     /**
      * Computes the Jaccard Distance between the two given sets.
@@ -18,15 +22,15 @@ import static java.lang.Math.*;
      */
     public static double jaccardDistance(BitSet a, BitSet b) {
 
-<span class="nc" id="L21">        BitSet tmp = (BitSet) a.clone();</span>
-<span class="nc" id="L22">        tmp.and(b);</span>
-<span class="nc" id="L23">        int intersectionSize = tmp.cardinality();</span>
+<span class="nc" id="L25">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L26">        tmp.and(b);</span>
+<span class="nc" id="L27">        int intersectionSize = tmp.cardinality();</span>
 
-<span class="nc" id="L25">        tmp = (BitSet) a.clone();</span>
-<span class="nc" id="L26">        tmp.or(b);</span>
-<span class="nc" id="L27">        int unionSize = tmp.cardinality();</span>
+<span class="nc" id="L29">        tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L30">        tmp.or(b);</span>
+<span class="nc" id="L31">        int unionSize = tmp.cardinality();</span>
 
-<span class="nc" id="L29">        return (1.0 - ((double) intersectionSize) / unionSize);</span>
+<span class="nc" id="L33">        return (1.0 - ((double) intersectionSize) / unionSize);</span>
     }
 
     /**
@@ -38,20 +42,20 @@ import static java.lang.Math.*;
      * @return the weighted Jaccard Distance between a and b
      */
     public static double weightedJaccardDistance(BitSet a, BitSet b, double[] weights) {
-<span class="nc" id="L41">        double intersectionSize = 0;</span>
-<span class="nc" id="L42">        double unionSize = 0;</span>
+<span class="nc" id="L45">        double intersectionSize = 0;</span>
+<span class="nc" id="L46">        double unionSize = 0;</span>
 
-<span class="nc" id="L44">        int maxIndex = max(a.length(), b.length());</span>
-<span class="nc bnc" id="L45" title="All 2 branches missed.">        for (int i = 0; i &lt; maxIndex; i++) {</span>
-<span class="nc bnc" id="L46" title="All 4 branches missed.">            if (a.get(i) || b.get(i)) {</span>
-<span class="nc" id="L47">                unionSize += weights[i];</span>
-<span class="nc bnc" id="L48" title="All 4 branches missed.">                if (a.get(i) &amp;&amp; b.get(i)) {</span>
-<span class="nc" id="L49">                    intersectionSize += weights[i];</span>
+<span class="nc" id="L48">        int maxIndex = max(a.length(), b.length());</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        for (int i = 0; i &lt; maxIndex; i++) {</span>
+<span class="nc bnc" id="L50" title="All 4 branches missed.">            if (a.get(i) || b.get(i)) {</span>
+<span class="nc" id="L51">                unionSize += weights[i];</span>
+<span class="nc bnc" id="L52" title="All 4 branches missed.">                if (a.get(i) &amp;&amp; b.get(i)) {</span>
+<span class="nc" id="L53">                    intersectionSize += weights[i];</span>
                 }
             }
         }
 
-<span class="nc" id="L54">        return 1.0 - intersectionSize / unionSize;</span>
+<span class="nc" id="L58">        return 1.0 - intersectionSize / unionSize;</span>
     }
 
     /**
@@ -62,15 +66,15 @@ import static java.lang.Math.*;
      * @return 1 - 2|a ∩ b| / (|a| + |b|)
      */
     public static double diceDistance(BitSet a, BitSet b) {
-<span class="nc" id="L65">        BitSet tmp = (BitSet) a.clone();</span>
-<span class="nc" id="L66">        tmp.and(b);</span>
-<span class="nc" id="L67">        double distance = tmp.cardinality();</span>
+<span class="nc" id="L69">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L70">        tmp.and(b);</span>
+<span class="nc" id="L71">        double distance = tmp.cardinality();</span>
 
-<span class="nc" id="L69">        distance = distance * -2;</span>
-<span class="nc" id="L70">        distance = distance / (a.cardinality() + b.cardinality());</span>
-<span class="nc" id="L71">        distance += 1;</span>
+<span class="nc" id="L73">        distance = distance * -2;</span>
+<span class="nc" id="L74">        distance = distance / (a.cardinality() + b.cardinality());</span>
+<span class="nc" id="L75">        distance += 1;</span>
 
-<span class="nc" id="L73">        return distance;</span>
+<span class="nc" id="L77">        return distance;</span>
     }
 
     /**
@@ -81,13 +85,13 @@ import static java.lang.Math.*;
      * @return the Euclidean distance between a and b
      */
     public static double euclideanDistance(double[] a, double[] b) {
-<span class="nc" id="L84">        double distance = 0.0;</span>
-<span class="nc bnc" id="L85" title="All 2 branches missed.">        for (int dim = 0; dim &lt; a.length; dim++) {</span>
-<span class="nc" id="L86">            distance += pow(a[dim] - b[dim], 2);</span>
+<span class="nc" id="L88">        double distance = 0.0;</span>
+<span class="nc bnc" id="L89" title="All 2 branches missed.">        for (int dim = 0; dim &lt; a.length; dim++) {</span>
+<span class="nc" id="L90">            distance += pow(a[dim] - b[dim], 2);</span>
         }
-<span class="nc" id="L88">        distance = sqrt(distance);</span>
+<span class="nc" id="L92">        distance = sqrt(distance);</span>
 
-<span class="nc" id="L90">        return distance;</span>
+<span class="nc" id="L94">        return distance;</span>
     }
 
     /**
@@ -98,28 +102,29 @@ import static java.lang.Math.*;
      * @return |a XOR b|
      */
     public static double symmetricDifferenceDistance(BitSet a, BitSet b) {
-<span class="nc" id="L101">        BitSet tmp = (BitSet) a.clone();</span>
-<span class="nc" id="L102">        tmp.xor(b);</span>
-<span class="nc" id="L103">        return tmp.cardinality();</span>
+<span class="nc" id="L105">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L106">        tmp.xor(b);</span>
+<span class="nc" id="L107">        return tmp.cardinality();</span>
     }
 
     /**
      * Computes the weighted symmetric difference between a and b
      *
-     * @param a the first set
-     * @param b the second set
+     * @param a       the first set
+     * @param b       the second set
+     * @param weights the weight of each element in a and b
      * @return the weighted symmetric difference between a and b
      */
     public static double weightedSymmetricDifferenceDistance(BitSet a, BitSet b, double[] weights) {
-<span class="nc" id="L114">        BitSet tmp = (BitSet) a.clone();</span>
-<span class="nc" id="L115">        tmp.xor(b);</span>
+<span class="nc" id="L119">        BitSet tmp = (BitSet) a.clone();</span>
+<span class="nc" id="L120">        tmp.xor(b);</span>
 
-<span class="nc" id="L117">        double distance = 0;</span>
-<span class="nc bnc" id="L118" title="All 2 branches missed.">        for (int i = tmp.nextSetBit(0); i &gt; 0; i = tmp.nextSetBit(i)) {</span>
-<span class="nc" id="L119">            distance += weights[i];</span>
+<span class="nc" id="L122">        double distance = 0;</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        for (int i = tmp.nextSetBit(0); i &gt; 0; i = tmp.nextSetBit(i)) {</span>
+<span class="nc" id="L124">            distance += weights[i];</span>
         }
 
-<span class="nc" id="L122">        return distance;</span>
+<span class="nc" id="L127">        return distance;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

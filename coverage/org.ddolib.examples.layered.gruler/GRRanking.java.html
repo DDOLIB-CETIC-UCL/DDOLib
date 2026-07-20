@@ -25,7 +25,13 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see GRState
  * @see StateRanking
  */
-<span class="fc" id="L28">public class GRRanking implements StateRanking&lt;GRState&gt; {</span>
+public class GRRanking implements StateRanking&lt;GRState&gt; {
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L32">    public GRRanking() {</span>
+<span class="fc" id="L33">    }</span>
+
     /**
      * Compares two {@link GRState} instances based on their last placed mark.
      * &lt;p&gt;
@@ -33,14 +39,14 @@ import org.ddolib.layered.modeling.StateRanking;
      * since it represents a shorter partial ruler.
      * &lt;/p&gt;
      *
-     * @param s1 the first state to compare.
-     * @param s2 the second state to compare.
+     * @param s1 the first state to compare
+     * @param s2 the second state to compare
      * @return a negative integer if {@code s1} has a smaller last mark than {@code s2},
      * zero if they are equal, or a positive integer otherwise.
      */
     @Override
     public int compare(GRState s1, GRState s2) {
-<span class="fc" id="L43">        return Integer.compare(s1.getLastMark(), s2.getLastMark()); // sort by last mark</span>
+<span class="fc" id="L49">        return Integer.compare(s1.getLastMark(), s2.getLastMark()); // sort by last mark</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -20,7 +20,14 @@ import java.util.Set;
  * @param &lt;T&gt; the type representing the problem state
  * @see FastLowerBound
  */
-<span class="fc" id="L23">public class DefaultFastLowerBound&lt;T&gt; implements FastLowerBound&lt;T&gt; {</span>
+public class DefaultFastLowerBound&lt;T&gt; implements FastLowerBound&lt;T&gt; {
+
+    /**
+     * Creates a new instance of this default fast lower bound.
+     */
+<span class="fc" id="L28">    public DefaultFastLowerBound() {</span>
+<span class="fc" id="L29">    }</span>
+
     /**
      * Computes a trivial fast lower bound for the given state and remaining variables.
      * &lt;p&gt;
@@ -40,8 +47,8 @@ import java.util.Set;
         // A* search will not work correctly as it will incorrectly terminate
         // by thinking it has found an optimal solution when popping the terminal state
         // from the open list.
-<span class="fc bfc" id="L43" title="All 2 branches covered.">        if (variables.isEmpty()) return 0;</span>
-<span class="fc" id="L44">        else return Integer.MIN_VALUE;</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">        if (variables.isEmpty()) return 0;</span>
+<span class="fc" id="L51">        else return Integer.MIN_VALUE;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

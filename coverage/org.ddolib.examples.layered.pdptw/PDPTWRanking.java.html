@@ -5,10 +5,17 @@ import org.ddolib.layered.modeling.StateRanking;
 /**
  * Neutral ranking heuristic for PDPTW states.
  */
-<span class="fc" id="L8">public class PDPTWRanking implements StateRanking&lt;PDPTWState&gt; {</span>
+public class PDPTWRanking implements StateRanking&lt;PDPTWState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L13">    public PDPTWRanking() {</span>
+<span class="fc" id="L14">    }</span>
+
     @Override
     public int compare(final PDPTWState o1, final PDPTWState o2) {
-<span class="nc" id="L11">        return 0;</span>
+<span class="nc" id="L18">        return 0;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

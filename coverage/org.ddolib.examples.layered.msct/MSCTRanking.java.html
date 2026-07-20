@@ -30,22 +30,29 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see MSCTDdoMain
  * @see MSCTRelax
  */
-<span class="fc" id="L33">public class MSCTRanking implements StateRanking&lt;MSCTState&gt; {</span>
+public class MSCTRanking implements StateRanking&lt;MSCTState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L38">    public MSCTRanking() {</span>
+<span class="fc" id="L39">    }</span>
+
     /**
      * Compares two scheduling states according to their current completion time.
      * &lt;p&gt;
      * The state with the smaller {@code currentTime} is ranked higher (considered better).
      * &lt;/p&gt;
      *
-     * @param s1 the first state to compare.
-     * @param s2 the second state to compare.
+     * @param s1 the first state to compare
+     * @param s2 the second state to compare
      * @return a negative integer if {@code s1} should be ranked before {@code s2},
      * zero if both states have the same rank,
      * or a positive integer if {@code s1} should be ranked after {@code s2}.
      */
     @Override
     public int compare(MSCTState s1, MSCTState s2) {
-<span class="fc" id="L48">        return Integer.compare(s1.currentTime(), s2.currentTime());</span>
+<span class="fc" id="L55">        return Integer.compare(s1.currentTime(), s2.currentTime());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

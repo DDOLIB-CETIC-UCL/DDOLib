@@ -12,7 +12,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * This ranking can be used by solvers to prioritize states during search.
  * &lt;/p&gt;
  */
-<span class="fc" id="L15">public class KSRanking implements StateRanking&lt;Integer&gt; {</span>
+public class KSRanking implements StateRanking&lt;Integer&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L20">    public KSRanking() {</span>
+<span class="fc" id="L21">    }</span>
+
     /**
      * Compares two states based on their remaining capacity.
      *
@@ -23,7 +30,7 @@ import org.ddolib.layered.modeling.StateRanking;
      */
     @Override
     public int compare(final Integer o1, final Integer o2) {
-<span class="fc" id="L26">        return o1 - o2;</span>
+<span class="fc" id="L33">        return o1 - o2;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

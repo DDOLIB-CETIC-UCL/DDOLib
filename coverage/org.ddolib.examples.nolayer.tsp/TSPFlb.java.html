@@ -4,34 +4,46 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 
 import java.util.BitSet;
 
+/**
+ * Fast lower bound for the Traveling Salesman Problem (TSP), using the no-layer modeling API.
+ * &lt;p&gt;
+ * The bound sums, for each city that still must be visited (plus the return to the origin),
+ * the least-cost edge incident to that city.
+ * &lt;/p&gt;
+ */
 public class TSPFlb implements FastLowerBound&lt;TSPState&gt; {
     private final double[] leastIncidentEdge;
 
-<span class="fc" id="L10">    public TSPFlb(TSPProblem problem) {</span>
-<span class="fc" id="L11">        leastIncidentEdge = new double[problem.n];</span>
-<span class="fc bfc" id="L12" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
-<span class="fc" id="L13">            double min = Double.POSITIVE_INFINITY;</span>
-<span class="fc bfc" id="L14" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
-<span class="fc bfc" id="L15" title="All 2 branches covered.">                if (i != j) {</span>
-<span class="fc" id="L16">                    min = Math.min(min, problem.distanceMatrix[i][j]);</span>
+    /**
+     * Creates a new fast lower bound for the given TSP instance.
+     *
+     * @param problem the TSP instance to bound
+     */
+<span class="fc" id="L22">    public TSPFlb(TSPProblem problem) {</span>
+<span class="fc" id="L23">        leastIncidentEdge = new double[problem.n];</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
+<span class="fc" id="L25">            double min = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">                if (i != j) {</span>
+<span class="fc" id="L28">                    min = Math.min(min, problem.distanceMatrix[i][j]);</span>
                 }
             }
-<span class="fc" id="L19">            leastIncidentEdge[i] = min;</span>
+<span class="fc" id="L31">            leastIncidentEdge[i] = min;</span>
         }
-<span class="fc" id="L21">    }</span>
+<span class="fc" id="L33">    }</span>
 
     @Override
     public double fastLowerBound(TSPState state) {
-<span class="fc bfc" id="L25" title="All 4 branches covered.">        if (state.toVisit.isEmpty() &amp;&amp; state.current.get(0)) {</span>
-<span class="fc" id="L26">            return 0.0;</span>
+<span class="fc bfc" id="L37" title="All 4 branches covered.">        if (state.toVisit.isEmpty() &amp;&amp; state.current.get(0)) {</span>
+<span class="fc" id="L38">            return 0.0;</span>
         }
-<span class="fc" id="L28">        BitSet toVisit = state.toVisit;</span>
-<span class="fc" id="L29">        double lb = leastIncidentEdge[0];  // for returning to origin</span>
-<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (int i = toVisit.nextSetBit(0); i &gt;= 0; i = toVisit.nextSetBit(i + 1)) {</span>
-<span class="fc" id="L31">            lb += leastIncidentEdge[i];</span>
+<span class="fc" id="L40">        BitSet toVisit = state.toVisit;</span>
+<span class="fc" id="L41">        double lb = leastIncidentEdge[0];  // for returning to origin</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (int i = toVisit.nextSetBit(0); i &gt;= 0; i = toVisit.nextSetBit(i + 1)) {</span>
+<span class="fc" id="L43">            lb += leastIncidentEdge[i];</span>
 
         }
-<span class="fc" id="L34">        return lb;</span>
+<span class="fc" id="L46">        return lb;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -5,140 +5,173 @@ import org.ddolib.common.util.InvalidSolutionException;
 
 import java.util.*;
 
+/**
+ * The Maximum Independent Set Problem (MISP), in the no-layer modeling API.
+ * &lt;p&gt;
+ * The problem is represented as an undirected graph where each node has a weight, and the
+ * goal is to select a subset of non-adjacent nodes (an independent set) that maximizes the
+ * total weight. Since the library only minimizes, weights are negated in
+ * {@link #transitionCost} and {@link #evaluate}.
+ */
 public class MispProblem implements Problem&lt;MispState&gt; {
 
+    /** For each node, the set of nodes it is adjacent to. */
     public final BitSet[] neighbors;
+    /** The weight of each node. */
     public final int[] weight;
+    /** The number of nodes in the graph. */
     public final int nbVars;
     private final Optional&lt;String&gt; name;
 
-<span class="fc" id="L15">    public MispProblem(BitSet[] neighbors, int[] weight, String name) {</span>
-<span class="fc" id="L16">        this.neighbors = neighbors;</span>
-<span class="fc" id="L17">        this.weight = weight;</span>
-<span class="fc" id="L18">        this.nbVars = weight.length;</span>
-<span class="fc" id="L19">        this.name = Optional.of(name);</span>
-<span class="fc" id="L20">    }</span>
+    /**
+     * Creates a new MISP instance with the given adjacency and weights.
+     *
+     * @param neighbors for each node, the set of nodes it is adjacent to
+     * @param weight    the weight of each node
+     * @param name      a name identifying this instance, typically the file it was loaded from
+     */
+<span class="fc" id="L33">    public MispProblem(BitSet[] neighbors, int[] weight, String name) {</span>
+<span class="fc" id="L34">        this.neighbors = neighbors;</span>
+<span class="fc" id="L35">        this.weight = weight;</span>
+<span class="fc" id="L36">        this.nbVars = weight.length;</span>
+<span class="fc" id="L37">        this.name = Optional.of(name);</span>
+<span class="fc" id="L38">    }</span>
 
 
-<span class="nc" id="L23">    public MispProblem(BitSet[] neighbors, int[] weight) {</span>
-<span class="nc" id="L24">        this.neighbors = neighbors;</span>
-<span class="nc" id="L25">        this.weight = weight;</span>
-<span class="nc" id="L26">        this.nbVars = weight.length;</span>
-<span class="nc" id="L27">        this.name = Optional.empty();</span>
-<span class="nc" id="L28">    }</span>
+    /**
+     * Creates a new, unnamed MISP instance with the given adjacency and weights.
+     *
+     * @param neighbors for each node, the set of nodes it is adjacent to
+     * @param weight    the weight of each node
+     */
+<span class="nc" id="L47">    public MispProblem(BitSet[] neighbors, int[] weight) {</span>
+<span class="nc" id="L48">        this.neighbors = neighbors;</span>
+<span class="nc" id="L49">        this.weight = weight;</span>
+<span class="nc" id="L50">        this.nbVars = weight.length;</span>
+<span class="nc" id="L51">        this.name = Optional.empty();</span>
+<span class="nc" id="L52">    }</span>
 
+    /**
+     * Reads a MISP instance from a DOT file, where each node line may carry a
+     * {@code weight=} attribute (defaulting to {@code 1} when absent) and edges are listed
+     * as {@code source -- target} lines.
+     *
+     * @param fname the path to the DOT file describing the instance
+     * @return the MISP instance read from the file
+     * @throws java.io.IOException if the file cannot be read
+     */
     public static MispProblem fromFile(String fname) throws java.io.IOException {
-<span class="fc" id="L31">        java.util.ArrayList&lt;Integer&gt; weight = new java.util.ArrayList&lt;&gt;();</span>
+<span class="fc" id="L64">        java.util.ArrayList&lt;Integer&gt; weight = new java.util.ArrayList&lt;&gt;();</span>
         BitSet[] neighbor;
         int n;
-<span class="fc" id="L34">        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(fname))) {</span>
-<span class="fc" id="L35">            br.readLine();</span>
+<span class="fc" id="L67">        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(fname))) {</span>
+<span class="fc" id="L68">            br.readLine();</span>
             String line;
-<span class="pc bpc" id="L37" title="1 of 4 branches missed.">            while ((line = br.readLine()) != null &amp;&amp; !line.contains(&quot;--&quot;)) {</span>
-<span class="fc bfc" id="L38" title="All 2 branches covered.">                if (line.isEmpty()) continue;</span>
+<span class="pc bpc" id="L70" title="1 of 4 branches missed.">            while ((line = br.readLine()) != null &amp;&amp; !line.contains(&quot;--&quot;)) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">                if (line.isEmpty()) continue;</span>
 
-<span class="fc bfc" id="L40" title="All 2 branches covered.">                if (line.contains(&quot;optimal&quot;)) {</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">                if (line.contains(&quot;optimal&quot;)) {</span>
                     // Ignore optimal
-<span class="fc bfc" id="L42" title="All 2 branches covered.">                } else if (line.contains(&quot;weight&quot;)) {</span>
-<span class="fc" id="L43">                    String w = line.trim().split(&quot; &quot;)[1];</span>
-<span class="fc" id="L44">                    w = w.replace(&quot;[weight=&quot;, &quot;&quot;).replace(&quot;];&quot;, &quot;&quot;);</span>
-<span class="fc" id="L45">                    weight.add(Integer.parseInt(w));</span>
-<span class="fc" id="L46">                } else {</span>
-<span class="fc" id="L47">                    weight.add(1);</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">                } else if (line.contains(&quot;weight&quot;)) {</span>
+<span class="fc" id="L76">                    String w = line.trim().split(&quot; &quot;)[1];</span>
+<span class="fc" id="L77">                    w = w.replace(&quot;[weight=&quot;, &quot;&quot;).replace(&quot;];&quot;, &quot;&quot;);</span>
+<span class="fc" id="L78">                    weight.add(Integer.parseInt(w));</span>
+<span class="fc" id="L79">                } else {</span>
+<span class="fc" id="L80">                    weight.add(1);</span>
                 }
             }
-<span class="fc" id="L50">            n = weight.size();</span>
-<span class="fc" id="L51">            neighbor = new BitSet[n];</span>
-<span class="fc" id="L52">            java.util.Arrays.setAll(neighbor, i -&gt; new BitSet(n));</span>
-<span class="pc bpc" id="L53" title="1 of 4 branches missed.">            while (line != null &amp;&amp; !line.equals(&quot;}&quot;)) {</span>
-<span class="fc bfc" id="L54" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
-<span class="fc" id="L55">                    line = br.readLine();</span>
-<span class="fc" id="L56">                    continue;</span>
+<span class="fc" id="L83">            n = weight.size();</span>
+<span class="fc" id="L84">            neighbor = new BitSet[n];</span>
+<span class="fc" id="L85">            java.util.Arrays.setAll(neighbor, i -&gt; new BitSet(n));</span>
+<span class="pc bpc" id="L86" title="1 of 4 branches missed.">            while (line != null &amp;&amp; !line.equals(&quot;}&quot;)) {</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
+<span class="fc" id="L88">                    line = br.readLine();</span>
+<span class="fc" id="L89">                    continue;</span>
                 }
-<span class="fc" id="L58">                String[] tokens = line.replace(&quot; &quot;, &quot;&quot;).replace(&quot;;&quot;, &quot;&quot;).split(&quot;--&quot;);</span>
-<span class="fc" id="L59">                int source = Integer.parseInt(tokens[0]) - 1;</span>
-<span class="fc" id="L60">                int target = Integer.parseInt(tokens[1]) - 1;</span>
-<span class="fc" id="L61">                neighbor[source].set(target);</span>
-<span class="fc" id="L62">                neighbor[target].set(source);</span>
-<span class="fc" id="L63">                line = br.readLine();</span>
-<span class="fc" id="L64">            }</span>
+<span class="fc" id="L91">                String[] tokens = line.replace(&quot; &quot;, &quot;&quot;).replace(&quot;;&quot;, &quot;&quot;).split(&quot;--&quot;);</span>
+<span class="fc" id="L92">                int source = Integer.parseInt(tokens[0]) - 1;</span>
+<span class="fc" id="L93">                int target = Integer.parseInt(tokens[1]) - 1;</span>
+<span class="fc" id="L94">                neighbor[source].set(target);</span>
+<span class="fc" id="L95">                neighbor[target].set(source);</span>
+<span class="fc" id="L96">                line = br.readLine();</span>
+<span class="fc" id="L97">            }</span>
         }
-<span class="fc" id="L66">        return new MispProblem(neighbor, weight.stream().mapToInt(x -&gt; x).toArray(), fname);</span>
+<span class="fc" id="L99">        return new MispProblem(neighbor, weight.stream().mapToInt(x -&gt; x).toArray(), fname);</span>
     }
 
     @Override
     public MispState initialState() {
-<span class="fc" id="L71">        BitSet remaining = new BitSet(nbVars);</span>
-<span class="fc" id="L72">        remaining.set(0, nbVars);</span>
-<span class="fc" id="L73">        return new MispState(remaining);</span>
+<span class="fc" id="L104">        BitSet remaining = new BitSet(nbVars);</span>
+<span class="fc" id="L105">        remaining.set(0, nbVars);</span>
+<span class="fc" id="L106">        return new MispState(remaining);</span>
     }
 
     @Override
     public double initialValue() {
-<span class="fc" id="L78">        return 0;</span>
+<span class="fc" id="L111">        return 0;</span>
     }
 
     @Override
     public boolean isTarget(MispState state) {
-<span class="fc" id="L83">        return state.remainingNodes().isEmpty();</span>
+<span class="fc" id="L116">        return state.remainingNodes().isEmpty();</span>
     }
 
     @Override
     public Iterator&lt;Integer&gt; domain(MispState state) {
-<span class="fc" id="L88">        List&lt;Integer&gt; dom = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L89">        int i = state.remainingNodes().nextSetBit(0);</span>
-<span class="fc bfc" id="L90" title="All 2 branches covered.">        while (i &gt;= 0) {</span>
-<span class="fc" id="L91">            dom.add(i);</span>
-<span class="fc" id="L92">            i = state.remainingNodes().nextSetBit(i + 1);</span>
+<span class="fc" id="L121">        List&lt;Integer&gt; dom = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L122">        int i = state.remainingNodes().nextSetBit(0);</span>
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        while (i &gt;= 0) {</span>
+<span class="fc" id="L124">            dom.add(i);</span>
+<span class="fc" id="L125">            i = state.remainingNodes().nextSetBit(i + 1);</span>
         }
-<span class="fc" id="L94">        return dom.iterator();</span>
+<span class="fc" id="L127">        return dom.iterator();</span>
     }
 
     @Override
     public MispState transition(MispState state, int label) {
-<span class="fc" id="L99">        BitSet nextRemaining = (BitSet) state.remainingNodes().clone();</span>
-<span class="fc" id="L100">        nextRemaining.andNot(neighbors[label]);</span>
-<span class="fc" id="L101">        nextRemaining.clear(0, label + 1);</span>
-<span class="fc" id="L102">        return new MispState(nextRemaining);</span>
+<span class="fc" id="L132">        BitSet nextRemaining = (BitSet) state.remainingNodes().clone();</span>
+<span class="fc" id="L133">        nextRemaining.andNot(neighbors[label]);</span>
+<span class="fc" id="L134">        nextRemaining.clear(0, label + 1);</span>
+<span class="fc" id="L135">        return new MispState(nextRemaining);</span>
     }
 
     @Override
     public double transitionCost(MispState state, int label) {
-<span class="fc" id="L107">        return -weight[label];</span>
+<span class="fc" id="L140">        return -weight[label];</span>
     }
 
     @Override
     public double evaluate(List&lt;Integer&gt; solution) throws InvalidSolutionException {
-<span class="fc" id="L112">        int[] binarySol = new int[nbVars];</span>
-<span class="fc bfc" id="L113" title="All 2 branches covered.">        for (int v : solution) {</span>
-<span class="fc" id="L114">            binarySol[v] = 1;</span>
-<span class="fc" id="L115">        }</span>
+<span class="fc" id="L145">        int[] binarySol = new int[nbVars];</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (int v : solution) {</span>
+<span class="fc" id="L147">            binarySol[v] = 1;</span>
+<span class="fc" id="L148">        }</span>
 
-<span class="fc bfc" id="L117" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars; i++) {</span>
-<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (binarySol[i] == 1) {</span>
-<span class="fc bfc" id="L119" title="All 2 branches covered.">                for (int j = neighbors[i].nextSetBit(0); j &gt;= 0; j = neighbors[i].nextSetBit(j + 1)) {</span>
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">                    if (binarySol[j] == 1) {</span>
-<span class="nc" id="L121">                        String msg = String.format(&quot;The solution %s contains adjacent nodes (%d, %d)&quot;,</span>
-<span class="nc" id="L122">                                solution, i, j);</span>
-<span class="nc" id="L123">                        throw new InvalidSolutionException(msg);</span>
+<span class="fc bfc" id="L150" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars; i++) {</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">            if (binarySol[i] == 1) {</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">                for (int j = neighbors[i].nextSetBit(0); j &gt;= 0; j = neighbors[i].nextSetBit(j + 1)) {</span>
+<span class="pc bpc" id="L153" title="1 of 2 branches missed.">                    if (binarySol[j] == 1) {</span>
+<span class="nc" id="L154">                        String msg = String.format(&quot;The solution %s contains adjacent nodes (%d, %d)&quot;,</span>
+<span class="nc" id="L155">                                solution, i, j);</span>
+<span class="nc" id="L156">                        throw new InvalidSolutionException(msg);</span>
                     }
                 }
             }
         }
 
-<span class="fc" id="L129">        double val = 0;</span>
-<span class="fc bfc" id="L130" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars; i++) {</span>
-<span class="fc bfc" id="L131" title="All 2 branches covered.">            if (binarySol[i] == 1) {</span>
-<span class="fc" id="L132">                val += weight[i];</span>
+<span class="fc" id="L162">        double val = 0;</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars; i++) {</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">            if (binarySol[i] == 1) {</span>
+<span class="fc" id="L165">                val += weight[i];</span>
             }
         }
 
-<span class="fc" id="L136">        return -val;</span>
+<span class="fc" id="L169">        return -val;</span>
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L141">        return name.orElse(&quot;MispProblem(nbVars:&quot; + nbVars + &quot;)&quot;);</span>
+<span class="fc" id="L174">        return name.orElse(&quot;MispProblem(nbVars:&quot; + nbVars + &quot;)&quot;);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

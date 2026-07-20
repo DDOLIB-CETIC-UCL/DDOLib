@@ -21,7 +21,7 @@ public class LCSDp {
      * Solves the 2-strings LCS problem using a naive DP method.
      * Initiates the matrix and calls the heuristic.
      *
-     * @return A Matrix containing the remaining LCS length based on the position in the strings.
+     * @return a Matrix containing the remaining LCS length based on the position in the strings
      */
     int[][] solve() {
         // All cells initiated at -1

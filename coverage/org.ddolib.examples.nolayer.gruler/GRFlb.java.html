@@ -2,28 +2,37 @@
 
 import org.ddolib.nolayer.modeling.FastLowerBound;
 
+/**
+ * Fast lower bound for the nolayer Golomb Ruler Problem. It assumes that the next marks will add
+ * the smallest missing distances.
+ */
 public class GRFlb implements FastLowerBound&lt;GRState&gt; {
 
     private final GRProblem problem;
 
-<span class="fc" id="L9">    public GRFlb(GRProblem problem) {</span>
-<span class="fc" id="L10">        this.problem = problem;</span>
-<span class="fc" id="L11">    }</span>
+    /**
+     * Creates a new fast lower bound for the given Golomb Ruler problem.
+     *
+     * @param problem the Golomb Ruler problem instance
+     */
+<span class="fc" id="L18">    public GRFlb(GRProblem problem) {</span>
+<span class="fc" id="L19">        this.problem = problem;</span>
+<span class="fc" id="L20">    }</span>
 
     @Override
     public double fastLowerBound(GRState state) {
-<span class="fc" id="L15">        int missingMarks = problem.order() - state.getNumberOfMarks();</span>
+<span class="fc" id="L24">        int missingMarks = problem.order() - state.getNumberOfMarks();</span>
 
-<span class="fc" id="L17">        int i = 0;</span>
-<span class="fc" id="L18">        int cost = 0;</span>
-<span class="fc bfc" id="L19" title="All 2 branches covered.">        while (missingMarks != 0) {</span>
-<span class="fc bfc" id="L20" title="All 4 branches covered.">            if (i != 0 &amp;&amp; !state.getDistances().get(i)) {</span>
-<span class="fc" id="L21">                cost += i;</span>
-<span class="fc" id="L22">                missingMarks--;</span>
+<span class="fc" id="L26">        int i = 0;</span>
+<span class="fc" id="L27">        int cost = 0;</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        while (missingMarks != 0) {</span>
+<span class="fc bfc" id="L29" title="All 4 branches covered.">            if (i != 0 &amp;&amp; !state.getDistances().get(i)) {</span>
+<span class="fc" id="L30">                cost += i;</span>
+<span class="fc" id="L31">                missingMarks--;</span>
             }
-<span class="fc" id="L24">            i++;</span>
+<span class="fc" id="L33">            i++;</span>
         }
-<span class="fc" id="L26">        return cost;</span>
+<span class="fc" id="L35">        return cost;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -12,7 +12,14 @@ import java.util.BitSet;
  * This allows pruning suboptimal states during the search.
  * &lt;/p&gt;
  */
-<span class="fc" id="L15">public class MispDominance implements Dominance&lt;BitSet&gt; {</span>
+public class MispDominance implements Dominance&lt;BitSet&gt; {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+<span class="fc" id="L20">    public MispDominance() {</span>
+<span class="fc" id="L21">    }</span>
+
     /**
      * Returns a key for the dominance relation.
      * &lt;p&gt;
@@ -25,7 +32,7 @@ import java.util.BitSet;
      */
     @Override
     public Integer getKey(BitSet state) {
-<span class="fc" id="L28">        return 0;</span>
+<span class="fc" id="L35">        return 0;</span>
     }
 
     /**
@@ -42,7 +49,7 @@ import java.util.BitSet;
 
     @Override
     public boolean isDominatedOrEqual(BitSet state1, BitSet state2) {
-<span class="fc" id="L45">        return state1.stream().allMatch(state2::get);</span>
+<span class="fc" id="L52">        return state1.stream().allMatch(state2::get);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

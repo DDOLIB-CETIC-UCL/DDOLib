@@ -12,7 +12,7 @@ sealed interface Position permits TSPNode, VirtualNodes {
 /**
  * Unique position of the vehicle.
  *
- * @param value Last position of the vehicle in the current route.
+ * @param value last position of the vehicle in the current route
  */
 <span class="fc" id="L17">record TSPNode(int value) implements Position {</span>
     @Override
@@ -25,7 +25,7 @@ sealed interface Position permits TSPNode, VirtualNodes {
 /**
  * Used for merged states. The vehicle can be at all the position of the merged states.
  *
- * @param nodes All the position of the merged states.
+ * @param nodes all the position of the merged states
  */
 <span class="fc" id="L30">record VirtualNodes(Set&lt;Integer&gt; nodes) implements Position {</span>
     @Override

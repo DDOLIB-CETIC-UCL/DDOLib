@@ -5,7 +5,10 @@ import java.util.Arrays;
 /**
  * Utility class providing algorithms to solve the Knapsack Problem.
  */
-<span class="nc" id="L8">public class KSAlgo {</span>
+public class KSAlgo {
+
+    private KSAlgo() {
+    }
 
     /**
      * Provides a greedy approximation for the Knapsack Problem.
@@ -19,26 +22,26 @@ import java.util.Arrays;
      * on the optimal solution
      */
     public static int greedyKS(KSProblem problem) {
-<span class="nc" id="L22">        Integer[] items = new Integer[problem.nbVars()];</span>
-<span class="nc bnc" id="L23" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
-<span class="nc" id="L24">            items[i] = i;</span>
+<span class="nc" id="L25">        Integer[] items = new Integer[problem.nbVars()];</span>
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
+<span class="nc" id="L27">            items[i] = i;</span>
         }
 
-<span class="nc" id="L27">        Arrays.sort(items, (o1, o2) -&gt; {</span>
-<span class="nc" id="L28">            double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
-<span class="nc" id="L29">            double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
-<span class="nc" id="L30">            return Double.compare(ratio2, ratio1);</span>
+<span class="nc" id="L30">        Arrays.sort(items, (o1, o2) -&gt; {</span>
+<span class="nc" id="L31">            double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
+<span class="nc" id="L32">            double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
+<span class="nc" id="L33">            return Double.compare(ratio2, ratio1);</span>
         });
 
-<span class="nc" id="L33">        int capa = problem.capa;</span>
-<span class="nc" id="L34">        int value = 0;</span>
-<span class="nc bnc" id="L35" title="All 2 branches missed.">        for (Integer i : items) {</span>
-<span class="nc bnc" id="L36" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) continue;</span>
-<span class="nc" id="L37">            value += problem.profit[i];</span>
-<span class="nc" id="L38">            capa -= problem.weight[i];</span>
+<span class="nc" id="L36">        int capa = problem.capa;</span>
+<span class="nc" id="L37">        int value = 0;</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        for (Integer i : items) {</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) continue;</span>
+<span class="nc" id="L40">            value += problem.profit[i];</span>
+<span class="nc" id="L41">            capa -= problem.weight[i];</span>
         }
 
-<span class="nc" id="L41">        return value;</span>
+<span class="nc" id="L44">        return value;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

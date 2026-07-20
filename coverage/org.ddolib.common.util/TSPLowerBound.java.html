@@ -16,7 +16,10 @@ import java.util.Set;
  * where the TSP component appears in the calculation of minimum changeover costs.
  * &lt;/p&gt;
  */
-<span class="nc" id="L19">public class TSPLowerBound {</span>
+public class TSPLowerBound {
+
+    private TSPLowerBound() {
+    }
 
     /**
      * Computes a lower-bound for all subsets of a set of nodes based on the given cost matrix.
@@ -37,14 +40,14 @@ import java.util.Set;
      * for the subset corresponding to the binary representation of i
      */
     public static int[] lowerBoundForAllSubsets(int[][] costMatrix) {
-<span class="fc" id="L40">        int nItems = costMatrix.length;</span>
-<span class="fc" id="L41">        int nPoss = 1 &lt;&lt; nItems; // 2 ^ nItems = number of all possible subsets</span>
-<span class="fc" id="L42">        int[] result = new int[nPoss];</span>
-<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (int i = 0; i &lt; nPoss; i++) {</span>
-<span class="fc" id="L44">            Set&lt;Integer&gt; members = intToSet(i, nItems);</span>
-<span class="fc" id="L45">            result[i] = (sumMinIncident(members, costMatrix));</span>
+<span class="fc" id="L43">        int nItems = costMatrix.length;</span>
+<span class="fc" id="L44">        int nPoss = 1 &lt;&lt; nItems; // 2 ^ nItems = number of all possible subsets</span>
+<span class="fc" id="L45">        int[] result = new int[nPoss];</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (int i = 0; i &lt; nPoss; i++) {</span>
+<span class="fc" id="L47">            Set&lt;Integer&gt; members = intToSet(i, nItems);</span>
+<span class="fc" id="L48">            result[i] = (sumMinIncident(members, costMatrix));</span>
         }
-<span class="fc" id="L47">        return result;</span>
+<span class="fc" id="L50">        return result;</span>
     }
 
     /**
@@ -60,32 +63,32 @@ import java.util.Set;
      * @return the sum of the minimum incident edges for the subset
      */
     private static int sumMinIncident(Set&lt;Integer&gt; members, int[][] changeover) {
-<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (members.size() &lt;= 1) {</span>
-<span class="fc" id="L64">            return 0;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (members.size() &lt;= 1) {</span>
+<span class="fc" id="L67">            return 0;</span>
         }
-<span class="fc" id="L66">        Set&lt;Integer&gt; covered = new HashSet&lt;&gt;();</span>
-<span class="fc" id="L67">        int total = 0;</span>
-<span class="fc bfc" id="L68" title="All 2 branches covered.">        for (int a : members) {</span>
-<span class="fc bfc" id="L69" title="All 2 branches covered.">            if (covered.contains(a)) {</span>
-<span class="fc" id="L70">                continue;</span>
+<span class="fc" id="L69">        Set&lt;Integer&gt; covered = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L70">        int total = 0;</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        for (int a : members) {</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">            if (covered.contains(a)) {</span>
+<span class="fc" id="L73">                continue;</span>
             }
-<span class="fc" id="L72">            int emin = Integer.MAX_VALUE; // minimum edge adjacent to a</span>
-<span class="fc" id="L73">            int bmin = a; // the other end of the minimum edge</span>
-<span class="fc bfc" id="L74" title="All 2 branches covered.">            for (int b : members) {</span>
-<span class="fc bfc" id="L75" title="All 2 branches covered.">                if (a == b) {</span>
-<span class="fc" id="L76">                    continue;</span>
+<span class="fc" id="L75">            int emin = Integer.MAX_VALUE; // minimum edge adjacent to a</span>
+<span class="fc" id="L76">            int bmin = a; // the other end of the minimum edge</span>
+<span class="fc bfc" id="L77" title="All 2 branches covered.">            for (int b : members) {</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">                if (a == b) {</span>
+<span class="fc" id="L79">                    continue;</span>
                 }
-<span class="fc" id="L78">                int edge = Math.min(changeover[a][b], changeover[b][a]);</span>
-<span class="pc bpc" id="L79" title="1 of 2 branches missed.">                if (edge &lt; emin) {</span>
-<span class="fc" id="L80">                    emin = edge;</span>
-<span class="fc" id="L81">                    bmin = b;</span>
+<span class="fc" id="L81">                int edge = Math.min(changeover[a][b], changeover[b][a]);</span>
+<span class="pc bpc" id="L82" title="1 of 2 branches missed.">                if (edge &lt; emin) {</span>
+<span class="fc" id="L83">                    emin = edge;</span>
+<span class="fc" id="L84">                    bmin = b;</span>
                 }
-<span class="fc" id="L83">            }</span>
-<span class="fc" id="L84">            total += emin;</span>
-<span class="fc" id="L85">            covered.add(a);</span>
-<span class="fc" id="L86">            covered.add(bmin);</span>
-<span class="fc" id="L87">        }</span>
-<span class="fc" id="L88">        return total;</span>
+<span class="fc" id="L86">            }</span>
+<span class="fc" id="L87">            total += emin;</span>
+<span class="fc" id="L88">            covered.add(a);</span>
+<span class="fc" id="L89">            covered.add(bmin);</span>
+<span class="fc" id="L90">        }</span>
+<span class="fc" id="L91">        return total;</span>
     }
 
     /**
@@ -100,13 +103,13 @@ import java.util.Set;
      * @return a set of integers corresponding to the indices of nodes in the subset
      */
     private static Set&lt;Integer&gt; intToSet(int num, int size) {
-<span class="fc" id="L103">        Set&lt;Integer&gt; set = new HashSet&lt;&gt;();</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">        for (int i = 0; i &lt; size; i++) {</span>
-<span class="fc bfc" id="L105" title="All 2 branches covered.">            if ((num &amp; (1 &lt;&lt; i)) != 0) {</span>
-<span class="fc" id="L106">                set.add(i);</span>
+<span class="fc" id="L106">        Set&lt;Integer&gt; set = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        for (int i = 0; i &lt; size; i++) {</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">            if ((num &amp; (1 &lt;&lt; i)) != 0) {</span>
+<span class="fc" id="L109">                set.add(i);</span>
             }
         }
-<span class="fc" id="L109">        return set;</span>
+<span class="fc" id="L112">        return set;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

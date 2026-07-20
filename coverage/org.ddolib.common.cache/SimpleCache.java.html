@@ -140,26 +140,33 @@ public class SimpleCache&lt;T&gt; implements Cache&lt;T&gt; {
      *
      * @param &lt;T&gt; the type of state stored in the layer
      */
-<span class="fc" id="L143">    public static class Layer&lt;T&gt; {</span>
+    public static class Layer&lt;T&gt; {
+
+        /**
+         * Creates a new, empty cache layer.
+         */
+<span class="fc" id="L148">        public Layer() {</span>
+<span class="fc" id="L149">        }</span>
+
         /**
          * Map of states to their thresholds.
          */
-<span class="fc" id="L147">        private final Map&lt;T, Threshold&gt; map = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L154">        private final Map&lt;T, Threshold&gt; map = new HashMap&lt;&gt;();</span>
 
         /**
          * Lock for thread-safe access.
          */
-<span class="fc" id="L152">        private final ReadWriteLock lock = new ReentrantReadWriteLock();</span>
+<span class="fc" id="L159">        private final ReadWriteLock lock = new ReentrantReadWriteLock();</span>
 
         /**
          * Number of queries to this layer.
          */
-<span class="fc" id="L157">        public int nbTests = 0;</span>
+<span class="fc" id="L164">        public int nbTests = 0;</span>
 
         /**
          * Number of cache hits.
          */
-<span class="fc" id="L162">        public int nbHits = 0;</span>
+<span class="fc" id="L169">        public int nbHits = 0;</span>
 
         /**
          * Retrieves the threshold for a given state in a thread-safe manner.
@@ -169,11 +176,11 @@ public class SimpleCache&lt;T&gt; implements Cache&lt;T&gt; {
          */
 
         public Optional&lt;Threshold&gt; get(T state) {
-<span class="fc" id="L172">            lock.readLock().lock();</span>
+<span class="fc" id="L179">            lock.readLock().lock();</span>
             try {
-<span class="fc" id="L174">                return Optional.ofNullable(map.get(state));</span>
+<span class="fc" id="L181">                return Optional.ofNullable(map.get(state));</span>
             } finally {
-<span class="fc" id="L176">                lock.readLock().unlock();</span>
+<span class="fc" id="L183">                lock.readLock().unlock();</span>
             }
         }
 
@@ -184,16 +191,16 @@ public class SimpleCache&lt;T&gt; implements Cache&lt;T&gt; {
          * @param newThreshold the new threshold value
          */
         public void update(T state, Threshold newThreshold) {
-<span class="fc" id="L187">            lock.writeLock().lock();</span>
+<span class="fc" id="L194">            lock.writeLock().lock();</span>
             try {
-<span class="fc" id="L189">                Threshold current = map.get(state);</span>
-<span class="pc bpc" id="L190" title="1 of 4 branches missed.">                if (current == null || newThreshold.compareTo(current) &gt; 0) {</span>
-<span class="fc" id="L191">                    map.put(state, newThreshold);</span>
+<span class="fc" id="L196">                Threshold current = map.get(state);</span>
+<span class="pc bpc" id="L197" title="1 of 4 branches missed.">                if (current == null || newThreshold.compareTo(current) &gt; 0) {</span>
+<span class="fc" id="L198">                    map.put(state, newThreshold);</span>
                 }
             } finally {
-<span class="fc" id="L194">                lock.writeLock().unlock();</span>
+<span class="fc" id="L201">                lock.writeLock().unlock();</span>
             }
-<span class="fc" id="L196">        }</span>
+<span class="fc" id="L203">        }</span>
 
         /**
          * Checks whether the layer contains a given state, updating hit/test statistics.
@@ -202,34 +209,34 @@ public class SimpleCache&lt;T&gt; implements Cache&lt;T&gt; {
          * @return true if the state exists in the layer, false otherwise
          */
         public boolean containsKey(T state) {
-<span class="fc" id="L205">            lock.writeLock().lock();</span>
-<span class="fc" id="L206">            nbTests += 1;</span>
+<span class="fc" id="L212">            lock.writeLock().lock();</span>
+<span class="fc" id="L213">            nbTests += 1;</span>
             try {
-<span class="fc bfc" id="L208" title="All 2 branches covered.">                if (map.containsKey(state)) {</span>
-<span class="fc" id="L209">                    nbHits += 1;</span>
-<span class="fc" id="L210">                    return true;</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">                if (map.containsKey(state)) {</span>
+<span class="fc" id="L216">                    nbHits += 1;</span>
+<span class="fc" id="L217">                    return true;</span>
                 }
             } finally {
-<span class="fc" id="L213">                lock.writeLock().unlock();</span>
+<span class="fc" id="L220">                lock.writeLock().unlock();</span>
             }
-<span class="fc" id="L215">            return false;</span>
+<span class="fc" id="L222">            return false;</span>
         }
 
         /**
          * Clears all entries in the layer.
          */
         public void clear() {
-<span class="nc" id="L222">            lock.writeLock().lock();</span>
+<span class="nc" id="L229">            lock.writeLock().lock();</span>
             try {
-<span class="nc" id="L224">                map.clear();</span>
+<span class="nc" id="L231">                map.clear();</span>
             } finally {
-<span class="nc" id="L226">                lock.writeLock().unlock();</span>
+<span class="nc" id="L233">                lock.writeLock().unlock();</span>
             }
-<span class="nc" id="L228">        }</span>
+<span class="nc" id="L235">        }</span>
 
         @Override
         public String toString() {
-<span class="nc" id="L232">            return map.keySet() + &quot; ---&gt; &quot; + map.values();</span>
+<span class="nc" id="L239">            return map.keySet() + &quot; ---&gt; &quot; + map.values();</span>
         }
     }
 }

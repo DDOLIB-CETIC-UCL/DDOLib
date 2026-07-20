@@ -69,12 +69,12 @@ public class TSProblem implements Problem&lt;TSState&gt; {
     /**
      * Constructs a TSP instance from explicit parameters.
      *
-     * @param nbScene  Number of scenes.
-     * @param nbActors Number of actors.
-     * @param costs    Array containing the cost of each actor per day.
-     * @param duration Array containing the duration of each scene.
-     * @param actors   Array of BitSets representing the actors required for each scene.
-     * @param optimal  Optional value of the optimal solution, if known.
+     * @param nbScene  number of scenes
+     * @param nbActors number of actors
+     * @param costs    array containing the cost of each actor per day
+     * @param duration array containing the duration of each scene
+     * @param actors   array of BitSets representing the actors required for each scene
+     * @param optimal  Optional value of the optimal solution, if known
      */
 <span class="nc" id="L79">    public TSProblem(int nbScene, int nbActors, int[] costs, int[] duration, BitSet[] actors, Optional&lt;Double&gt; optimal) {</span>
 <span class="nc" id="L80">        this.nbScene = nbScene;</span>
@@ -89,8 +89,8 @@ public class TSProblem implements Problem&lt;TSState&gt; {
     /**
      * Constructs a TSP instance by reading a file in the standard dataset format.
      *
-     * @param fname Path to the input file.
-     * @throws IOException If an I/O error occurs while reading the file.
+     * @param fname path to the input file
+     * @throws IOException if an I/O error occurs while reading the file
      */
 <span class="fc" id="L95">    public TSProblem(String fname) throws IOException {</span>
 <span class="fc" id="L96">        int nbScenes = 0;</span>
@@ -261,64 +261,78 @@ public class TSProblem implements Problem&lt;TSState&gt; {
 <span class="fc" id="L261">        return value;</span>
     }
 
+    /**
+     * Computes the total cost per day of all actors required to perform a given scene.
+     *
+     * @param scene the index of the scene
+     * @return the sum of the daily costs of the actors involved in {@code scene}
+     */
     public int sceneCost(int scene) {
-<span class="nc" id="L265">        int sum = 0;</span>
-<span class="nc bnc" id="L266" title="All 2 branches missed.">        for (int actor = this.actors[scene].nextSetBit(0); actor &gt;= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {</span>
-<span class="nc" id="L267">            sum += costs[actor];</span>
+<span class="nc" id="L271">        int sum = 0;</span>
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        for (int actor = this.actors[scene].nextSetBit(0); actor &gt;= 0; actor = this.actors[scene].nextSetBit(actor + 1)) {</span>
+<span class="nc" id="L273">            sum += costs[actor];</span>
         }
-<span class="nc" id="L269">        return sum;</span>
+<span class="nc" id="L275">        return sum;</span>
     }
 
     /**
      * Returns the set of actors already present on location at the current state,
      * i.e., actors involved in past scenes and needed for future scenes.
      *
-     * @param state Current state of the MDD.
-     * @return BitSet of actors currently on location.
+     * @param state current state of the MDD
+     * @return BitSet of actors currently on location
      */
     public BitSet onLocationActors(TSState state) {
-<span class="fc" id="L280">        BitSet before = new BitSet(); //Actors for past scenes</span>
-<span class="fc" id="L281">        BitSet after = new BitSet(); // Actors for future scenes</span>
+<span class="fc" id="L286">        BitSet before = new BitSet(); //Actors for past scenes</span>
+<span class="fc" id="L287">        BitSet after = new BitSet(); // Actors for future scenes</span>
 
-<span class="fc bfc" id="L283" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
-<span class="fc bfc" id="L284" title="All 2 branches covered.">            if (!state.maybeScenes().get(i)) {</span>
-<span class="fc bfc" id="L285" title="All 2 branches covered.">                if (state.remainingScenes().get(i)) after.or(actors[i]);</span>
-<span class="fc" id="L286">                else before.or(actors[i]);</span>
+<span class="fc bfc" id="L289" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
+<span class="fc bfc" id="L290" title="All 2 branches covered.">            if (!state.maybeScenes().get(i)) {</span>
+<span class="fc bfc" id="L291" title="All 2 branches covered.">                if (state.remainingScenes().get(i)) after.or(actors[i]);</span>
+<span class="fc" id="L292">                else before.or(actors[i]);</span>
             }
         }
-<span class="fc" id="L289">        after.and(before); // Already present actors</span>
-<span class="fc" id="L290">        return after;</span>
+<span class="fc" id="L295">        after.and(before); // Already present actors</span>
+<span class="fc" id="L296">        return after;</span>
     }
 
+    /**
+     * Returns the set of actors already present on location, i.e., actors involved in past
+     * scenes and needed for future scenes, given explicit remaining and maybe scene sets.
+     *
+     * @param remainingScenes the scenes that still need to be scheduled
+     * @param maybeScenes     the scenes that may or may not still need to be scheduled
+     * @return the BitSet of actors currently on location
+     */
     public BitSet onLocationActors(BitSet remainingScenes, BitSet maybeScenes) {
-<span class="fc" id="L294">        BitSet before = new BitSet(); //Actors for past scenes</span>
-<span class="fc" id="L295">        BitSet after = new BitSet(); // Actors for future scenes</span>
+<span class="fc" id="L308">        BitSet before = new BitSet(); //Actors for past scenes</span>
+<span class="fc" id="L309">        BitSet after = new BitSet(); // Actors for future scenes</span>
 
-<span class="fc bfc" id="L297" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
-<span class="fc bfc" id="L298" title="All 2 branches covered.">            if (!maybeScenes.get(i)) {</span>
-<span class="fc bfc" id="L299" title="All 2 branches covered.">                if (remainingScenes.get(i)) after.or(actors[i]);</span>
-<span class="fc" id="L300">                else before.or(actors[i]);</span>
+<span class="fc bfc" id="L311" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
+<span class="fc bfc" id="L312" title="All 2 branches covered.">            if (!maybeScenes.get(i)) {</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">                if (remainingScenes.get(i)) after.or(actors[i]);</span>
+<span class="fc" id="L314">                else before.or(actors[i]);</span>
             }
         }
-<span class="fc" id="L303">        after.and(before); // Already present actors</span>
-<span class="fc" id="L304">        return after;</span>
+<span class="fc" id="L317">        after.and(before); // Already present actors</span>
+<span class="fc" id="L318">        return after;</span>
     }
 
     @Override
     public String toString() {
-<span class="pc bpc" id="L309" title="1 of 2 branches missed.">        if (name.isPresent()) {</span>
-<span class="fc" id="L310">            return name.get();</span>
+<span class="pc bpc" id="L323" title="1 of 2 branches missed.">        if (name.isPresent()) {</span>
+<span class="fc" id="L324">            return name.get();</span>
         } else {
-<span class="nc" id="L312">            String nbSceneStr = String.format(&quot;Nb Scene: %d%n&quot;, nbScene);</span>
-<span class="nc" id="L313">            String nbActorsStr = String.format(&quot;Nb Actors: %d%n&quot;, nbActors);</span>
-<span class="nc" id="L314">            String costStr = String.format(&quot;Costs: %s%n&quot;, Arrays.toString(costs));</span>
-<span class="nc" id="L315">            String durationStr = String.format(&quot;Duration: %s%n&quot;, Arrays.toString(duration));</span>
-<span class="nc" id="L316">            StringBuilder actorsStr = new StringBuilder();</span>
-<span class="nc bnc" id="L317" title="All 2 branches missed.">            for (int i = 0; i &lt; actors.length; i++) {</span>
-<span class="nc" id="L318">                actorsStr.append(String.format(&quot;Scene %d needs actors: %s%n&quot;, i, actors[i]));</span>
+<span class="nc" id="L326">            String nbSceneStr = String.format(&quot;Nb Scene: %d%n&quot;, nbScene);</span>
+<span class="nc" id="L327">            String nbActorsStr = String.format(&quot;Nb Actors: %d%n&quot;, nbActors);</span>
+<span class="nc" id="L328">            String costStr = String.format(&quot;Costs: %s%n&quot;, Arrays.toString(costs));</span>
+<span class="nc" id="L329">            String durationStr = String.format(&quot;Duration: %s%n&quot;, Arrays.toString(duration));</span>
+<span class="nc" id="L330">            StringBuilder actorsStr = new StringBuilder();</span>
+<span class="nc bnc" id="L331" title="All 2 branches missed.">            for (int i = 0; i &lt; actors.length; i++) {</span>
+<span class="nc" id="L332">                actorsStr.append(String.format(&quot;Scene %d needs actors: %s%n&quot;, i, actors[i]));</span>
             }
 
-<span class="nc" id="L321">            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;</span>
+<span class="nc" id="L335">            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;</span>
         }
     }
 }

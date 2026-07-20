@@ -20,52 +20,57 @@ import java.util.Iterator;
  *
  * @param &lt;T&gt; the type representing the state space of the problem
  */
-<span class="fc" id="L23">public abstract class ExactModel&lt;T&gt; implements DdoModel&lt;T&gt; {</span>
+public abstract class ExactModel&lt;T&gt; implements DdoModel&lt;T&gt; {
 
+    /**
+     * Creates a new exact model.
+     */
+<span class="fc" id="L28">    protected ExactModel() {</span>
+<span class="fc" id="L29">    }</span>
 
     @Override
     public final Relaxation&lt;T&gt; relaxation() {
-<span class="fc" id="L28">        return new DummyRelaxation&lt;&gt;();</span>
+<span class="fc" id="L33">        return new DummyRelaxation&lt;&gt;();</span>
     }
 
     @Override
     public final StateRanking&lt;T&gt; ranking() {
-<span class="fc" id="L33">        return DdoModel.super.ranking();</span>
+<span class="fc" id="L38">        return DdoModel.super.ranking();</span>
     }
 
     @Override
     public final WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="nc" id="L38">        return DdoModel.super.widthHeuristic();</span>
+<span class="nc" id="L43">        return DdoModel.super.widthHeuristic();</span>
     }
 
     @Override
     public final Frontier&lt;T&gt; frontier() {
-<span class="nc" id="L43">        return DdoModel.super.frontier();</span>
+<span class="nc" id="L48">        return DdoModel.super.frontier();</span>
     }
 
     @Override
     public final boolean useCache() {
-<span class="nc" id="L48">        return DdoModel.super.useCache();</span>
+<span class="nc" id="L53">        return DdoModel.super.useCache();</span>
     }
 
     @Override
     public final ReductionStrategy&lt;T&gt; relaxStrategy() {
-<span class="nc" id="L53">        return DdoModel.super.relaxStrategy();</span>
+<span class="nc" id="L58">        return DdoModel.super.relaxStrategy();</span>
     }
 
     @Override
     public final ReductionStrategy&lt;T&gt; restrictStrategy() {
-<span class="nc" id="L58">        return DdoModel.super.restrictStrategy();</span>
+<span class="nc" id="L63">        return DdoModel.super.restrictStrategy();</span>
     }
 
     @Override
     public final StateDistance&lt;T&gt; stateDistance() {
-<span class="nc" id="L63">        return DdoModel.super.stateDistance();</span>
+<span class="nc" id="L68">        return DdoModel.super.stateDistance();</span>
     }
 
     @Override
     public final VariableHeuristic&lt;T&gt; variableHeuristic() {
-<span class="fc" id="L68">        return DdoModel.super.variableHeuristic();</span>
+<span class="fc" id="L73">        return DdoModel.super.variableHeuristic();</span>
     }
 
     /**

@@ -24,7 +24,14 @@ import java.util.Arrays;
  * @see ALPState
  * @see StateRanking
  */
-<span class="fc" id="L27">public class ALPRanking implements StateRanking&lt;ALPState&gt; {</span>
+public class ALPRanking implements StateRanking&lt;ALPState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L32">    public ALPRanking() {</span>
+<span class="fc" id="L33">    }</span>
+
     /**
      * Compares two ALP states according to the number of remaining aircraft
      * and the sum of runway previous landing times.
@@ -36,14 +43,14 @@ import java.util.Arrays;
      */
     @Override
     public int compare(ALPState a, ALPState b) {
-<span class="fc" id="L39">        int remAircraftA = Arrays.stream(a.remainingAircraftOfClass).sum();</span>
-<span class="fc" id="L40">        int remAircraftB = Arrays.stream(b.remainingAircraftOfClass).sum();</span>
-<span class="fc" id="L41">        int totA = Arrays.stream(a.runwayStates).map(i -&gt; i.prevTime).reduce(0, Integer::sum);</span>
-<span class="fc" id="L42">        int totB = Arrays.stream(b.runwayStates).map(i -&gt; i.prevTime).reduce(0, Integer::sum);</span>
+<span class="fc" id="L46">        int remAircraftA = Arrays.stream(a.remainingAircraftOfClass).sum();</span>
+<span class="fc" id="L47">        int remAircraftB = Arrays.stream(b.remainingAircraftOfClass).sum();</span>
+<span class="fc" id="L48">        int totA = Arrays.stream(a.runwayStates).map(i -&gt; i.prevTime).reduce(0, Integer::sum);</span>
+<span class="fc" id="L49">        int totB = Arrays.stream(b.runwayStates).map(i -&gt; i.prevTime).reduce(0, Integer::sum);</span>
 
-<span class="fc" id="L44">        int remCompare = Integer.compare(remAircraftA, remAircraftB);</span>
-<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (remCompare == 0) return Integer.compare(totA, totB);</span>
-<span class="fc" id="L46">        else return remCompare;</span>
+<span class="fc" id="L51">        int remCompare = Integer.compare(remAircraftA, remAircraftB);</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        if (remCompare == 0) return Integer.compare(totA, totB);</span>
+<span class="fc" id="L53">        else return remCompare;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

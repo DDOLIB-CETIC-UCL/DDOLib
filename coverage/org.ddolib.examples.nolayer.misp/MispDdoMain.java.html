@@ -18,8 +18,25 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * The Maximum Independent Set Problem (MISP) with Ddo.
+ * Entry point for solving the Maximum Independent Set Problem (MISP) using a Decision Diagram
+ * Optimization (DDO) solver, in the no-layer modeling API.
+ */
 public class MispDdoMain {
 
+    private MispDdoMain() {
+    }
+
+    /**
+     * Main method to execute the DDO solver on a given MISP instance.
+     * &lt;p&gt;
+     * If no command-line argument is provided, a default instance
+     * &lt;code&gt;data/MISP/tadpole_4_2.dot&lt;/code&gt; is used.
+     *
+     * @param args optional command-line arguments; args[0] can be the path to the MISP instance file
+     * @throws IOException if there is an error reading the problem instance from the file
+     */
     public static void main(String[] args) throws IOException {
         String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;MISP&quot;, &quot;tadpole_4_2.dot&quot;).toString() : args[0];
         final MispProblem problem = MispProblem.fromFile(instance);
@@ -89,7 +106,7 @@ public class MispDdoMain {
 
 abstract class MispDdoModel extends MispModel implements DdoModel&lt;MispState&gt; {
     public MispDdoModel(MispProblem problem) {
-<span class="nc" id="L92">        super(problem);</span>
-<span class="nc" id="L93">    }</span>
+<span class="nc" id="L109">        super(problem);</span>
+<span class="nc" id="L110">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

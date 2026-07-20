@@ -11,20 +11,33 @@ import org.ddolib.layered.modeling.StateRanking;
  * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
  * That's why we sum the absolute value of each benefit to compare the states.
  */
-<span class="fc" id="L14">public class Max2SatRanking implements StateRanking&lt;Max2SatState&gt; {</span>
+public class Max2SatRanking implements StateRanking&lt;Max2SatState&gt; {
 
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L19">    public Max2SatRanking() {</span>
+<span class="fc" id="L20">    }</span>
+
+    /**
+     * Computes the ranking value of a state, defined as the sum of the absolute value of the net
+     * benefit of each variable not yet assigned.
+     *
+     * @param state the state to rank
+     * @return the ranking value of the state
+     */
     public static int rank(Max2SatState state) {
-<span class="fc" id="L17">        int toReturn = 0;</span>
-<span class="fc bfc" id="L18" title="All 2 branches covered.">        for (int i = state.depth(); i &lt; state.netBenefit().size(); i++) {</span>
-<span class="fc" id="L19">            toReturn += Math.abs(state.netBenefit().get(i));</span>
+<span class="fc" id="L30">        int toReturn = 0;</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        for (int i = state.depth(); i &lt; state.netBenefit().size(); i++) {</span>
+<span class="fc" id="L32">            toReturn += Math.abs(state.netBenefit().get(i));</span>
         }
 
-<span class="fc" id="L22">        return toReturn;</span>
+<span class="fc" id="L35">        return toReturn;</span>
     }
 
     @Override
     public int compare(Max2SatState o1, Max2SatState o2) {
-<span class="fc" id="L27">        return Integer.compare(rank(o1), rank(o2));</span>
+<span class="fc" id="L40">        return Integer.compare(rank(o1), rank(o2));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

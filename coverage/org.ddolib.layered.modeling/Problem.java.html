@@ -21,6 +21,8 @@ import java.util.Optional;
  */
 public interface Problem&lt;T&gt; {
     /**
+     * Returns the total number of decision variables in this problem.
+     *
      * @return the total number of decision variables in this problem
      */
     int nbVars();
@@ -78,7 +80,7 @@ public interface Problem&lt;T&gt; {
      * @return an {@code Optional} containing the known optimal value, or empty if unknown
      */
     default Optional&lt;Double&gt; optimalValue() {
-<span class="nc" id="L81">        return Optional.empty();</span>
+<span class="nc" id="L83">        return Optional.empty();</span>
     }
 
     /**
@@ -88,9 +90,9 @@ public interface Problem&lt;T&gt; {
      * &lt;p&gt;
      * &lt;b&gt;Note:&lt;/b&gt; For maximization problems, the returned value is minus the computed value.
      *
-     * @param solution A solution of the problem.
-     * @return The value of the input solution
-     * @throws InvalidSolutionException If the solution does not respect problem's constraints.
+     * @param solution a solution of the problem
+     * @return the value of the input solution
+     * @throws InvalidSolutionException if the solution does not respect the problem's constraints
      */
     double evaluate(final int[] solution) throws InvalidSolutionException;
 

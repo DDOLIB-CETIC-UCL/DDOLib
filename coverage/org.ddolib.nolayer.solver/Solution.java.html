@@ -14,10 +14,16 @@ public class Solution {
     private final List&lt;Integer&gt; solution;
     private final SearchStatistics statistics;
 
-<span class="fc" id="L17">    public Solution(List&lt;Integer&gt; solution, SearchStatistics statistics) {</span>
-<span class="fc" id="L18">        this.solution = solution;</span>
-<span class="fc" id="L19">        this.statistics = statistics;</span>
-<span class="fc" id="L20">    }</span>
+    /**
+     * Creates a new solution wrapping the given labels and search statistics.
+     *
+     * @param solution   the ordered list of labels leading to this solution from the initial state
+     * @param statistics the search statistics associated with this solution
+     */
+<span class="fc" id="L23">    public Solution(List&lt;Integer&gt; solution, SearchStatistics statistics) {</span>
+<span class="fc" id="L24">        this.solution = solution;</span>
+<span class="fc" id="L25">        this.statistics = statistics;</span>
+<span class="fc" id="L26">    }</span>
 
     /**
      * Returns the evaluation of the objective value of this solution.
@@ -25,16 +31,16 @@ public class Solution {
      * @return the evaluation of the objective value of this solution
      */
     public double value() {
-<span class="fc" id="L28">        return statistics.incumbent();</span>
+<span class="fc" id="L34">        return statistics.incumbent();</span>
     }
 
     /**
      * Returns the ordered list of labels leading to the best solution from the initial state.
      *
-     * @return the ordered list of labels leading to the best solution from the initial state.
+     * @return the ordered list of labels leading to the best solution from the initial state
      */
     public List&lt;Integer&gt; solution() {
-<span class="fc" id="L37">        return solution;</span>
+<span class="fc" id="L43">        return solution;</span>
     }
 
     /**
@@ -43,21 +49,21 @@ public class Solution {
      * @return the statistics associated to this solution
      */
     public SearchStatistics statistics() {
-<span class="fc" id="L46">        return statistics;</span>
+<span class="fc" id="L52">        return statistics;</span>
     }
 
     /**
      * Returns a readable string for the search time needed to find this solution.
      *
-     * @return a readable string for the search time needed to find this solution.
+     * @return a readable string for the search time needed to find this solution
      */
     public String searchTime() {
-<span class="nc" id="L55">        return PrettyPrint.formatMs(statistics.runtime());</span>
+<span class="nc" id="L61">        return PrettyPrint.formatMs(statistics.runtime());</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L60">        return &quot;Solution: %s%nValue: %s&quot;.formatted(solution, value());</span>
+<span class="nc" id="L66">        return &quot;Solution: %s%nValue: %s&quot;.formatted(solution, value());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

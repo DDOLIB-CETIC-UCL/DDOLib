@@ -11,15 +11,20 @@ import java.util.List;
  * This strategy select the nodes based on the objective value of the best path leading to them.
  * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost.
  *
- * @param &lt;T&gt;
+ * @param &lt;T&gt; the type of state
  */
 public class CostBased&lt;T&gt; implements ReductionStrategy&lt;T&gt; {
 
     final private NodeSubroblemComparator&lt;T&gt; ranking;
 
-<span class="fc" id="L20">    public CostBased(final StateRanking&lt;T&gt; ranking) {</span>
-<span class="fc" id="L21">        this.ranking = new NodeSubroblemComparator&lt;&gt;(ranking);</span>
-<span class="fc" id="L22">    }</span>
+    /**
+     * Creates a new instance breaking ties between nodes of same cost with the given ranking.
+     *
+     * @param ranking the ranking used to break ties between nodes of same cost
+     */
+<span class="fc" id="L25">    public CostBased(final StateRanking&lt;T&gt; ranking) {</span>
+<span class="fc" id="L26">        this.ranking = new NodeSubroblemComparator&lt;&gt;(ranking);</span>
+<span class="fc" id="L27">    }</span>
 
     /**
      * Select the layer.size() - maxWidth - 1 nodes with the worst cost on the layer.
@@ -27,29 +32,29 @@ public class CostBased&lt;T&gt; implements ReductionStrategy&lt;T&gt; {
      *
      * @param layer    the layer
      * @param maxWidth the desired maximal width after the restriction and relaxation
-     * @return
+     * @return the resulting clusters, the last one gathering all the unselected nodes
      */
     public List&lt;NodeSubProblem&lt;T&gt;&gt;[] defineClusters(List&lt;NodeSubProblem&lt;T&gt;&gt; layer, int maxWidth) {
-<span class="fc" id="L33">        layer.sort(ranking);</span>
-<span class="fc" id="L34">        int nbClusters = Math.min(layer.size(), maxWidth);</span>
-<span class="fc" id="L35">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] cluster = new List[nbClusters];</span>
+<span class="fc" id="L38">        layer.sort(ranking);</span>
+<span class="fc" id="L39">        int nbClusters = Math.min(layer.size(), maxWidth);</span>
+<span class="fc" id="L40">        List&lt;NodeSubProblem&lt;T&gt;&gt;[] cluster = new List[nbClusters];</span>
         // take the best min(maxWidth, layerSize) - 1 nodes as individual clusters
-<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (int i = 0; i &lt; nbClusters - 1; i++) {</span>
-<span class="fc" id="L38">            cluster[i] = new ArrayList&lt;&gt;(1);</span>
-<span class="fc" id="L39">            cluster[i].add(layer.get(i));</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (int i = 0; i &lt; nbClusters - 1; i++) {</span>
+<span class="fc" id="L43">            cluster[i] = new ArrayList&lt;&gt;(1);</span>
+<span class="fc" id="L44">            cluster[i].add(layer.get(i));</span>
         }
         // put the rest in the last cluster
-<span class="fc" id="L42">        cluster[nbClusters - 1] = new ArrayList&lt;&gt;(layer.size() - nbClusters + 1);</span>
-<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (int i = nbClusters - 1; i &lt; layer.size(); i++) {</span>
-<span class="fc" id="L44">            cluster[nbClusters - 1].add(layer.get(i));</span>
+<span class="fc" id="L47">        cluster[nbClusters - 1] = new ArrayList&lt;&gt;(layer.size() - nbClusters + 1);</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        for (int i = nbClusters - 1; i &lt; layer.size(); i++) {</span>
+<span class="fc" id="L49">            cluster[nbClusters - 1].add(layer.get(i));</span>
         }
-<span class="fc" id="L46">        return cluster;</span>
+<span class="fc" id="L51">        return cluster;</span>
     }
 
     /**
      * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
      *
-     * @param delegate This is the decorated ranking
+     * @param delegate this is the decorated ranking
      */
     private record NodeSubroblemComparator&lt;T&gt;(StateRanking&lt;T&gt; delegate) implements Comparator&lt;NodeSubProblem&lt;T&gt;&gt; {
         /**
@@ -57,16 +62,16 @@ public class CostBased&lt;T&gt; implements ReductionStrategy&lt;T&gt; {
          *
          * @param delegate the decorated ranking
          */
-<span class="fc" id="L60">        private NodeSubroblemComparator {</span>
-<span class="fc" id="L61">        }</span>
+<span class="fc" id="L65">        private NodeSubroblemComparator {</span>
+<span class="fc" id="L66">        }</span>
 
         @Override
         public int compare(NodeSubProblem&lt;T&gt; o1, NodeSubProblem&lt;T&gt; o2) {
-<span class="fc" id="L65">            int cmp = Double.compare(o1.node.value, o2.node.value);</span>
-<span class="pc bpc" id="L66" title="1 of 4 branches missed.">            if (cmp == 0 &amp;&amp; delegate != null) {</span>
-<span class="fc" id="L67">                return delegate.compare(o1.state, o2.state);</span>
+<span class="fc" id="L70">            int cmp = Double.compare(o1.node.value, o2.node.value);</span>
+<span class="pc bpc" id="L71" title="1 of 4 branches missed.">            if (cmp == 0 &amp;&amp; delegate != null) {</span>
+<span class="fc" id="L72">                return delegate.compare(o1.state, o2.state);</span>
             } else {
-<span class="fc" id="L69">                return cmp;</span>
+<span class="fc" id="L74">                return cmp;</span>
             }
         }
     }

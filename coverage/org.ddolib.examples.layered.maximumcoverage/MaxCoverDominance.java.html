@@ -17,7 +17,14 @@ import java.util.BitSet;
  * All states are assigned the same dominance key, meaning that any two states
  * are comparable for dominance checking.
  */
-<span class="nc" id="L20">public class MaxCoverDominance implements Dominance&lt;MaxCoverState&gt; {</span>
+public class MaxCoverDominance implements Dominance&lt;MaxCoverState&gt; {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+<span class="nc" id="L25">    public MaxCoverDominance() {</span>
+<span class="nc" id="L26">    }</span>
+
     /**
      * Returns the dominance key associated with a state.
      *
@@ -31,7 +38,7 @@ import java.util.BitSet;
     @Override
     public Integer getKey(MaxCoverState state) {
         // All states share the same key (0), meaning they are all comparable for dominance
-<span class="nc" id="L34">        return 0;</span>
+<span class="nc" id="L41">        return 0;</span>
     }
 
     /**
@@ -50,12 +57,12 @@ import java.util.BitSet;
     @Override
     public boolean isDominatedOrEqual(MaxCoverState state1, MaxCoverState state2) {
         // state1 is dominated by state2 if the covered items of state1 are a subset of those of state2
-<span class="nc" id="L53">        BitSet coveredItems1 = state1.coveredItems();</span>
-<span class="nc" id="L54">        BitSet coveredItems2 = state2.coveredItems();</span>
+<span class="nc" id="L60">        BitSet coveredItems1 = state1.coveredItems();</span>
+<span class="nc" id="L61">        BitSet coveredItems2 = state2.coveredItems();</span>
 
-<span class="nc" id="L56">        BitSet temp = (BitSet) coveredItems1.clone();</span>
-<span class="nc" id="L57">        temp.andNot(coveredItems2);</span>
-<span class="nc" id="L58">        return temp.isEmpty();</span>
+<span class="nc" id="L63">        BitSet temp = (BitSet) coveredItems1.clone();</span>
+<span class="nc" id="L64">        temp.andNot(coveredItems2);</span>
+<span class="nc" id="L65">        return temp.isEmpty();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

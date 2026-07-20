@@ -10,7 +10,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * the number of items they have covered. States covering fewer items
  * are considered &quot;smaller&quot; and ranked lower.
  */
-<span class="fc" id="L13">public class MaxCoverRanking implements StateRanking&lt;MaxCoverState&gt; {</span>
+public class MaxCoverRanking implements StateRanking&lt;MaxCoverState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L18">    public MaxCoverRanking() {</span>
+<span class="fc" id="L19">    }</span>
+
     /**
      * Compares two MaxCover states based on the number of items they cover.
      *
@@ -21,7 +28,7 @@ import org.ddolib.layered.modeling.StateRanking;
      */
     @Override
     public int compare(MaxCoverState o1, MaxCoverState o2) {
-<span class="fc" id="L24">        return Integer.compare(o1.coveredItems().size(), o2.coveredItems().size());</span>
+<span class="fc" id="L31">        return Integer.compare(o1.coveredItems().size(), o2.coveredItems().size());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

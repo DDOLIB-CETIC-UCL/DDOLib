@@ -7,144 +7,179 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Knapsack Problem (KS), using the no-layer modeling API.
+ * &lt;p&gt;
+ * Models the classic 0/1 knapsack problem: given a capacity and a list of items each with a
+ * weight and a profit, decide which items to take so as to maximize total profit without
+ * exceeding the capacity. States are represented by {@link KSState} (current item index and
+ * remaining capacity); since the library minimizes, transition costs are negated profits.
+ * &lt;/p&gt;
+ */
 public class KSProblem implements Problem&lt;KSState&gt; {
 
+    /** Profit of each item, indexed by item number. */
     public final int[] profit;
+    /** Weight of each item, indexed by item number. */
     public final int[] weight;
+    /** Total capacity of the knapsack. */
     public final int capa;
     private final int nbItems;
     private final Optional&lt;String&gt; name;
 
-<span class="fc" id="L18">    public KSProblem(int[] profit, int[] weight, int capa, String name) {</span>
-<span class="fc" id="L19">        this.profit = profit;</span>
-<span class="fc" id="L20">        this.weight = weight;</span>
-<span class="fc" id="L21">        this.capa = capa;</span>
-<span class="fc" id="L22">        this.nbItems = profit.length;</span>
-<span class="fc" id="L23">        this.name = Optional.of(name);</span>
-<span class="fc" id="L24">    }</span>
+    /**
+     * Creates a new named knapsack instance.
+     *
+     * @param profit profit of each item, indexed by item number
+     * @param weight weight of each item, indexed by item number
+     * @param capa   total capacity of the knapsack
+     * @param name   name of the instance, used in {@link #toString()}
+     */
+<span class="fc" id="L38">    public KSProblem(int[] profit, int[] weight, int capa, String name) {</span>
+<span class="fc" id="L39">        this.profit = profit;</span>
+<span class="fc" id="L40">        this.weight = weight;</span>
+<span class="fc" id="L41">        this.capa = capa;</span>
+<span class="fc" id="L42">        this.nbItems = profit.length;</span>
+<span class="fc" id="L43">        this.name = Optional.of(name);</span>
+<span class="fc" id="L44">    }</span>
 
-<span class="fc" id="L26">    public KSProblem(int[] profit, int[] weight, int capa) {</span>
-<span class="fc" id="L27">        this.profit = profit;</span>
-<span class="fc" id="L28">        this.weight = weight;</span>
-<span class="fc" id="L29">        this.capa = capa;</span>
-<span class="fc" id="L30">        this.nbItems = profit.length;</span>
-<span class="fc" id="L31">        this.name = Optional.empty();</span>
-<span class="fc" id="L32">    }</span>
+    /**
+     * Creates a new unnamed knapsack instance.
+     *
+     * @param profit profit of each item, indexed by item number
+     * @param weight weight of each item, indexed by item number
+     * @param capa   total capacity of the knapsack
+     */
+<span class="fc" id="L53">    public KSProblem(int[] profit, int[] weight, int capa) {</span>
+<span class="fc" id="L54">        this.profit = profit;</span>
+<span class="fc" id="L55">        this.weight = weight;</span>
+<span class="fc" id="L56">        this.capa = capa;</span>
+<span class="fc" id="L57">        this.nbItems = profit.length;</span>
+<span class="fc" id="L58">        this.name = Optional.empty();</span>
+<span class="fc" id="L59">    }</span>
 
+    /**
+     * Reads a knapsack instance from a file and returns it with its items sorted by
+     * decreasing profit-to-weight ratio.
+     *
+     * @param fname path to the instance file
+     * @return the knapsack instance described by the file
+     * @throws java.io.IOException if the instance file cannot be read
+     */
     public static KSProblem fromFile(final String fname) throws java.io.IOException {
-<span class="fc" id="L35">        boolean isFirst = true;</span>
-<span class="fc" id="L36">        int count = 0;</span>
-<span class="fc" id="L37">        int n = 0;</span>
-<span class="fc" id="L38">        int c = 0;</span>
-<span class="fc" id="L39">        int[] profit = new int[0];</span>
-<span class="fc" id="L40">        int[] weight = new int[0];</span>
-<span class="fc" id="L41">        try (final java.io.BufferedReader bf = new java.io.BufferedReader(new java.io.FileReader(fname))) {</span>
+<span class="fc" id="L70">        boolean isFirst = true;</span>
+<span class="fc" id="L71">        int count = 0;</span>
+<span class="fc" id="L72">        int n = 0;</span>
+<span class="fc" id="L73">        int c = 0;</span>
+<span class="fc" id="L74">        int[] profit = new int[0];</span>
+<span class="fc" id="L75">        int[] weight = new int[0];</span>
+<span class="fc" id="L76">        try (final java.io.BufferedReader bf = new java.io.BufferedReader(new java.io.FileReader(fname))) {</span>
             String line;
-<span class="fc bfc" id="L43" title="All 2 branches covered.">            while ((line = bf.readLine()) != null) {</span>
-<span class="fc bfc" id="L44" title="All 2 branches covered.">                if (isFirst) {</span>
-<span class="fc" id="L45">                    isFirst = false;</span>
-<span class="fc" id="L46">                    String[] tokens = line.split(&quot;\\s&quot;);</span>
-<span class="fc" id="L47">                    n = Integer.parseInt(tokens[0]);</span>
-<span class="fc" id="L48">                    c = Integer.parseInt(tokens[1]);</span>
-<span class="fc" id="L49">                    profit = new int[n];</span>
-<span class="fc" id="L50">                    weight = new int[n];</span>
-<span class="fc" id="L51">                } else {</span>
-<span class="pc bpc" id="L52" title="1 of 2 branches missed.">                    if (count &lt; n) {</span>
-<span class="fc" id="L53">                        String[] tokens = line.split(&quot;\\s&quot;);</span>
-<span class="fc" id="L54">                        profit[count] = Integer.parseInt(tokens[0]);</span>
-<span class="fc" id="L55">                        weight[count] = Integer.parseInt(tokens[1]);</span>
-<span class="fc" id="L56">                        count++;</span>
-<span class="fc" id="L57">                    }</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            while ((line = bf.readLine()) != null) {</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                if (isFirst) {</span>
+<span class="fc" id="L80">                    isFirst = false;</span>
+<span class="fc" id="L81">                    String[] tokens = line.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L82">                    n = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L83">                    c = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L84">                    profit = new int[n];</span>
+<span class="fc" id="L85">                    weight = new int[n];</span>
+<span class="fc" id="L86">                } else {</span>
+<span class="pc bpc" id="L87" title="1 of 2 branches missed.">                    if (count &lt; n) {</span>
+<span class="fc" id="L88">                        String[] tokens = line.split(&quot;\\s&quot;);</span>
+<span class="fc" id="L89">                        profit[count] = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L90">                        weight[count] = Integer.parseInt(tokens[1]);</span>
+<span class="fc" id="L91">                        count++;</span>
+<span class="fc" id="L92">                    }</span>
                 }
             }
         }
 
-<span class="fc" id="L62">        Integer[] items = new Integer[n];</span>
-<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
-<span class="fc" id="L64">            items[i] = i;</span>
+<span class="fc" id="L97">        Integer[] items = new Integer[n];</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L99">            items[i] = i;</span>
         }
-<span class="fc" id="L66">        final int[] w = weight;</span>
-<span class="fc" id="L67">        final int[] p = profit;</span>
+<span class="fc" id="L101">        final int[] w = weight;</span>
+<span class="fc" id="L102">        final int[] p = profit;</span>
 
-<span class="fc" id="L69">        java.util.Arrays.sort(items, (o1, o2) -&gt; {</span>
-<span class="fc" id="L70">            double ratio1 = (double) p[o1] / w[o1];</span>
-<span class="fc" id="L71">            double ratio2 = (double) p[o2] / w[o2];</span>
-<span class="fc" id="L72">            return Double.compare(ratio2, ratio1);</span>
+<span class="fc" id="L104">        java.util.Arrays.sort(items, (o1, o2) -&gt; {</span>
+<span class="fc" id="L105">            double ratio1 = (double) p[o1] / w[o1];</span>
+<span class="fc" id="L106">            double ratio2 = (double) p[o2] / w[o2];</span>
+<span class="fc" id="L107">            return Double.compare(ratio2, ratio1);</span>
         });
 
-<span class="fc" id="L75">        int[] sortedProfit = new int[n];</span>
-<span class="fc" id="L76">        int[] sortedWeight = new int[n];</span>
+<span class="fc" id="L110">        int[] sortedProfit = new int[n];</span>
+<span class="fc" id="L111">        int[] sortedWeight = new int[n];</span>
 
-<span class="fc bfc" id="L78" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
-<span class="fc" id="L79">            int j = items[i];</span>
-<span class="fc" id="L80">            sortedProfit[i] = profit[j];</span>
-<span class="fc" id="L81">            sortedWeight[i] = weight[j];</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="fc" id="L114">            int j = items[i];</span>
+<span class="fc" id="L115">            sortedProfit[i] = profit[j];</span>
+<span class="fc" id="L116">            sortedWeight[i] = weight[j];</span>
         }
 
-<span class="fc" id="L84">        return new KSProblem(sortedProfit, sortedWeight, c, fname);</span>
+<span class="fc" id="L119">        return new KSProblem(sortedProfit, sortedWeight, c, fname);</span>
     }
 
     @Override
     public KSState initialState() {
-<span class="fc" id="L89">        return new KSState(0, capa);</span>
+<span class="fc" id="L124">        return new KSState(0, capa);</span>
     }
 
     @Override
     public double initialValue() {
-<span class="fc" id="L94">        return 0;</span>
+<span class="fc" id="L129">        return 0;</span>
     }
 
     @Override
     public boolean isTarget(KSState state) {
-<span class="fc bfc" id="L99" title="All 2 branches covered.">        return state.currentItem() &gt;= nbItems;</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">        return state.currentItem() &gt;= nbItems;</span>
     }
 
     @Override
     public Iterator&lt;Integer&gt; domain(KSState state) {
-<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (state.remainingCapacity() &gt;= weight[state.currentItem()]) {</span>
-<span class="fc" id="L105">            return List.of(0, 1).iterator();</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (state.remainingCapacity() &gt;= weight[state.currentItem()]) {</span>
+<span class="fc" id="L140">            return List.of(0, 1).iterator();</span>
         } else {
-<span class="fc" id="L107">            return List.of(0).iterator();</span>
+<span class="fc" id="L142">            return List.of(0).iterator();</span>
         }
     }
 
     @Override
     public KSState transition(KSState state, int label) {
-<span class="fc" id="L113">        return new KSState(</span>
-<span class="fc" id="L114">                state.currentItem() + 1,</span>
-<span class="fc" id="L115">                state.remainingCapacity() - label * weight[state.currentItem()]</span>
+<span class="fc" id="L148">        return new KSState(</span>
+<span class="fc" id="L149">                state.currentItem() + 1,</span>
+<span class="fc" id="L150">                state.remainingCapacity() - label * weight[state.currentItem()]</span>
         );
     }
 
     @Override
     public double transitionCost(KSState state, int label) {
-<span class="fc" id="L121">        return -label * profit[state.currentItem()];</span>
+<span class="fc" id="L156">        return -label * profit[state.currentItem()];</span>
     }
 
     @Override
     public double evaluate(List&lt;Integer&gt; solution) throws InvalidSolutionException {
-<span class="pc bpc" id="L126" title="1 of 2 branches missed.">        if (solution.size() != nbItems) {</span>
-<span class="nc" id="L127">            throw new InvalidSolutionException(&quot;Expected &quot; + nbItems + &quot; values, got &quot; + solution.size());</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        if (solution.size() != nbItems) {</span>
+<span class="nc" id="L162">            throw new InvalidSolutionException(&quot;Expected &quot; + nbItems + &quot; values, got &quot; + solution.size());</span>
         }
-<span class="fc" id="L129">        int totalWeight = 0;</span>
-<span class="fc" id="L130">        int totalProfit = 0;</span>
-<span class="fc bfc" id="L131" title="All 2 branches covered.">        for (int i = 0; i &lt; nbItems; i++) {</span>
-<span class="fc bfc" id="L132" title="All 2 branches covered.">            if (solution.get(i) == 1) {</span>
-<span class="fc" id="L133">                totalWeight += weight[i];</span>
-<span class="fc" id="L134">                totalProfit += profit[i];</span>
-<span class="pc bpc" id="L135" title="1 of 2 branches missed.">            } else if (solution.get(i) != 0) {</span>
-<span class="nc" id="L136">                throw new InvalidSolutionException(&quot;Value must be 0 or 1, got &quot; + solution.get(i) + &quot; at index &quot; + i);</span>
+<span class="fc" id="L164">        int totalWeight = 0;</span>
+<span class="fc" id="L165">        int totalProfit = 0;</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        for (int i = 0; i &lt; nbItems; i++) {</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">            if (solution.get(i) == 1) {</span>
+<span class="fc" id="L168">                totalWeight += weight[i];</span>
+<span class="fc" id="L169">                totalProfit += profit[i];</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">            } else if (solution.get(i) != 0) {</span>
+<span class="nc" id="L171">                throw new InvalidSolutionException(&quot;Value must be 0 or 1, got &quot; + solution.get(i) + &quot; at index &quot; + i);</span>
             }
         }
-<span class="pc bpc" id="L139" title="1 of 2 branches missed.">        if (totalWeight &gt; capa) {</span>
-<span class="nc" id="L140">            throw new InvalidSolutionException(&quot;Capacity exceeded: &quot; + totalWeight + &quot; &gt; &quot; + capa);</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        if (totalWeight &gt; capa) {</span>
+<span class="nc" id="L175">            throw new InvalidSolutionException(&quot;Capacity exceeded: &quot; + totalWeight + &quot; &gt; &quot; + capa);</span>
         }
-<span class="fc" id="L142">        return -totalProfit;</span>
+<span class="fc" id="L177">        return -totalProfit;</span>
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L147">        return name.orElse(&quot;KSProblem(nbVars:&quot; + nbItems + &quot;)&quot;);</span>
+<span class="fc" id="L182">        return name.orElse(&quot;KSProblem(nbVars:&quot; + nbItems + &quot;)&quot;);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

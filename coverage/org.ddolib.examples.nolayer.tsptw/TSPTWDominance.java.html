@@ -4,39 +4,54 @@ import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 
 import java.util.*;
 
-<span class="nc" id="L7">public class TSPTWDominance implements NoLayerDominanceChecker&lt;TSPTWState&gt; {</span>
+/**
+ * Dominance checker for the Traveling Salesman Problem with Time Windows (TSPTW), using
+ * the no-layer modeling API.
+ * &lt;p&gt;
+ * Two states with the same current city and the same set of cities still to visit are
+ * comparable; among those, the state with the earlier arrival time and lower cost dominates
+ * the other.
+ * &lt;/p&gt;
+ */
+public class TSPTWDominance implements NoLayerDominanceChecker&lt;TSPTWState&gt; {
 
-<span class="nc" id="L9">    private final Map&lt;DominanceKey, List&lt;DominanceEntry&gt;&gt; dominanceFronts = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L18">    private final Map&lt;DominanceKey, List&lt;DominanceEntry&gt;&gt; dominanceFronts = new HashMap&lt;&gt;();</span>
+
+    /**
+     * Creates a new dominance checker with an empty dominance front.
+     */
+<span class="nc" id="L23">    public TSPTWDominance() {</span>
+<span class="nc" id="L24">    }</span>
 
     @Override
     public boolean updateDominance(TSPTWState state, double value) {
-<span class="nc" id="L13">        BitSet mustVisit = (BitSet) state.mustVisit().clone();</span>
-<span class="nc" id="L14">        DominanceKey key = new DominanceKey(state.currentCity(), mustVisit);</span>
+<span class="nc" id="L28">        BitSet mustVisit = (BitSet) state.mustVisit().clone();</span>
+<span class="nc" id="L29">        DominanceKey key = new DominanceKey(state.currentCity(), mustVisit);</span>
 
-<span class="nc" id="L16">        List&lt;DominanceEntry&gt; front = dominanceFronts.get(key);</span>
-<span class="nc bnc" id="L17" title="All 2 branches missed.">        if (front != null) {</span>
-<span class="nc bnc" id="L18" title="All 2 branches missed.">            for (DominanceEntry entry : front) {</span>
-<span class="nc bnc" id="L19" title="All 4 branches missed.">                if (entry.value() &lt;= value &amp;&amp; entry.time() &lt;= state.time()) {</span>
-<span class="nc" id="L20">                    return true;</span>
+<span class="nc" id="L31">        List&lt;DominanceEntry&gt; front = dominanceFronts.get(key);</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        if (front != null) {</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">            for (DominanceEntry entry : front) {</span>
+<span class="nc bnc" id="L34" title="All 4 branches missed.">                if (entry.value() &lt;= value &amp;&amp; entry.time() &lt;= state.time()) {</span>
+<span class="nc" id="L35">                    return true;</span>
                 }
-<span class="nc" id="L22">            }</span>
-<span class="nc bnc" id="L23" title="All 4 branches missed.">            front.removeIf(entry -&gt; value &lt;= entry.value() &amp;&amp; state.time() &lt;= entry.time());</span>
+<span class="nc" id="L37">            }</span>
+<span class="nc bnc" id="L38" title="All 4 branches missed.">            front.removeIf(entry -&gt; value &lt;= entry.value() &amp;&amp; state.time() &lt;= entry.time());</span>
         }
-<span class="nc" id="L25">        DominanceEntry newEntry = new DominanceEntry(state.time(), value);</span>
-<span class="nc" id="L26">        dominanceFronts.computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;()).add(newEntry);</span>
+<span class="nc" id="L40">        DominanceEntry newEntry = new DominanceEntry(state.time(), value);</span>
+<span class="nc" id="L41">        dominanceFronts.computeIfAbsent(key, k -&gt; new ArrayList&lt;&gt;()).add(newEntry);</span>
 
-<span class="nc" id="L28">        return false;</span>
+<span class="nc" id="L43">        return false;</span>
     }
 
     @Override
     public void clear() {
-<span class="nc" id="L33">        dominanceFronts.clear();</span>
-<span class="nc" id="L34">    }</span>
+<span class="nc" id="L48">        dominanceFronts.clear();</span>
+<span class="nc" id="L49">    }</span>
 
-<span class="nc" id="L36">    private record DominanceKey(int currentCity, BitSet mustVisit) {</span>
+<span class="nc" id="L51">    private record DominanceKey(int currentCity, BitSet mustVisit) {</span>
     }
 
-<span class="nc" id="L39">    private record DominanceEntry(int time, double value) {</span>
+<span class="nc" id="L54">    private record DominanceEntry(int time, double value) {</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

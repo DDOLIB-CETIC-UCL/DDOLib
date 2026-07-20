@@ -17,7 +17,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * and are ranked higher.
  * &lt;/p&gt;
  */
-<span class="fc" id="L20">public class TSPTWRanking implements StateRanking&lt;TSPTWState&gt; {</span>
+public class TSPTWRanking implements StateRanking&lt;TSPTWState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L25">    public TSPTWRanking() {</span>
+<span class="fc" id="L26">    }</span>
+
     /**
      * Compares two {@link TSPTWState} objects based on the size of their {@code possiblyVisit} set.
      *
@@ -30,7 +37,7 @@ import org.ddolib.layered.modeling.StateRanking;
     public int compare(TSPTWState o1, TSPTWState o2) {
         // In a layer,nodes with a non-empty possiblyVisit are children of a merged node.
         // There are good candidates to be merged.
-<span class="fc" id="L33">        return -Integer.compare(o1.possiblyVisit().cardinality(), o2.possiblyVisit().cardinality());</span>
+<span class="fc" id="L40">        return -Integer.compare(o1.possiblyVisit().cardinality(), o2.possiblyVisit().cardinality());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

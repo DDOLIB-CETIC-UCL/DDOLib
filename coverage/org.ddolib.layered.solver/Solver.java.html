@@ -40,6 +40,8 @@ public interface Solver {
                       BiConsumer&lt;int[], SearchStatistics&gt; onSolution);
 
     /**
+     * Returns the value of the best solution found so far by this solver, if any.
+     *
      * @return the value of the best solution in this decision diagram if there is one
      */
     Optional&lt;Double&gt; bestValue();
@@ -60,17 +62,17 @@ public interface Solver {
      * or an empty array if the solution does not exist
      */
     default int[] constructSolution(Set&lt;Decision&gt; decisions) {
-<span class="fc" id="L63">        int maxVar = -1;</span>
-<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
-<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (d.variable() &gt; maxVar) maxVar = d.variable();</span>
-<span class="fc" id="L66">        }</span>
-<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (maxVar == -1) return new int[0];</span>
+<span class="fc" id="L65">        int maxVar = -1;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            if (d.variable() &gt; maxVar) maxVar = d.variable();</span>
+<span class="fc" id="L68">        }</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (maxVar == -1) return new int[0];</span>
 
-<span class="fc" id="L69">        int[] toReturn = new int[maxVar + 1];</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
-<span class="fc" id="L71">            toReturn[d.variable()] = d.value();</span>
-<span class="fc" id="L72">        }</span>
-<span class="fc" id="L73">        return toReturn;</span>
+<span class="fc" id="L71">        int[] toReturn = new int[maxVar + 1];</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        for (Decision d : decisions) {</span>
+<span class="fc" id="L73">            toReturn[d.variable()] = d.value();</span>
+<span class="fc" id="L74">        }</span>
+<span class="fc" id="L75">        return toReturn;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

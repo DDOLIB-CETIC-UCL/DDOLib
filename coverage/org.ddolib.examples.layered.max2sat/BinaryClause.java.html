@@ -7,46 +7,53 @@ import static java.lang.Math.abs;
  * &lt;p&gt;
  * To symbolize a literal {@code x_i    }, for {@code i &gt; 0}, we give the value {@code i} as
  * input. To symbolize {@code NOT x_i}, we give {@code -i}.
+ *
+ * @param i the first literal of the clause
+ * @param j the second literal of the clause
  */
 public record BinaryClause(int i, int j) implements Comparable&lt;BinaryClause&gt; {
-<span class="fc" id="L12">    public BinaryClause {</span>
-<span class="pc bpc" id="L13" title="2 of 4 branches missed.">        if (i == 0 || j == 0)</span>
-<span class="nc" id="L14">            throw new IllegalArgumentException(&quot;Id of variable in Binary clauses must be != 0&quot;);</span>
-<span class="fc" id="L15">    }</span>
+
+    /**
+     * Creates a new binary clause, checking that neither literal is {@code 0}.
+     */
+<span class="fc" id="L19">    public BinaryClause {</span>
+<span class="pc bpc" id="L20" title="2 of 4 branches missed.">        if (i == 0 || j == 0)</span>
+<span class="nc" id="L21">            throw new IllegalArgumentException(&quot;Id of variable in Binary clauses must be != 0&quot;);</span>
+<span class="fc" id="L22">    }</span>
 
     /**
      * Evaluates if the clause is verified given 2 boolean values.
      *
-     * @param a The value to attribute to the variable {@code x_i} (0 or 1).
-     * @param b The value to attribute to the variable {@code x_j} (0 or 1).
-     * @return 1 if the clause is verified. 0 else.
+     * @param a the value to attribute to the variable {@code x_i} (0 or 1)
+     * @param b the value to attribute to the variable {@code x_j} (0 or 1)
+     * @return 1 if the clause is verified, 0 otherwise
      */
     public int eval(int a, int b) {
-<span class="fc bfc" id="L25" title="All 2 branches covered.">        int literal1 = i &lt; 0 ? a ^ 1 : a;</span>
-<span class="fc bfc" id="L26" title="All 2 branches covered.">        int literal2 = j &lt; 0 ? b ^ 1 : b;</span>
-<span class="fc" id="L27">        return literal1 | literal2;</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">        int literal1 = i &lt; 0 ? a ^ 1 : a;</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">        int literal2 = j &lt; 0 ? b ^ 1 : b;</span>
+<span class="fc" id="L34">        return literal1 | literal2;</span>
     }
 
 
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L33" title="2 of 6 branches missed.">        if (obj instanceof BinaryClause other) return this.i == other.i &amp;&amp; this.j == other.j;</span>
-<span class="nc" id="L34">        else return false;</span>
+<span class="pc bpc" id="L40" title="2 of 6 branches missed.">        if (obj instanceof BinaryClause other) return this.i == other.i &amp;&amp; this.j == other.j;</span>
+<span class="nc" id="L41">        else return false;</span>
     }
 
     @Override
     public String toString() {
-<span class="nc bnc" id="L39" title="All 2 branches missed.">        String notX = i &lt; 0 ? &quot;!&quot; : &quot;&quot;;</span>
-<span class="nc bnc" id="L40" title="All 2 branches missed.">        String notY = j &lt; 0 ? &quot;!&quot; : &quot;&quot;;</span>
-<span class="nc" id="L41">        return String.format(&quot;%sx_%d || %sx_%d&quot;, notX, abs(i), notY, abs(j));</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        String notX = i &lt; 0 ? &quot;!&quot; : &quot;&quot;;</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        String notY = j &lt; 0 ? &quot;!&quot; : &quot;&quot;;</span>
+<span class="nc" id="L48">        return String.format(&quot;%sx_%d || %sx_%d&quot;, notX, abs(i), notY, abs(j));</span>
     }
 
     private int internalCompare(int x, int y) {
-<span class="nc" id="L45">        int compared = Integer.compare(abs(x), abs(y));</span>
-<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (compared == 0) {</span>
-<span class="nc" id="L47">            return -Integer.compare(x, y);</span>
+<span class="nc" id="L52">        int compared = Integer.compare(abs(x), abs(y));</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (compared == 0) {</span>
+<span class="nc" id="L54">            return -Integer.compare(x, y);</span>
         } else {
-<span class="nc" id="L49">            return compared;</span>
+<span class="nc" id="L56">            return compared;</span>
         }
     }
 
@@ -59,7 +66,7 @@ public record BinaryClause(int i, int j) implements Comparable&lt;BinaryClause&g
      *     &lt;li&gt;The positive literal before the negative ones.&lt;/li&gt;
      * &lt;/ol&gt;
      *
-     * @param other The binary clause to be compared.
+     * @param other the binary clause to be compared
      * @return &lt;ul&gt;
      *     &lt;li&gt; {@code 0} if if {@code this == other}&lt;/li&gt;
      *     &lt;li&gt;&lt;code&gt;1&lt;/code&gt; if {@code this &gt; other}&lt;/li&gt;
@@ -68,11 +75,11 @@ public record BinaryClause(int i, int j) implements Comparable&lt;BinaryClause&g
      */
     @Override
     public int compareTo(BinaryClause other) {
-<span class="nc" id="L71">        int lit1Compare = internalCompare(this.i, other.i);</span>
-<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (lit1Compare == 0) {</span>
-<span class="nc" id="L73">            return internalCompare(this.j, other.j);</span>
+<span class="nc" id="L78">        int lit1Compare = internalCompare(this.i, other.i);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (lit1Compare == 0) {</span>
+<span class="nc" id="L80">            return internalCompare(this.j, other.j);</span>
         } else {
-<span class="nc" id="L75">            return lit1Compare;</span>
+<span class="nc" id="L82">            return lit1Compare;</span>
         }
     }
 }

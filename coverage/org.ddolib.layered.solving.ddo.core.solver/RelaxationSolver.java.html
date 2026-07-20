@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 /**
  * A solver that compile one relaxed MDD from the root node.
  *
- * @param &lt;T&gt; The type representing a problem state.
+ * @param &lt;T&gt; the type representing a problem state
  * @see ExactSolver
  * @see DdoModel
  * @see Problem
@@ -101,7 +101,7 @@ public final class RelaxationSolver&lt;T&gt; {
      * Creates a fully qualified instance. The parameters of this solver are given via a
      * {@link DdoModel}
      *
-     * @param model All the parameters needed to configure the solver.
+     * @param model all the parameters needed to configure the solver
      */
 <span class="nc" id="L106">    public RelaxationSolver(DdoModel&lt;T&gt; model) {</span>
 <span class="nc" id="L107">        this.problem = model.problem();</span>
@@ -116,43 +116,61 @@ public final class RelaxationSolver&lt;T&gt; {
 <span class="nc" id="L116">        this.model = model;</span>
 <span class="nc" id="L117">    }</span>
 
+    /**
+     * Solves the model by compiling a single relaxed decision diagram.
+     *
+     * @param limit      a predicate that can limit or stop the search based on current statistics
+     * @param onSolution a callback invoked once with the best solution found, if any
+     * @return the statistics of the search after completion
+     */
     public Solution minimize(Predicate&lt;SearchStatistics&gt; limit,
                              BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L121">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);</span>
+<span class="nc" id="L128">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);</span>
 
-<span class="nc" id="L123">        SubProblem&lt;T&gt; sub = root();</span>
-<span class="nc" id="L124">        int maxWidth = width.maximumWidth(sub.getState());</span>
-<span class="nc" id="L125">        CompilationConfig&lt;T&gt; compilation = configureCompilation(sub, maxWidth, model.exportDot());</span>
+<span class="nc" id="L130">        SubProblem&lt;T&gt; sub = root();</span>
+<span class="nc" id="L131">        int maxWidth = width.maximumWidth(sub.getState());</span>
+<span class="nc" id="L132">        CompilationConfig&lt;T&gt; compilation = configureCompilation(sub, maxWidth, model.exportDot());</span>
 
-<span class="nc" id="L127">        LinkedDecisionDiagram&lt;T&gt; relaxedMdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
-<span class="nc" id="L128">        relaxedMdd.compile();</span>
-<span class="nc" id="L129">        maybeUpdateBest(relaxedMdd, exportAsDot);</span>
+<span class="nc" id="L134">        LinkedDecisionDiagram&lt;T&gt; relaxedMdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
+<span class="nc" id="L135">        relaxedMdd.compile();</span>
+<span class="nc" id="L136">        maybeUpdateBest(relaxedMdd, exportAsDot);</span>
 
-<span class="nc" id="L131">        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);</span>
-<span class="nc" id="L132">        return new Solution(bestSolution(), statistics);</span>
+<span class="nc" id="L138">        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);</span>
+<span class="nc" id="L139">        return new Solution(bestSolution(), statistics);</span>
     }
 
+    /**
+     * Returns the value of the best solution found so far by this solver, if any.
+     *
+     * @return the value of the best solution in the relaxed decision diagram if there is one
+     */
     public Optional&lt;Double&gt; bestValue() {
-<span class="nc bnc" id="L136" title="All 2 branches missed.">        if (bestSol.isPresent()) {</span>
-<span class="nc" id="L137">            return Optional.of(bestUB);</span>
+<span class="nc bnc" id="L148" title="All 2 branches missed.">        if (bestSol.isPresent()) {</span>
+<span class="nc" id="L149">            return Optional.of(bestUB);</span>
         } else {
-<span class="nc" id="L139">            return Optional.empty();</span>
+<span class="nc" id="L151">            return Optional.empty();</span>
         }
     }
 
+    /**
+     * Returns the set of decisions that lead to the best solution found by this solver, if any.
+     *
+     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
+     * or empty if no solution exists
+     */
     public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
-<span class="nc" id="L144">        return bestSol;</span>
+<span class="nc" id="L162">        return bestSol;</span>
     }
 
     /**
      * @return the root subproblem
      */
     private SubProblem&lt;T&gt; root() {
-<span class="nc" id="L151">        return new SubProblem&lt;&gt;(</span>
-<span class="nc" id="L152">                problem.initialState(),</span>
-<span class="nc" id="L153">                problem.initialValue(),</span>
+<span class="nc" id="L169">        return new SubProblem&lt;&gt;(</span>
+<span class="nc" id="L170">                problem.initialState(),</span>
+<span class="nc" id="L171">                problem.initialValue(),</span>
                 Double.NEGATIVE_INFINITY,
-<span class="nc" id="L155">                Collections.emptySet());</span>
+<span class="nc" id="L173">                Collections.emptySet());</span>
     }
 
     /**
@@ -161,23 +179,23 @@ public final class RelaxationSolver&lt;T&gt; {
      * bounds.
      */
     private void maybeUpdateBest(DecisionDiagram&lt;T&gt; currentMdd, boolean exportDot) {
-<span class="nc" id="L164">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
-<span class="nc bnc" id="L165" title="All 4 branches missed.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
-<span class="nc" id="L166">            bestUB = ddval.get();</span>
-<span class="nc" id="L167">            bestSol = currentMdd.bestSolution();</span>
-<span class="nc" id="L168">            verboseMode.newBest(bestUB);</span>
+<span class="nc" id="L182">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
+<span class="nc" id="L184">            bestUB = ddval.get();</span>
+<span class="nc" id="L185">            bestSol = currentMdd.bestSolution();</span>
+<span class="nc" id="L186">            verboseMode.newBest(bestUB);</span>
         }
-<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (exportDot) {</span>
-<span class="nc" id="L171">            System.out.println(currentMdd.exportAsDot()); // to be sure to update the color of the edges.</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">        if (exportDot) {</span>
+<span class="nc" id="L189">            System.out.println(currentMdd.exportAsDot()); // to be sure to update the color of the edges.</span>
         }
-<span class="nc" id="L173">    }</span>
+<span class="nc" id="L191">    }</span>
 
     private double gap() {
-<span class="nc bnc" id="L176" title="All 2 branches missed.">        if (frontier.isEmpty()) {</span>
-<span class="nc" id="L177">            return 100.0;</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (frontier.isEmpty()) {</span>
+<span class="nc" id="L195">            return 100.0;</span>
         } else {
-<span class="nc" id="L179">            double bestInFrontier = frontier.bestInFrontier();</span>
-<span class="nc" id="L180">            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);</span>
+<span class="nc" id="L197">            double bestInFrontier = frontier.bestInFrontier();</span>
+<span class="nc" id="L198">            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);</span>
         }
     }
 
@@ -186,28 +204,28 @@ public final class RelaxationSolver&lt;T&gt; {
      *
      * @param sub         the root of the current sub-problem
      * @param maxWidth    the max width of the diagram
-     * @param exportAsDot whether the diagram has to be exported as .dot file.
+     * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */
     private CompilationConfig&lt;T&gt; configureCompilation(SubProblem&lt;T&gt; sub,
                                                       int maxWidth, boolean exportAsDot) {
-<span class="nc" id="L194">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
-<span class="nc" id="L195">        compilation.compilationType = CompilationType.Relaxed;</span>
-<span class="nc" id="L196">        compilation.problem = model.problem();</span>
-<span class="nc" id="L197">        compilation.relaxation = model.relaxation();</span>
-<span class="nc" id="L198">        compilation.variableHeuristic = model.variableHeuristic();</span>
-<span class="nc" id="L199">        compilation.stateRanking = model.ranking();</span>
-<span class="nc" id="L200">        compilation.residual = sub;</span>
-<span class="nc" id="L201">        compilation.maxWidth = maxWidth;</span>
-<span class="nc" id="L202">        compilation.flb = model.lowerBound();</span>
-<span class="nc" id="L203">        compilation.dominance = this.dominance;</span>
-<span class="nc" id="L204">        compilation.bestUB = this.bestUB;</span>
-<span class="nc" id="L205">        compilation.cutSetType = frontier.cutSetType();</span>
-<span class="nc" id="L206">        compilation.exportAsDot = exportAsDot;</span>
-<span class="nc" id="L207">        compilation.debugLevel = model.debugMode();</span>
-<span class="nc" id="L208">        compilation.reductionStrategy = model.relaxStrategy();</span>
+<span class="nc" id="L212">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
+<span class="nc" id="L213">        compilation.compilationType = CompilationType.Relaxed;</span>
+<span class="nc" id="L214">        compilation.problem = model.problem();</span>
+<span class="nc" id="L215">        compilation.relaxation = model.relaxation();</span>
+<span class="nc" id="L216">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="nc" id="L217">        compilation.stateRanking = model.ranking();</span>
+<span class="nc" id="L218">        compilation.residual = sub;</span>
+<span class="nc" id="L219">        compilation.maxWidth = maxWidth;</span>
+<span class="nc" id="L220">        compilation.flb = model.lowerBound();</span>
+<span class="nc" id="L221">        compilation.dominance = this.dominance;</span>
+<span class="nc" id="L222">        compilation.bestUB = this.bestUB;</span>
+<span class="nc" id="L223">        compilation.cutSetType = frontier.cutSetType();</span>
+<span class="nc" id="L224">        compilation.exportAsDot = exportAsDot;</span>
+<span class="nc" id="L225">        compilation.debugLevel = model.debugMode();</span>
+<span class="nc" id="L226">        compilation.reductionStrategy = model.relaxStrategy();</span>
 
-<span class="nc" id="L210">        return compilation;</span>
+<span class="nc" id="L228">        return compilation;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

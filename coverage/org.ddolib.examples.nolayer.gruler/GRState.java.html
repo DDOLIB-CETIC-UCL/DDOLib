@@ -31,74 +31,80 @@ public class GRState {
      * Defensive copies of the bitsets are made to ensure immutability of the internal state.
      * &lt;/p&gt;
      *
-     * @param marks     the set of marks already placed.
-     * @param distances the set of pairwise distances already covered.
-     * @param lastMark  the position of the last placed mark.
+     * @param marks     the set of marks already placed
+     * @param distances the set of pairwise distances already covered
+     * @param lastMark  the position of the last placed mark
+     * @param layer     the layer (depth) of the state
      */
-<span class="fc" id="L38">    public GRState(BitSet marks, BitSet distances, int lastMark, int layer) {</span>
-<span class="fc" id="L39">        this.marks = (BitSet) marks.clone();</span>
-<span class="fc" id="L40">        this.distances = (BitSet) distances.clone();</span>
-<span class="fc" id="L41">        this.lastMark = lastMark;</span>
-<span class="fc" id="L42">        this.layer = layer;</span>
-<span class="fc" id="L43">    }</span>
+<span class="fc" id="L39">    public GRState(BitSet marks, BitSet distances, int lastMark, int layer) {</span>
+<span class="fc" id="L40">        this.marks = (BitSet) marks.clone();</span>
+<span class="fc" id="L41">        this.distances = (BitSet) distances.clone();</span>
+<span class="fc" id="L42">        this.lastMark = lastMark;</span>
+<span class="fc" id="L43">        this.layer = layer;</span>
+<span class="fc" id="L44">    }</span>
 
     /**
      * Returns the set of marks already placed.
      *
-     * @return a {@link BitSet} representing the placed marks.
+     * @return a {@link BitSet} representing the placed marks
      */
     public BitSet getMarks() {
-<span class="fc" id="L51">        return marks;</span>
+<span class="fc" id="L52">        return marks;</span>
     }
 
     /**
      * Returns the set of pairwise distances already covered.
      *
-     * @return a {@link BitSet} representing existing distances.
+     * @return a {@link BitSet} representing existing distances
      */
     public BitSet getDistances() {
-<span class="fc" id="L60">        return distances;</span>
+<span class="fc" id="L61">        return distances;</span>
     }
 
     /**
      * Returns the number of marks currently placed.
      *
-     * @return the number of marks in this state.
+     * @return the number of marks in this state
      */
     public int getNumberOfMarks() {
-<span class="fc" id="L69">        return layer; // Return the explicit layer instead of cardinality</span>
+<span class="fc" id="L70">        return layer; // Return the explicit layer instead of cardinality</span>
     }
 
+    /**
+     * Returns the layer (depth) of this state.
+     *
+     * @return the layer (depth) of this state
+     */
     public int getLayer() {
-<span class="fc" id="L73">        return layer;</span>
+<span class="fc" id="L79">        return layer;</span>
     }
 
     /**
      * Returns the position of the last placed mark.
      *
-     * @return the position (integer value) of the last mark.
+     * @return the position (integer value) of the last mark
      */
     public int getLastMark() {
-<span class="fc" id="L82">        return lastMark;</span>
+<span class="fc" id="L88">        return lastMark;</span>
     }
 
     /**
      * Creates and returns a deep copy of this state.
      *
-     * @return a new {@link GRState} identical to the current one.
+     * @return a new {@link GRState} identical to the current one
      */
     public GRState copy() {
-<span class="nc" id="L91">        return new GRState(marks, distances, lastMark, layer);</span>
+<span class="nc" id="L97">        return new GRState(marks, distances, lastMark, layer);</span>
     }
 
     /**
      * Computes the hash code for this state based on marks, distances, and the last mark.
      *
-     * @return the hash code of this state.
+     * @return the hash code of this state
      */
     @Override
     public int hashCode() {
-<span class="fc" id="L101">        return Objects.hash(marks, distances, lastMark, layer);</span>
+<span class="fc" id="L107">        return Objects.hash(marks, distances, lastMark, layer);</span>
     }
 
     /**
@@ -106,15 +112,15 @@ public class GRState {
      * Two states are equal if they have identical marks, identical distances,
      * and the same last mark position.
      *
-     * @param obj the object to compare to.
-     * @return {@code true} if the states are identical; {@code false} otherwise.
+     * @param obj the object to compare to
+     * @return {@code true} if the states are identical; {@code false} otherwise
      */
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L114" title="1 of 2 branches missed.">        if (obj instanceof GRState other) {</span>
-<span class="pc bpc" id="L115" title="3 of 8 branches missed.">            return this.marks.equals(other.marks) &amp;&amp; this.distances.equals(other.distances) &amp;&amp; this.lastMark == other.lastMark &amp;&amp; this.layer == other.layer;</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (obj instanceof GRState other) {</span>
+<span class="pc bpc" id="L121" title="3 of 8 branches missed.">            return this.marks.equals(other.marks) &amp;&amp; this.distances.equals(other.distances) &amp;&amp; this.lastMark == other.lastMark &amp;&amp; this.layer == other.layer;</span>
         }
-<span class="nc" id="L117">        return false;</span>
+<span class="nc" id="L123">        return false;</span>
     }
 
     /**
@@ -123,11 +129,11 @@ public class GRState {
      * The output includes the list of marks, distances, and the last mark position.
      * &lt;/p&gt;
      *
-     * @return a string describing this state.
+     * @return a string describing this state
      */
     @Override
     public String toString() {
-<span class="fc" id="L130">        return &quot;(&quot; + Arrays.toString(marks.stream().toArray()) + &quot; , &quot; + Arrays.toString(distances.stream().toArray()) + &quot; , &quot; + lastMark + &quot; , &quot; + layer + &quot;)&quot;;</span>
+<span class="fc" id="L136">        return &quot;(&quot; + Arrays.toString(marks.stream().toArray()) + &quot; , &quot; + Arrays.toString(distances.stream().toArray()) + &quot; , &quot; + lastMark + &quot; , &quot; + layer + &quot;)&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

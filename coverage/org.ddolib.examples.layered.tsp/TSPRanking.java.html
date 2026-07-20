@@ -20,7 +20,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see TSPState
  * @see StateRanking
  */
-<span class="fc" id="L23">public class TSPRanking implements StateRanking&lt;TSPState&gt; {</span>
+public class TSPRanking implements StateRanking&lt;TSPState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L28">    public TSPRanking() {</span>
+<span class="fc" id="L29">    }</span>
+
     /**
      * Compares two TSP states.
      *
@@ -30,7 +37,7 @@ import org.ddolib.layered.modeling.StateRanking;
      */
     @Override
     public int compare(final TSPState o1, final TSPState o2) {
-<span class="fc" id="L33">        return 0;</span>
+<span class="fc" id="L40">        return 0;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

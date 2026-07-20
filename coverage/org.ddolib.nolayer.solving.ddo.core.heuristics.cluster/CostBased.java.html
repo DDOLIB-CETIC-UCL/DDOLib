@@ -7,41 +7,53 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+/**
+ * This strategy selects the nodes based on the objective value of the best path leading to them.
+ * It requires a problem-specific {@link StateRanking} comparator to break the ties between states
+ * of the same cost.
+ *
+ * @param &lt;T&gt; the type of state
+ */
 public class CostBased&lt;T&gt; implements ReductionStrategy&lt;T&gt; {
 
     private final StateRanking&lt;T&gt; ranking;
 
-<span class="fc" id="L14">    public CostBased(final StateRanking&lt;T&gt; ranking) {</span>
-<span class="fc" id="L15">        this.ranking = ranking;</span>
-<span class="fc" id="L16">    }</span>
+    /**
+     * Creates a new instance breaking ties between states of the same cost with the given ranking.
+     *
+     * @param ranking the ranking used to break ties between states of the same cost
+     */
+<span class="fc" id="L26">    public CostBased(final StateRanking&lt;T&gt; ranking) {</span>
+<span class="fc" id="L27">        this.ranking = ranking;</span>
+<span class="fc" id="L28">    }</span>
 
     @Override
     public List&lt;List&lt;T&gt;&gt; defineClusters(List&lt;T&gt; states, List&lt;Double&gt; values, int maxWidth) {
-<span class="fc" id="L20">        List&lt;Integer&gt; indices = IntStream.range(0, states.size()).boxed().collect(Collectors.toList());</span>
-<span class="fc" id="L21">        indices.sort((i1, i2) -&gt; {</span>
-<span class="fc" id="L22">            double cmp = values.get(i1) - values.get(i2);</span>
-<span class="pc bpc" id="L23" title="1 of 4 branches missed.">            if (cmp == 0 &amp;&amp; ranking != null) {</span>
-<span class="fc" id="L24">                return ranking.compare(states.get(i1), states.get(i2));</span>
+<span class="fc" id="L32">        List&lt;Integer&gt; indices = IntStream.range(0, states.size()).boxed().collect(Collectors.toList());</span>
+<span class="fc" id="L33">        indices.sort((i1, i2) -&gt; {</span>
+<span class="fc" id="L34">            double cmp = values.get(i1) - values.get(i2);</span>
+<span class="pc bpc" id="L35" title="1 of 4 branches missed.">            if (cmp == 0 &amp;&amp; ranking != null) {</span>
+<span class="fc" id="L36">                return ranking.compare(states.get(i1), states.get(i2));</span>
             }
-<span class="fc" id="L26">            return Double.compare(values.get(i1), values.get(i2));</span>
+<span class="fc" id="L38">            return Double.compare(values.get(i1), values.get(i2));</span>
         });
 
-<span class="fc" id="L29">        int nbClusters = Math.min(states.size(), maxWidth);</span>
-<span class="fc" id="L30">        List&lt;List&lt;T&gt;&gt; cluster = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L41">        int nbClusters = Math.min(states.size(), maxWidth);</span>
+<span class="fc" id="L42">        List&lt;List&lt;T&gt;&gt; cluster = new ArrayList&lt;&gt;();</span>
 
-<span class="fc bfc" id="L32" title="All 2 branches covered.">        for (int i = 0; i &lt; nbClusters - 1; i++) {</span>
-<span class="fc" id="L33">            List&lt;T&gt; cl = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L34">            cl.add(states.get(indices.get(i)));</span>
-<span class="fc" id="L35">            cluster.add(cl);</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">        for (int i = 0; i &lt; nbClusters - 1; i++) {</span>
+<span class="fc" id="L45">            List&lt;T&gt; cl = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L46">            cl.add(states.get(indices.get(i)));</span>
+<span class="fc" id="L47">            cluster.add(cl);</span>
         }
 
-<span class="fc" id="L38">        List&lt;T&gt; lastCl = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L39" title="All 2 branches covered.">        for (int i = nbClusters - 1; i &lt; states.size(); i++) {</span>
-<span class="fc" id="L40">            lastCl.add(states.get(indices.get(i)));</span>
+<span class="fc" id="L50">        List&lt;T&gt; lastCl = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (int i = nbClusters - 1; i &lt; states.size(); i++) {</span>
+<span class="fc" id="L52">            lastCl.add(states.get(indices.get(i)));</span>
         }
-<span class="pc bpc" id="L42" title="1 of 2 branches missed.">        if (!lastCl.isEmpty()) cluster.add(lastCl);</span>
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (!lastCl.isEmpty()) cluster.add(lastCl);</span>
 
-<span class="fc" id="L44">        return cluster;</span>
+<span class="fc" id="L56">        return cluster;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

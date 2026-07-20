@@ -23,7 +23,14 @@ import java.util.Set;
  * @see VariableHeuristic
  * @see java.util.Set
  */
-<span class="fc" id="L26">public final class DefaultVariableHeuristic&lt;T&gt; implements VariableHeuristic&lt;T&gt; {</span>
+public final class DefaultVariableHeuristic&lt;T&gt; implements VariableHeuristic&lt;T&gt; {
+
+    /**
+     * Creates a new instance of this default variable heuristic.
+     */
+<span class="fc" id="L31">    public DefaultVariableHeuristic() {</span>
+<span class="fc" id="L32">    }</span>
+
     /**
      * Returns the next variable to branch on by selecting the first element
      * from the set of remaining variables.
@@ -41,7 +48,7 @@ import java.util.Set;
      */
     @Override
     public Integer nextVariable(final Set&lt;Integer&gt; variables, final Iterator&lt;T&gt; states) {
-<span class="fc" id="L44">        return variables.iterator().next();</span>
+<span class="fc" id="L51">        return variables.iterator().next();</span>
     }
 
 }

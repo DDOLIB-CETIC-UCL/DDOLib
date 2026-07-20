@@ -18,8 +18,26 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Knapsack Problem (KS) with DDO, using the no-layer modeling API.
+ * &lt;p&gt;
+ * This class demonstrates how to solve an instance of the Knapsack Problem
+ * using the Decision Diagram Optimization (DDO) algorithm, configuring its own
+ * relaxation, state ranking, width heuristic, dominance checker, and cluster
+ * reduction strategies on top of {@link KSModel}.
+ * &lt;/p&gt;
+ */
 public class KSDdoMain {
 
+    private KSDdoMain() {
+    }
+
+    /**
+     * Entry point of the DDO demonstration for the Knapsack Problem.
+     *
+     * @param args command-line arguments (optional: instance file path)
+     * @throws IOException if the instance file cannot be read
+     */
     public static void main(String[] args) throws IOException {
         final String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;Knapsack&quot;,
                 &quot;instance_n1000_c1000_10_5_10_5_0&quot;).toString() : args[0];
@@ -157,7 +175,7 @@ public class KSDdoMain {
 
 abstract class KSDdoModel extends KSModel implements DdoModel&lt;KSState&gt; {
     public KSDdoModel(KSProblem problem) {
-<span class="nc" id="L160">        super(problem);</span>
-<span class="nc" id="L161">    }</span>
+<span class="nc" id="L178">        super(problem);</span>
+<span class="nc" id="L179">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

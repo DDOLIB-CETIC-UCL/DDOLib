@@ -10,7 +10,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * two MKS states based on the average remaining capacity across all knapsack dimensions.
  * States with smaller average remaining capacity are considered &quot;smaller&quot; in the ranking.
  */
-<span class="nc" id="L13">public class MKSRanking implements StateRanking&lt;MKSState&gt; {</span>
+public class MKSRanking implements StateRanking&lt;MKSState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="nc" id="L18">    public MKSRanking() {</span>
+<span class="nc" id="L19">    }</span>
+
     /**
      * Compares two MKS states based on their average remaining capacities.
      *
@@ -26,16 +33,16 @@ import org.ddolib.layered.modeling.StateRanking;
      */
     @Override
     public int compare(MKSState o1, MKSState o2) {
-<span class="nc" id="L29">        double avgCapa1 = 0;</span>
-<span class="nc" id="L30">        double avgCapa2 = 0;</span>
-<span class="nc bnc" id="L31" title="All 2 branches missed.">        for (int dim = 0; dim &lt; o1.capacities.length; dim++) {</span>
-<span class="nc" id="L32">            avgCapa1 += o1.capacities[dim];</span>
-<span class="nc" id="L33">            avgCapa2 += o2.capacities[dim];</span>
+<span class="nc" id="L36">        double avgCapa1 = 0;</span>
+<span class="nc" id="L37">        double avgCapa2 = 0;</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        for (int dim = 0; dim &lt; o1.capacities.length; dim++) {</span>
+<span class="nc" id="L39">            avgCapa1 += o1.capacities[dim];</span>
+<span class="nc" id="L40">            avgCapa2 += o2.capacities[dim];</span>
         }
-<span class="nc" id="L35">        avgCapa1 /= o1.capacities.length;</span>
-<span class="nc" id="L36">        avgCapa2 /= o2.capacities.length;</span>
+<span class="nc" id="L42">        avgCapa1 /= o1.capacities.length;</span>
+<span class="nc" id="L43">        avgCapa2 /= o2.capacities.length;</span>
 
-<span class="nc" id="L38">        return Double.compare(avgCapa1, avgCapa2);</span>
+<span class="nc" id="L45">        return Double.compare(avgCapa1, avgCapa2);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

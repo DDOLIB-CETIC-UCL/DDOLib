@@ -17,7 +17,14 @@ import java.util.Iterator;
  *
  * @see Relaxation
  */
-<span class="fc" id="L20">public class KSRelax implements Relaxation&lt;Integer&gt; {</span>
+public class KSRelax implements Relaxation&lt;Integer&gt; {
+
+    /**
+     * Creates a new instance of this relaxation.
+     */
+<span class="fc" id="L25">    public KSRelax() {</span>
+<span class="fc" id="L26">    }</span>
+
     /**
      * Merges multiple states into a single relaxed state.
      * &lt;p&gt;
@@ -30,12 +37,12 @@ import java.util.Iterator;
      */
     @Override
     public Integer mergeStates(final Iterator&lt;Integer&gt; states) {
-<span class="fc" id="L33">        int capa = 0;</span>
-<span class="fc bfc" id="L34" title="All 2 branches covered.">        while (states.hasNext()) {</span>
-<span class="fc" id="L35">            final Integer state = states.next();</span>
-<span class="fc" id="L36">            capa = Math.max(capa, state);</span>
-<span class="fc" id="L37">        }</span>
-<span class="fc" id="L38">        return capa;</span>
+<span class="fc" id="L40">        int capa = 0;</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L42">            final Integer state = states.next();</span>
+<span class="fc" id="L43">            capa = Math.max(capa, state);</span>
+<span class="fc" id="L44">        }</span>
+<span class="fc" id="L45">        return capa;</span>
     }
 
     /**
@@ -53,7 +60,7 @@ import java.util.Iterator;
      */
     @Override
     public double relaxEdge(Integer from, Integer to, Integer merged, Decision d, double cost) {
-<span class="fc" id="L56">        return cost;</span>
+<span class="fc" id="L63">        return cost;</span>
     }
 
 }

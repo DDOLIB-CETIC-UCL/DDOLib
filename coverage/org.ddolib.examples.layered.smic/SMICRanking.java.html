@@ -28,7 +28,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * @see StateRanking
  * @see SMICProblem
  */
-<span class="fc" id="L31">public class SMICRanking implements StateRanking&lt;SMICState&gt; {</span>
+public class SMICRanking implements StateRanking&lt;SMICState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L36">    public SMICRanking() {</span>
+<span class="fc" id="L37">    }</span>
+
     /**
      * Compares two {@link SMICState} instances based on their current time.
      * &lt;p&gt;
@@ -43,7 +50,7 @@ import org.ddolib.layered.modeling.StateRanking;
      */
     @Override
     public int compare(SMICState o1, SMICState o2) {
-<span class="fc" id="L46">        return Integer.compare(o1.currentTime(), o2.currentTime());</span>
+<span class="fc" id="L53">        return Integer.compare(o1.currentTime(), o2.currentTime());</span>
     }
 }
 

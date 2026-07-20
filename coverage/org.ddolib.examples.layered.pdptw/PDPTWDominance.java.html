@@ -7,11 +7,17 @@ import org.ddolib.layered.modeling.Dominance;
  * If for two states, the position is the same and the {@code mustVisit} set is the same,
  * then we can only keep the state with the lowest time.
  */
-<span class="fc" id="L10">public class PDPTWDominance implements Dominance&lt;PDPTWState&gt; {</span>
+public class PDPTWDominance implements Dominance&lt;PDPTWState&gt; {
+
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+<span class="fc" id="L15">    public PDPTWDominance() {</span>
+<span class="fc" id="L16">    }</span>
 
     @Override
     public PDPTWDominanceKey getKey(PDPTWState state) {
-<span class="fc" id="L14">        return new PDPTWDominanceKey(state.openToVisit, state.allToVisit, state.current,</span>
+<span class="fc" id="L20">        return new PDPTWDominanceKey(state.openToVisit, state.allToVisit, state.current,</span>
                 state.minContent, state.maxContent);
     }
 
@@ -19,7 +25,7 @@ import org.ddolib.layered.modeling.Dominance;
     public boolean isDominatedOrEqual(PDPTWState state1, PDPTWState state2) {
         //earlier is better
         //however the time has an interval so we take the safe choice to avoid dropping solutions
-<span class="pc bpc" id="L22" title="1 of 2 branches missed.">        return state1.minCurrentTime &gt;= state2.maxCurrentTime;</span>
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        return state1.minCurrentTime &gt;= state2.maxCurrentTime;</span>
     }
 }
 

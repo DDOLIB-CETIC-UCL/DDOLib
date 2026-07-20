@@ -7,7 +7,10 @@
  * returning {@link Double#POSITIVE_INFINITY} or {@link Double#NEGATIVE_INFINITY}
  * instead of exceeding the representable range of a double.
  */
-<span class="nc" id="L10">public class MathUtil {</span>
+public class MathUtil {
+
+    private MathUtil() {
+    }
 
     /**
      * Performs a saturated addition of two double values.
@@ -21,11 +24,11 @@
      * @return the saturated sum of {@code a} and {@code b}
      */
     public static double saturatedAdd(double a, double b) {
-<span class="fc" id="L24">        double sum = a + b;</span>
-<span class="fc bfc" id="L25" title="All 2 branches covered.">        if (Double.isInfinite(sum)) {</span>
-<span class="pc bpc" id="L26" title="1 of 2 branches missed.">            return sum &gt; 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;</span>
+<span class="fc" id="L27">        double sum = a + b;</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        if (Double.isInfinite(sum)) {</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">            return sum &gt; 0 ? Double.POSITIVE_INFINITY : Double.NEGATIVE_INFINITY;</span>
         }
-<span class="fc" id="L28">        return sum;</span>
+<span class="fc" id="L31">        return sum;</span>
     }
 
 
@@ -41,11 +44,11 @@
      * @return the saturated difference {@code a - b}
      */
     public static double saturatedDiff(double a, double b) {
-<span class="fc" id="L44">        double diff = a - b;</span>
-<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (Double.isInfinite(diff)) {</span>
-<span class="pc bpc" id="L46" title="1 of 2 branches missed.">            return diff &lt; 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L47">        double diff = a - b;</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if (Double.isInfinite(diff)) {</span>
+<span class="pc bpc" id="L49" title="1 of 2 branches missed.">            return diff &lt; 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;</span>
         }
-<span class="fc" id="L48">        return diff;</span>
+<span class="fc" id="L51">        return diff;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

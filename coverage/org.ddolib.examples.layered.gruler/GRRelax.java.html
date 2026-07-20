@@ -36,7 +36,13 @@ import java.util.Iterator;
  * @see GRState
  * @see Relaxation
  */
-<span class="fc" id="L39">public class GRRelax implements Relaxation&lt;GRState&gt; {</span>
+public class GRRelax implements Relaxation&lt;GRState&gt; {
+    /**
+     * Creates a new instance of this relaxation.
+     */
+<span class="fc" id="L43">    public GRRelax() {</span>
+<span class="fc" id="L44">    }</span>
+
     /**
      * Merges several {@link GRState} objects into a single relaxed state.
      * &lt;p&gt;
@@ -48,23 +54,23 @@ import java.util.Iterator;
      *     &lt;li&gt;The smallest {@code lastMark} value among all merged states.&lt;/li&gt;
      * &lt;/ul&gt;
      *
-     * @param states an iterator over the states to merge.
-     * @return a new {@link GRState} representing the relaxed (merged) state.
+     * @param states an iterator over the states to merge
+     * @return a new {@link GRState} representing the relaxed (merged) state
      */
     @Override
     public GRState mergeStates(final Iterator&lt;GRState&gt; states) {
         // take the intersection of the marks and distances sets
-<span class="fc" id="L57">        GRState curr = states.next();</span>
-<span class="fc" id="L58">        BitSet intersectionMarks = (BitSet) curr.getMarks().clone();</span>
-<span class="fc" id="L59">        BitSet intersectionDistances = (BitSet) curr.getDistances().clone();</span>
-<span class="fc" id="L60">        int lastMark = curr.getLastMark();</span>
-<span class="fc bfc" id="L61" title="All 2 branches covered.">        while (states.hasNext()) {</span>
-<span class="fc" id="L62">            GRState state = states.next();</span>
-<span class="fc" id="L63">            intersectionMarks.and(state.getMarks());</span>
-<span class="fc" id="L64">            intersectionDistances.and(state.getDistances());</span>
-<span class="fc" id="L65">            lastMark = Math.min(lastMark, state.getLastMark());</span>
-<span class="fc" id="L66">        }</span>
-<span class="fc" id="L67">        return new GRState(intersectionMarks, intersectionDistances, lastMark);</span>
+<span class="fc" id="L63">        GRState curr = states.next();</span>
+<span class="fc" id="L64">        BitSet intersectionMarks = (BitSet) curr.getMarks().clone();</span>
+<span class="fc" id="L65">        BitSet intersectionDistances = (BitSet) curr.getDistances().clone();</span>
+<span class="fc" id="L66">        int lastMark = curr.getLastMark();</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        while (states.hasNext()) {</span>
+<span class="fc" id="L68">            GRState state = states.next();</span>
+<span class="fc" id="L69">            intersectionMarks.and(state.getMarks());</span>
+<span class="fc" id="L70">            intersectionDistances.and(state.getDistances());</span>
+<span class="fc" id="L71">            lastMark = Math.min(lastMark, state.getLastMark());</span>
+<span class="fc" id="L72">        }</span>
+<span class="fc" id="L73">        return new GRState(intersectionMarks, intersectionDistances, lastMark);</span>
     }
 
     /**
@@ -74,16 +80,16 @@ import java.util.Iterator;
      * the same value as the original transition cost.
      * &lt;/p&gt;
      *
-     * @param from   the source state before the transition.
-     * @param to     the destination state after the transition.
-     * @param merged the merged relaxed state (unused in this relaxation).
-     * @param d      the decision made for the transition.
-     * @param cost   the original transition cost.
-     * @return the relaxed transition cost (equal to {@code cost}).
+     * @param from   the source state before the transition
+     * @param to     the destination state after the transition
+     * @param merged the merged relaxed state (unused in this relaxation)
+     * @param d      the decision made for the transition
+     * @param cost   the original transition cost
+     * @return the relaxed transition cost (equal to {@code cost})
      */
     @Override
     public double relaxEdge(GRState from, GRState to, GRState merged, Decision d, double cost) {
-<span class="fc" id="L86">        return cost;</span>
+<span class="fc" id="L92">        return cost;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

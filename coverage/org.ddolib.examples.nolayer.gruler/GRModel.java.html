@@ -4,24 +4,33 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.Problem;
 
+/**
+ * Nolayer model for the Golomb Ruler Problem, bundling the {@link GRProblem} with its
+ * {@link GRFlb} fast lower bound.
+ */
 public class GRModel implements Model&lt;GRState&gt; {
 
     private final GRProblem problem;
     private final FastLowerBound&lt;GRState&gt; lowerBound;
 
-<span class="fc" id="L12">    public GRModel(GRProblem problem) {</span>
-<span class="fc" id="L13">        this.problem = problem;</span>
-<span class="fc" id="L14">        this.lowerBound = new GRFlb(problem);</span>
-<span class="fc" id="L15">    }</span>
+    /**
+     * Creates a new model for the given Golomb Ruler problem.
+     *
+     * @param problem the Golomb Ruler problem instance
+     */
+<span class="fc" id="L21">    public GRModel(GRProblem problem) {</span>
+<span class="fc" id="L22">        this.problem = problem;</span>
+<span class="fc" id="L23">        this.lowerBound = new GRFlb(problem);</span>
+<span class="fc" id="L24">    }</span>
 
     @Override
     public Problem&lt;GRState&gt; problem() {
-<span class="fc" id="L19">        return problem;</span>
+<span class="fc" id="L28">        return problem;</span>
     }
 
     @Override
     public FastLowerBound&lt;GRState&gt; lowerBound() {
-<span class="nc" id="L24">        return lowerBound;</span>
+<span class="nc" id="L33">        return lowerBound;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

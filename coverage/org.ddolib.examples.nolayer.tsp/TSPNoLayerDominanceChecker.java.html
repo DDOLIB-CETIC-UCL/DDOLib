@@ -8,73 +8,79 @@ import java.util.*;
  * Dominance checker for the Travelling Salesperson Problem (TSP).
  * Correctly implements subset dominance relations across different cardinalities.
  */
-<span class="fc" id="L11">public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker&lt;TSPState&gt; {</span>
+public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker&lt;TSPState&gt; {
 
 <span class="fc" id="L13">    private final Map&lt;Integer, List&lt;DominanceEntry&gt;&gt; fronts = new HashMap&lt;&gt;();</span>
 
+    /**
+     * Creates a new dominance checker with an empty dominance front.
+     */
+<span class="fc" id="L18">    public TSPNoLayerDominanceChecker() {</span>
+<span class="fc" id="L19">    }</span>
+
     @Override
     public boolean updateDominance(TSPState state, double value) {
-<span class="fc" id="L17">        BitSet toVisit = state.toVisit;</span>
-<span class="fc" id="L18">        BitSet current = state.current;</span>
-<span class="fc" id="L19">        int card = toVisit.cardinality();</span>
+<span class="fc" id="L23">        BitSet toVisit = state.toVisit;</span>
+<span class="fc" id="L24">        BitSet current = state.current;</span>
+<span class="fc" id="L25">        int card = toVisit.cardinality();</span>
 
         // 1. Check if the new 'state' is dominated by any existing entry
         // An entry can dominate 'state' only if it has AT MOST as many cities left to visit (smaller or equal cardinality)
-<span class="fc bfc" id="L23" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : fronts.entrySet()) {</span>
-<span class="fc bfc" id="L24" title="All 2 branches covered.">            if (mapEntry.getKey() &lt;= card) {</span>
-<span class="fc bfc" id="L25" title="All 2 branches covered.">                for (DominanceEntry entry : mapEntry.getValue()) {</span>
-<span class="fc bfc" id="L26" title="All 2 branches covered.">                    if (entry.value &lt;= value</span>
-<span class="fc bfc" id="L27" title="All 2 branches covered.">                            &amp;&amp; entry.current.equals(current)</span>
-<span class="fc bfc" id="L28" title="All 2 branches covered.">                            &amp;&amp; isSubset(entry.toVisit, toVisit)) {</span>
-<span class="fc" id="L29">                        return true; // The new state is dominated, discard it</span>
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : fronts.entrySet()) {</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            if (mapEntry.getKey() &lt;= card) {</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">                for (DominanceEntry entry : mapEntry.getValue()) {</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">                    if (entry.value &lt;= value</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">                            &amp;&amp; entry.current.equals(current)</span>
+<span class="fc bfc" id="L34" title="All 2 branches covered.">                            &amp;&amp; isSubset(entry.toVisit, toVisit)) {</span>
+<span class="fc" id="L35">                        return true; // The new state is dominated, discard it</span>
                     }
-<span class="fc" id="L31">                }</span>
+<span class="fc" id="L37">                }</span>
             }
-<span class="fc" id="L33">        }</span>
+<span class="fc" id="L39">        }</span>
 
         // 2. Remove existing entries that are dominated by the new 'state'
         // The new state can dominate an entry only if it has AT LEAST as many cities left to visit (larger or equal cardinality)
-<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : fronts.entrySet()) {</span>
-<span class="fc bfc" id="L38" title="All 2 branches covered.">            if (mapEntry.getKey() &gt;= card) {</span>
-<span class="fc" id="L39">                mapEntry.getValue().removeIf(entry -&gt;</span>
-<span class="fc bfc" id="L40" title="All 2 branches covered.">                        value &lt;= entry.value</span>
-<span class="fc bfc" id="L41" title="All 2 branches covered.">                                &amp;&amp; current.equals(entry.current)</span>
-<span class="fc bfc" id="L42" title="All 2 branches covered.">                                &amp;&amp; isSubset(toVisit, entry.toVisit)</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, List&lt;DominanceEntry&gt;&gt; mapEntry : fronts.entrySet()) {</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">            if (mapEntry.getKey() &gt;= card) {</span>
+<span class="fc" id="L45">                mapEntry.getValue().removeIf(entry -&gt;</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">                        value &lt;= entry.value</span>
+<span class="fc bfc" id="L47" title="All 2 branches covered.">                                &amp;&amp; current.equals(entry.current)</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">                                &amp;&amp; isSubset(toVisit, entry.toVisit)</span>
                 );
             }
-<span class="fc" id="L45">        }</span>
+<span class="fc" id="L51">        }</span>
 
         // 3. Add the new state to the matching cardinality front
-<span class="fc" id="L48">        fronts.computeIfAbsent(card, k -&gt; new ArrayList&lt;&gt;())</span>
-<span class="fc" id="L49">                .add(new DominanceEntry(current, toVisit, value));</span>
+<span class="fc" id="L54">        fronts.computeIfAbsent(card, k -&gt; new ArrayList&lt;&gt;())</span>
+<span class="fc" id="L55">                .add(new DominanceEntry(current, toVisit, value));</span>
 
-<span class="fc" id="L51">        return false;</span>
+<span class="fc" id="L57">        return false;</span>
     }
 
     @Override
     public void clear() {
-<span class="fc" id="L56">        fronts.clear();</span>
-<span class="fc" id="L57">    }</span>
+<span class="fc" id="L62">        fronts.clear();</span>
+<span class="fc" id="L63">    }</span>
 
     /**
      * Checks if the 'child' BitSet is a subset of the 'parent' BitSet.
      * Performance optimized loop without object allocations.
      */
     private boolean isSubset(BitSet child, BitSet parent) {
-<span class="fc bfc" id="L64" title="All 2 branches covered.">        for (int i = child.nextSetBit(0); i &gt;= 0; i = child.nextSetBit(i + 1)) {</span>
-<span class="fc bfc" id="L65" title="All 2 branches covered.">            if (!parent.get(i)) {</span>
-<span class="fc" id="L66">                return false;</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (int i = child.nextSetBit(0); i &gt;= 0; i = child.nextSetBit(i + 1)) {</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (!parent.get(i)) {</span>
+<span class="fc" id="L72">                return false;</span>
             }
         }
-<span class="fc" id="L69">        return true;</span>
+<span class="fc" id="L75">        return true;</span>
     }
 
     private record DominanceEntry(BitSet current, BitSet toVisit, double value) {
-<span class="fc" id="L73">        private DominanceEntry(BitSet current, BitSet toVisit, double value) {</span>
-<span class="fc" id="L74">            this.current = (BitSet) current.clone();</span>
-<span class="fc" id="L75">            this.toVisit = (BitSet) toVisit.clone();</span>
-<span class="fc" id="L76">            this.value = value;</span>
-<span class="fc" id="L77">        }</span>
+<span class="fc" id="L79">        private DominanceEntry(BitSet current, BitSet toVisit, double value) {</span>
+<span class="fc" id="L80">            this.current = (BitSet) current.clone();</span>
+<span class="fc" id="L81">            this.toVisit = (BitSet) toVisit.clone();</span>
+<span class="fc" id="L82">            this.value = value;</span>
+<span class="fc" id="L83">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

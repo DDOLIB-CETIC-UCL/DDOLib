@@ -16,77 +16,91 @@ public class PDPTWFastLowerBound implements FastLowerBound&lt;PDPTWState&gt; {
     private final double[] leastIncidentEdge;
     PDPTWProblem problem;
 
-<span class="fc" id="L19">    public PDPTWFastLowerBound(PDPTWProblem problem) {</span>
-<span class="fc" id="L20">        this.problem = problem;</span>
-<span class="fc" id="L21">        this.leastIncidentEdge = new double[problem.n];</span>
-<span class="fc bfc" id="L22" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
-<span class="fc" id="L23">            double min = Double.POSITIVE_INFINITY;</span>
-<span class="fc bfc" id="L24" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
-<span class="fc bfc" id="L25" title="All 2 branches covered.">                if (i != j) {</span>
-<span class="fc" id="L26">                    min = Math.min(min, problem.timeMatrix[i][j]);</span>
+    /**
+     * Builds a fast lower bound calculator for the given PDPTW problem, precomputing
+     * the least incident edge of every node.
+     *
+     * @param problem the PDPTW problem to compute lower bounds for
+     */
+<span class="fc" id="L25">    public PDPTWFastLowerBound(PDPTWProblem problem) {</span>
+<span class="fc" id="L26">        this.problem = problem;</span>
+<span class="fc" id="L27">        this.leastIncidentEdge = new double[problem.n];</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
+<span class="fc" id="L29">            double min = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L30" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">                if (i != j) {</span>
+<span class="fc" id="L32">                    min = Math.min(min, problem.timeMatrix[i][j]);</span>
                 }
             }
-<span class="fc" id="L29">            leastIncidentEdge[i] = min;</span>
+<span class="fc" id="L35">            leastIncidentEdge[i] = min;</span>
         }
-<span class="fc" id="L31">    }</span>
+<span class="fc" id="L37">    }</span>
 
     @Override
     public double fastLowerBound(PDPTWState state, Set&lt;Integer&gt; variables) {
-<span class="fc" id="L35">        return fastLowerBound(state, variables.size());</span>
+<span class="fc" id="L41">        return fastLowerBound(state, variables.size());</span>
     }
 
 
+    /**
+     * Computes a fast lower bound on the remaining cost from the given state.
+     *
+     * @param state                  the current state
+     * @param nbUnassignedVariables  the number of variables (nodes) still to visit, including the final return to the depot
+     * @return the lower bound on the remaining cost, or {@link Double#POSITIVE_INFINITY} if no
+     * feasible completion respecting the time windows exists
+     */
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
-<span class="fc" id="L40">        BitSet toVisit = state.allToVisit;</span>
+<span class="fc" id="L54">        BitSet toVisit = state.allToVisit;</span>
 
         // for each unvisited node, we take the smallest incident edge
-<span class="fc" id="L43">        ArrayList&lt;Double&gt; toVisitLB = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
-<span class="fc" id="L44">        toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back</span>
+<span class="fc" id="L57">        ArrayList&lt;Double&gt; toVisitLB = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
+<span class="fc" id="L58">        toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back</span>
         //TODO use something better based on the actual remaining nodes to reach
-<span class="fc bfc" id="L46" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
-<span class="fc" id="L47">            toVisitLB.add(leastIncidentEdge[i]);</span>
-        }
-<span class="fc" id="L49">        Collections.sort(toVisitLB);</span>
-
-<span class="fc" id="L51">        ArrayList&lt;Double&gt; toVisitEarlyLines = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
-<span class="fc" id="L52">        toVisitEarlyLines.add(problem.timeWindows[0].start()); //one more earlyLine because there is the final hop</span>
-<span class="fc bfc" id="L53" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
-<span class="fc" id="L54">            toVisitEarlyLines.add(problem.timeWindows[i].start());</span>
-        }
-<span class="fc" id="L56">        Collections.sort(toVisitEarlyLines);</span>
-
-<span class="fc" id="L58">        ArrayList&lt;Double&gt; toVisitDeadlines = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
-<span class="fc" id="L59">        toVisitDeadlines.add(problem.timeWindows[0].end()); //one more deadline because there is the final hop</span>
 <span class="fc bfc" id="L60" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
-<span class="fc" id="L61">            toVisitDeadlines.add(problem.timeWindows[i].end());</span>
+<span class="fc" id="L61">            toVisitLB.add(leastIncidentEdge[i]);</span>
+        }
+<span class="fc" id="L63">        Collections.sort(toVisitLB);</span>
+
+<span class="fc" id="L65">        ArrayList&lt;Double&gt; toVisitEarlyLines = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
+<span class="fc" id="L66">        toVisitEarlyLines.add(problem.timeWindows[0].start()); //one more earlyLine because there is the final hop</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
+<span class="fc" id="L68">            toVisitEarlyLines.add(problem.timeWindows[i].start());</span>
+        }
+<span class="fc" id="L70">        Collections.sort(toVisitEarlyLines);</span>
+
+<span class="fc" id="L72">        ArrayList&lt;Double&gt; toVisitDeadlines = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
+<span class="fc" id="L73">        toVisitDeadlines.add(problem.timeWindows[0].end()); //one more deadline because there is the final hop</span>
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
+<span class="fc" id="L75">            toVisitDeadlines.add(problem.timeWindows[i].end());</span>
         }
 
-<span class="fc" id="L64">        Collections.sort(toVisitDeadlines);</span>
+<span class="fc" id="L78">        Collections.sort(toVisitDeadlines);</span>
 
         //first iteration, to check for deadline enforcement
         //We take the min because it will not overprune
-<span class="fc" id="L68">        int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;</span>
-<span class="fc" id="L69">        double currentSimulationTime = state.minCurrentTime;</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">        for (int i = 0; i &lt; nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back</span>
-<span class="fc" id="L71">            double incomingHop = toVisitLB.get(i);</span>
-<span class="fc" id="L72">            double earlyLine = toVisitEarlyLines.get(i);</span>
-<span class="fc" id="L73">            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);</span>
-<span class="fc" id="L74">            double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);</span>
-<span class="fc bfc" id="L75" title="All 2 branches covered.">            if (currentSimulationTime &gt; deadLine) {</span>
-<span class="fc" id="L76">                return Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L82">        int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;</span>
+<span class="fc" id="L83">        double currentSimulationTime = state.minCurrentTime;</span>
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        for (int i = 0; i &lt; nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back</span>
+<span class="fc" id="L85">            double incomingHop = toVisitLB.get(i);</span>
+<span class="fc" id="L86">            double earlyLine = toVisitEarlyLines.get(i);</span>
+<span class="fc" id="L87">            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);</span>
+<span class="fc" id="L88">            double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);</span>
+<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (currentSimulationTime &gt; deadLine) {</span>
+<span class="fc" id="L90">                return Double.POSITIVE_INFINITY;</span>
             }
         }
 
         //second iteration, to compute actual bound,
         // we take the max because it under-estimate the remaining cost
-<span class="fc" id="L82">        currentSimulationTime = state.maxCurrentTime;</span>
-<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (int i = 0; i &lt; nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back</span>
-<span class="fc" id="L84">            double incomingHop = toVisitLB.get(i);</span>
-<span class="fc" id="L85">            double earlyLine = toVisitEarlyLines.get(i);</span>
-<span class="fc" id="L86">            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);</span>
+<span class="fc" id="L96">        currentSimulationTime = state.maxCurrentTime;</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">        for (int i = 0; i &lt; nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back</span>
+<span class="fc" id="L98">            double incomingHop = toVisitLB.get(i);</span>
+<span class="fc" id="L99">            double earlyLine = toVisitEarlyLines.get(i);</span>
+<span class="fc" id="L100">            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);</span>
         }
 
-<span class="fc" id="L89">        return currentSimulationTime - state.minCurrentTime;</span>
+<span class="fc" id="L103">        return currentSimulationTime - state.minCurrentTime;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

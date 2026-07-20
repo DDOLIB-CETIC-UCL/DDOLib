@@ -16,36 +16,69 @@ public class SubProblem&lt;T&gt; {
     private final double h; // heuristic cost to target
     private final List&lt;Integer&gt; path; // sequence of labels applied
 
-<span class="fc" id="L19">    public SubProblem(T state, double g, double h, List&lt;Integer&gt; path) {</span>
-<span class="fc" id="L20">        this.state = state;</span>
-<span class="fc" id="L21">        this.g = g;</span>
-<span class="fc" id="L22">        this.h = h;</span>
-<span class="fc" id="L23">        this.path = path;</span>
-<span class="fc" id="L24">    }</span>
+    /**
+     * Creates a new subproblem.
+     *
+     * @param state the state of this subproblem
+     * @param g     the cost of the path from the initial state to this state
+     * @param h     the fast lower bound estimating the cost from this state to a target state
+     * @param path  the sequence of labels applied from the initial state to reach this state
+     */
+<span class="fc" id="L27">    public SubProblem(T state, double g, double h, List&lt;Integer&gt; path) {</span>
+<span class="fc" id="L28">        this.state = state;</span>
+<span class="fc" id="L29">        this.g = g;</span>
+<span class="fc" id="L30">        this.h = h;</span>
+<span class="fc" id="L31">        this.path = path;</span>
+<span class="fc" id="L32">    }</span>
 
+    /**
+     * Returns the state of this subproblem.
+     *
+     * @return the state of this subproblem
+     */
     public T getState() {
-<span class="fc" id="L27">        return state;</span>
+<span class="fc" id="L40">        return state;</span>
     }
 
+    /**
+     * Returns the cost of the path from the initial state to this state.
+     *
+     * @return the cost of the path from the initial state to this state
+     */
     public double getValue() {
-<span class="fc" id="L31">        return g;</span>
+<span class="fc" id="L49">        return g;</span>
     }
 
+    /**
+     * Returns the fast lower bound estimating the cost from this state to a target state.
+     *
+     * @return the fast lower bound estimating the cost from this state to a target state
+     */
     public double getLowerBound() {
-<span class="fc" id="L35">        return h;</span>
+<span class="fc" id="L58">        return h;</span>
     }
 
+    /**
+     * Returns the {@code f = g + h} value of this subproblem, used to order the search.
+     *
+     * @return the {@code f = g + h} value of this subproblem
+     */
     public double f() {
-<span class="fc" id="L39">        return g + h;</span>
+<span class="fc" id="L67">        return g + h;</span>
     }
 
+    /**
+     * Returns the sequence of labels applied from the initial state to reach this state.
+     *
+     * @return an unmodifiable view of the sequence of labels applied to reach this state
+     */
     public List&lt;Integer&gt; getPath() {
-<span class="fc" id="L43">        return Collections.unmodifiableList(path);</span>
+<span class="fc" id="L76">        return Collections.unmodifiableList(path);</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L48">        return &quot;%s - g: %f - h: %f&quot;.formatted(state, g, h);</span>
+<span class="nc" id="L81">        return &quot;%s - g: %f - h: %f&quot;.formatted(state, g, h);</span>
     }
 
     /**
@@ -58,15 +91,15 @@ public class SubProblem&lt;T&gt; {
      */
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L61" title="1 of 2 branches missed.">        if (obj instanceof SubProblem&lt;?&gt; other) {</span>
-<span class="fc" id="L62">            return Objects.equals(this.state, other.state);</span>
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (obj instanceof SubProblem&lt;?&gt; other) {</span>
+<span class="fc" id="L95">            return Objects.equals(this.state, other.state);</span>
         }
-<span class="nc" id="L64">        return false;</span>
+<span class="nc" id="L97">        return false;</span>
     }
 
     @Override
     public int hashCode() {
-<span class="nc" id="L69">        return Objects.hashCode(state);</span>
+<span class="nc" id="L102">        return Objects.hashCode(state);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -2,21 +2,32 @@
 
 import org.ddolib.nolayer.modeling.FastLowerBound;
 
+/**
+ * Fast lower bound for the Maximum Independent Set Problem (MISP), in the no-layer modeling API.
+ * &lt;p&gt;
+ * The bound sums the weights of all remaining nodes in a state, which is an admissible
+ * (optimistic) estimate since selecting every remaining node ignores adjacency constraints.
+ */
 public class MispFlb implements FastLowerBound&lt;MispState&gt; {
 
     private final int[] weight;
 
-<span class="fc" id="L9">    public MispFlb(MispProblem problem) {</span>
-<span class="fc" id="L10">        this.weight = problem.weight;</span>
-<span class="fc" id="L11">    }</span>
+    /**
+     * Creates a new fast lower bound for the given MISP problem.
+     *
+     * @param problem the MISP problem instance providing the node weights
+     */
+<span class="fc" id="L20">    public MispFlb(MispProblem problem) {</span>
+<span class="fc" id="L21">        this.weight = problem.weight;</span>
+<span class="fc" id="L22">    }</span>
 
     @Override
     public double fastLowerBound(MispState state) {
-<span class="fc" id="L15">        double flb = 0;</span>
-<span class="fc bfc" id="L16" title="All 2 branches covered.">        for (int i = state.remainingNodes().nextSetBit(0); i &gt;= 0; i = state.remainingNodes().nextSetBit(i + 1)) {</span>
-<span class="fc" id="L17">            flb += weight[i];</span>
+<span class="fc" id="L26">        double flb = 0;</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">        for (int i = state.remainingNodes().nextSetBit(0); i &gt;= 0; i = state.remainingNodes().nextSetBit(i + 1)) {</span>
+<span class="fc" id="L28">            flb += weight[i];</span>
         }
-<span class="fc" id="L19">        return -flb;</span>
+<span class="fc" id="L30">        return -flb;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

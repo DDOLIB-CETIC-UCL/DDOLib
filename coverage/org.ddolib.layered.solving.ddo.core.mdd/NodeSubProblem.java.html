@@ -93,12 +93,22 @@ public final class NodeSubProblem&lt;T&gt; {
 <span class="nc" id="L93">        return String.format(&quot;%s - lb: %s - value: %s&quot;, state, df.format(lb), df.format(node.value));</span>
     }
 
+    /**
+     * Returns the value of the best path from the root to this node.
+     *
+     * @return the value of the best path from the root to this node
+     */
     public double getValue() {
-<span class="nc" id="L97">        return node.value;</span>
+<span class="nc" id="L102">        return node.value;</span>
     }
 
+    /**
+     * Returns the lower bound associated with this node.
+     *
+     * @return the lower bound associated with this node
+     */
     public double getLb() {
-<span class="nc" id="L101">        return lb;</span>
+<span class="nc" id="L111">        return lb;</span>
     }
 
 }

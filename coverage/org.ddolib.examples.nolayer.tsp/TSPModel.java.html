@@ -4,24 +4,36 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.Problem;
 
+/**
+ * Base model for the Traveling Salesman Problem (TSP), using the no-layer modeling API.
+ * &lt;p&gt;
+ * Bundles a {@link TSPProblem} instance together with the {@link TSPFlb} fast lower bound
+ * used to guide and prune the search.
+ * &lt;/p&gt;
+ */
 public class TSPModel implements Model&lt;TSPState&gt; {
 
     private final TSPProblem problem;
     private final FastLowerBound&lt;TSPState&gt; lowerBound;
 
-<span class="fc" id="L12">    public TSPModel(TSPProblem problem) {</span>
-<span class="fc" id="L13">        this.problem = problem;</span>
-<span class="fc" id="L14">        this.lowerBound = new TSPFlb(problem);</span>
-<span class="fc" id="L15">    }</span>
+    /**
+     * Creates a new model for the given TSP instance.
+     *
+     * @param problem the TSP instance to solve
+     */
+<span class="fc" id="L24">    public TSPModel(TSPProblem problem) {</span>
+<span class="fc" id="L25">        this.problem = problem;</span>
+<span class="fc" id="L26">        this.lowerBound = new TSPFlb(problem);</span>
+<span class="fc" id="L27">    }</span>
 
     @Override
     public Problem&lt;TSPState&gt; problem() {
-<span class="fc" id="L19">        return problem;</span>
+<span class="fc" id="L31">        return problem;</span>
     }
 
     @Override
     public FastLowerBound&lt;TSPState&gt; lowerBound() {
-<span class="fc" id="L24">        return lowerBound;</span>
+<span class="fc" id="L36">        return lowerBound;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

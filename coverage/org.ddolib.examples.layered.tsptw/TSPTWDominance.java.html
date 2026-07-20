@@ -17,17 +17,24 @@ import org.ddolib.layered.modeling.Dominance;
  * it can be safely discarded without losing optimality.
  * &lt;/p&gt;
  */
-<span class="fc" id="L20">public class TSPTWDominance implements Dominance&lt;TSPTWState&gt; {</span>
+public class TSPTWDominance implements Dominance&lt;TSPTWState&gt; {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+<span class="fc" id="L25">    public TSPTWDominance() {</span>
+<span class="fc" id="L26">    }</span>
+
     /**
      * Returns the dominance key for a given state, based on its current position
      * and the set of locations that still must be visited.
      *
-     * @param state The state for which to compute the dominance key.
-     * @return The {@link TSPTWDominanceKey} representing the key of this state.
+     * @param state the state for which to compute the dominance key
+     * @return the {@link TSPTWDominanceKey} representing the key of this state
      */
     @Override
     public TSPTWDominanceKey getKey(TSPTWState state) {
-<span class="fc" id="L30">        return new TSPTWDominanceKey(state.position(), state.mustVisit());</span>
+<span class="fc" id="L37">        return new TSPTWDominanceKey(state.position(), state.mustVisit());</span>
     }
 
     /**
@@ -39,13 +46,13 @@ import org.ddolib.layered.modeling.Dominance;
      * greater than or equal to that of {@code state2}.
      * &lt;/p&gt;
      *
-     * @param state1 The state being tested for dominance.
-     * @param state2 The state to compare against.
-     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code false} otherwise.
+     * @param state1 the state being tested for dominance
+     * @param state2 the state to compare against
+     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(TSPTWState state1, TSPTWState state2) {
-<span class="fc bfc" id="L48" title="All 2 branches covered.">        return state1.time() &gt;= state2.time();</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">        return state1.time() &gt;= state2.time();</span>
     }
 }
 

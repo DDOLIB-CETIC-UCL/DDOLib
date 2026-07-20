@@ -18,7 +18,14 @@ import org.ddolib.layered.modeling.Dominance;
  *     is dominated by one with more remaining capacity.&lt;/li&gt;
  * &lt;/ul&gt;
  */
-<span class="fc" id="L21">public class KSDominance implements Dominance&lt;Integer&gt; {</span>
+public class KSDominance implements Dominance&lt;Integer&gt; {
+
+    /**
+     * Creates a new instance of this dominance rule.
+     */
+<span class="fc" id="L26">    public KSDominance() {</span>
+<span class="fc" id="L27">    }</span>
+
     /**
      * Returns the key used for grouping states in the dominance checker.
      *
@@ -27,7 +34,7 @@ import org.ddolib.layered.modeling.Dominance;
      */
     @Override
     public Integer getKey(Integer capa) {
-<span class="fc" id="L30">        return 0;</span>
+<span class="fc" id="L37">        return 0;</span>
     }
 
     /**
@@ -39,7 +46,7 @@ import org.ddolib.layered.modeling.Dominance;
      */
     @Override
     public boolean isDominatedOrEqual(Integer capa1, Integer capa2) {
-<span class="fc bfc" id="L42" title="All 2 branches covered.">        return capa1 &lt;= capa2;</span>
+<span class="fc bfc" id="L49" title="All 2 branches covered.">        return capa1 &lt;= capa2;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -8,8 +8,10 @@ import java.util.Set;
 /**
  * Contains method useful to implements solvers
  */
-<span class="nc" id="L11">public final class SolverUtil {</span>
+public final class SolverUtil {
 
+    private SolverUtil() {
+    }
 
     /**
      * Returns the set of variables not covered by the given set of decisions.
@@ -19,11 +21,11 @@ import java.util.Set;
      * @return the set of variables not covered by the given set of decisions
      */
     public static Set&lt;Integer&gt; unassignedVars(int nbVars, Set&lt;Decision&gt; path) {
-<span class="fc" id="L22">        final Set&lt;Integer&gt; set = new HashSet&lt;&gt;(nbVars);</span>
-<span class="fc bfc" id="L23" title="All 2 branches covered.">        for (int i = path.size(); i &lt; nbVars; i++) {</span>
-<span class="fc" id="L24">            set.add(i);</span>
+<span class="fc" id="L24">        final Set&lt;Integer&gt; set = new HashSet&lt;&gt;(nbVars);</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        for (int i = path.size(); i &lt; nbVars; i++) {</span>
+<span class="fc" id="L26">            set.add(i);</span>
         }
-<span class="fc" id="L26">        return set;</span>
+<span class="fc" id="L28">        return set;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

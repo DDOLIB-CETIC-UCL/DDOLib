@@ -31,7 +31,14 @@ import java.util.Arrays;
  * @see PSState
  * @see StateRanking
  */
-<span class="fc" id="L34">public class PSRanking implements StateRanking&lt;PSState&gt; {</span>
+public class PSRanking implements StateRanking&lt;PSState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L39">    public PSRanking() {</span>
+<span class="fc" id="L40">    }</span>
+
     /**
      * Compares two PSP states based on their total remaining demand.
      * &lt;p&gt;
@@ -47,9 +54,9 @@ import java.util.Arrays;
     @Override
     public int compare(PSState s1, PSState s2) {
         // the state with the smallest total demand is the best (not sure about this)
-<span class="nc" id="L50">        int totS1 = Arrays.stream(s1.previousDemands).sum();</span>
-<span class="nc" id="L51">        int totS2 = Arrays.stream(s2.previousDemands).sum();</span>
-<span class="nc" id="L52">        return Integer.compare(totS1, totS2);</span>
+<span class="nc" id="L57">        int totS1 = Arrays.stream(s1.previousDemands).sum();</span>
+<span class="nc" id="L58">        int totS2 = Arrays.stream(s2.previousDemands).sum();</span>
+<span class="nc" id="L59">        return Integer.compare(totS1, totS2);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -17,8 +17,22 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.Iterator;
 
+/**
+ * Main class to solve a Traveling Salesman Problem with Time Windows (TSPTW) instance
+ * using the no-layer DDO (Decision Diagram Optimization) algorithm.
+ */
 public class TSPTWDdoMain {
 
+    private TSPTWDdoMain() {
+    }
+
+    /**
+     * Entry point of the program. Builds a TSPTW instance and solves it using the DDO algorithm.
+     *
+     * @param args optional command-line argument: path to the TSPTW instance file
+     *             (default: {@code data/TSPTW/AFG/rbg010a.tw})
+     * @throws IOException if there is an error reading the instance file
+     */
     public static void main(String[] args) throws IOException {
         String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;TSPTW&quot;, &quot;AFG&quot;, &quot;rbg010a.tw&quot;).toString() : args[0];
         final TSPTWProblem problem = TSPTWProblem.fromFile(instance);
@@ -89,7 +103,7 @@ public class TSPTWDdoMain {
 // Ensure TSPTWModel implements DdoModel
 abstract class TSPTWDdoModel extends TSPTWModel implements DdoModel&lt;TSPTWState&gt; {
     public TSPTWDdoModel(TSPTWProblem problem) {
-<span class="nc" id="L92">        super(problem);</span>
-<span class="nc" id="L93">    }</span>
+<span class="nc" id="L106">        super(problem);</span>
+<span class="nc" id="L107">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

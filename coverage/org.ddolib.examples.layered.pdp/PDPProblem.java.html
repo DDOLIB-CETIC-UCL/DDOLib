@@ -373,10 +373,16 @@ public class PDPProblem implements Problem&lt;PDPState&gt; {
 <span class="fc" id="L373">        return value;</span>
     }
 
+    /**
+     * Builds a singleton {@link BitSet} containing only the given value.
+     *
+     * @param singletonValue the value to set in the returned set
+     * @return a new {@link BitSet} with only {@code singletonValue} set
+     */
     public BitSet singleton(int singletonValue) {
-<span class="fc" id="L377">        BitSet toReturn = new BitSet(n);</span>
-<span class="fc" id="L378">        toReturn.set(singletonValue);</span>
-<span class="fc" id="L379">        return toReturn;</span>
+<span class="fc" id="L383">        BitSet toReturn = new BitSet(n);</span>
+<span class="fc" id="L384">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L385">        return toReturn;</span>
     }
 
     /**
@@ -386,12 +392,12 @@ public class PDPProblem implements Problem&lt;PDPState&gt; {
      */
     @Override
     public String toString() {
-<span class="fc" id="L389">        String str = &quot;PDP(\n\tn:&quot; + n + &quot;\n&quot; +</span>
-<span class="fc" id="L390">                &quot;\tpdp:&quot; + pickupToAssociatedDelivery.keySet().stream().map(p -&gt; p + &quot;-&gt;&quot; + pickupToAssociatedDelivery.get(p)).toList() + &quot;\n&quot; +</span>
-<span class="fc" id="L391">                &quot;\tunrelated:&quot; + unrelatedNodes.stream().toList() + &quot;\n&quot; +</span>
-<span class="fc" id="L392">                &quot;\t&quot; + Arrays.stream(distanceMatrix).map(l -&gt; &quot;\n\t &quot; + Arrays.toString(l)).toList();</span>
+<span class="fc" id="L395">        String str = &quot;PDP(\n\tn:&quot; + n + &quot;\n&quot; +</span>
+<span class="fc" id="L396">                &quot;\tpdp:&quot; + pickupToAssociatedDelivery.keySet().stream().map(p -&gt; p + &quot;-&gt;&quot; + pickupToAssociatedDelivery.get(p)).toList() + &quot;\n&quot; +</span>
+<span class="fc" id="L397">                &quot;\tunrelated:&quot; + unrelatedNodes.stream().toList() + &quot;\n&quot; +</span>
+<span class="fc" id="L398">                &quot;\t&quot; + Arrays.stream(distanceMatrix).map(l -&gt; &quot;\n\t &quot; + Arrays.toString(l)).toList();</span>
 
-<span class="fc" id="L394">        return name.orElse(str);</span>
+<span class="fc" id="L400">        return name.orElse(str);</span>
     }
 
     /**
@@ -401,21 +407,21 @@ public class PDPProblem implements Problem&lt;PDPState&gt; {
      * @return total distance of the solution, or -1 if it violates vehicle capacity
      */
     public double eval(int[] solution) {
-<span class="nc" id="L404">        int vehicleContent = 0;</span>
-<span class="nc" id="L405">        double toReturn = 0;</span>
-<span class="nc bnc" id="L406" title="All 2 branches missed.">        for (int i = 1; i &lt; solution.length; i++) {</span>
-<span class="nc" id="L407">            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];</span>
-<span class="nc bnc" id="L408" title="All 2 branches missed.">            if (pickupToAssociatedDelivery.containsKey(solution[i])) {</span>
-<span class="nc" id="L409">                vehicleContent += 1;</span>
-<span class="nc bnc" id="L410" title="All 2 branches missed.">            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {</span>
-<span class="nc" id="L411">                vehicleContent -= 1;</span>
+<span class="nc" id="L410">        int vehicleContent = 0;</span>
+<span class="nc" id="L411">        double toReturn = 0;</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">        for (int i = 1; i &lt; solution.length; i++) {</span>
+<span class="nc" id="L413">            toReturn = toReturn + distanceMatrix[solution[i - 1]][solution[i]];</span>
+<span class="nc bnc" id="L414" title="All 2 branches missed.">            if (pickupToAssociatedDelivery.containsKey(solution[i])) {</span>
+<span class="nc" id="L415">                vehicleContent += 1;</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {</span>
+<span class="nc" id="L417">                vehicleContent -= 1;</span>
             }
-<span class="nc bnc" id="L413" title="All 2 branches missed.">            if (vehicleContent &gt; maxCapa) {</span>
-<span class="nc" id="L414">                return -1;</span>
+<span class="nc bnc" id="L419" title="All 2 branches missed.">            if (vehicleContent &gt; maxCapa) {</span>
+<span class="nc" id="L420">                return -1;</span>
             }
         }
-<span class="nc" id="L417">        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back</span>
-<span class="nc" id="L418">        return toReturn;</span>
+<span class="nc" id="L423">        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back</span>
+<span class="nc" id="L424">        return toReturn;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

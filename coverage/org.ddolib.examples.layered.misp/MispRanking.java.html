@@ -16,7 +16,14 @@ import java.util.BitSet;
  * &lt;/p&gt;
  */
 
-<span class="fc" id="L19">public class MispRanking implements StateRanking&lt;BitSet&gt; {</span>
+public class MispRanking implements StateRanking&lt;BitSet&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L24">    public MispRanking() {</span>
+<span class="fc" id="L25">    }</span>
+
     /**
      * Compares two states based on the number of remaining nodes.
      *
@@ -28,7 +35,7 @@ import java.util.BitSet;
     @Override
     public int compare(BitSet o1, BitSet o2) {
         // The state with the most remaining nodes is most interesting
-<span class="fc" id="L31">        return Integer.compare(o1.cardinality(), o2.cardinality());</span>
+<span class="fc" id="L38">        return Integer.compare(o1.cardinality(), o2.cardinality());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

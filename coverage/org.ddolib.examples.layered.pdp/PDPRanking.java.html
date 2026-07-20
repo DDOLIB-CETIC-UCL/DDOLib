@@ -21,7 +21,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * to be plugged into search models for PDP optimization.
  * &lt;/p&gt;
  */
-<span class="fc" id="L24">public class PDPRanking implements StateRanking&lt;PDPState&gt; {</span>
+public class PDPRanking implements StateRanking&lt;PDPState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L29">    public PDPRanking() {</span>
+<span class="fc" id="L30">    }</span>
+
     /**
      * Compares two PDP states to determine their relative rank.
      *
@@ -33,7 +40,7 @@ import org.ddolib.layered.modeling.StateRanking;
     public int compare(final PDPState o1, final PDPState o2) {
         //children of merged are good candidates for merged as well
         //there are the one with imprecise min and maxContent
-<span class="fc" id="L36">        return 0; //Integer.compare(o1.uncertaintyOnContent(), o2.uncertaintyOnContent());</span>
+<span class="fc" id="L43">        return 0; //Integer.compare(o1.uncertaintyOnContent(), o2.uncertaintyOnContent());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

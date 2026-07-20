@@ -19,7 +19,14 @@ import org.ddolib.layered.modeling.StateRanking;
  * SRFLP solvers.
  * &lt;/p&gt;
  */
-<span class="fc" id="L22">public class SRFLPRanking implements StateRanking&lt;SRFLPState&gt; {</span>
+public class SRFLPRanking implements StateRanking&lt;SRFLPState&gt; {
+
+    /**
+     * Creates a new instance of this ranking.
+     */
+<span class="fc" id="L27">    public SRFLPRanking() {</span>
+<span class="fc" id="L28">    }</span>
+
     /**
      * Compares two SRFLP states based on the total number of remaining departments.
      *
@@ -31,9 +38,9 @@ import org.ddolib.layered.modeling.StateRanking;
      */
     @Override
     public int compare(SRFLPState o1, SRFLPState o2) {
-<span class="fc" id="L34">        int total1 = o1.must().cardinality() + o1.maybe().cardinality();</span>
-<span class="fc" id="L35">        int total2 = o2.must().cardinality() + o2.maybe().cardinality();</span>
-<span class="fc" id="L36">        return Integer.compare(total1, total2);</span>
+<span class="fc" id="L41">        int total1 = o1.must().cardinality() + o1.maybe().cardinality();</span>
+<span class="fc" id="L42">        int total2 = o2.must().cardinality() + o2.maybe().cardinality();</span>
+<span class="fc" id="L43">        return Integer.compare(total1, total2);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

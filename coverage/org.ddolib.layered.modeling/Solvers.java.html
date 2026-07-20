@@ -41,7 +41,11 @@ import java.util.function.Predicate;
  * @see AcsSolver
  * @see AwAstarSolver
  */
-<span class="nc" id="L44">public class Solvers {</span>
+public class Solvers {
+
+    private Solvers() {
+    }
+
     // =============================================================
     // DDO Solver Methods
     // =============================================================
@@ -50,35 +54,38 @@ import java.util.function.Predicate;
      * Solves the given model using the DDO (Decision Diagram Optimization) algorithm
      * with default stopping criteria and no solution callback.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the DDO model to solve
      * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
     public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model) {
-<span class="fc" id="L57">        return minimizeDdo(model, stats -&gt; false, (sol, s) -&gt; {</span>
-<span class="fc" id="L58">        });</span>
+<span class="fc" id="L62">        return minimizeDdo(model, stats -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L63">        });</span>
     }
 
     /**
      * Solves the given model using DDO, stopping when the provided limit condition becomes true.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the DDO model to solve
      * @param limit a predicate defining the stopping criterion (e.g., max iterations, time limit)
      * @return a solution to the related problem with search statistics summarizing the solver's performance
      */
     public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L69">        return minimizeDdo(model, limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L70">        });</span>
+<span class="nc" id="L75">        return minimizeDdo(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L76">        });</span>
     }
 
     /**
      * Solves the given model using DDO and triggers a callback each time a new incumbent solution is found.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the DDO model to solve
      * @param onSolution callback executed when a new best solution is discovered
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L81">        return minimizeDdo(model, s -&gt; false, onSolution);</span>
+<span class="fc" id="L88">        return minimizeDdo(model, s -&gt; false, onSolution);</span>
     }
 
     /**
@@ -88,6 +95,7 @@ import java.util.function.Predicate;
      * the actual solving to a {@link SequentialSolver}.
      * &lt;/p&gt;
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the DDO model to solve
      * @param limit      a predicate defining when the solver should stop
      * @param onSolution a callback invoked whenever a new best solution is found
@@ -95,43 +103,123 @@ import java.util.function.Predicate;
      */
     public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model,
                                            Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L98">        return new SequentialSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L106">        return new SequentialSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
+    /**
+     * Solves the given model by compiling a single relaxed decision diagram, with default
+     * stopping criteria and no solution callback.
+     * &lt;p&gt;
+     * This is mainly used internally and for testing the lower bound produced by a relaxation.
+     *
+     * @param &lt;T&gt;   the type of the state
+     * @param model the DDO model to solve
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
     public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model) {
-<span class="nc" id="L102">        return relaxedDdo(model, stats -&gt; false, (sol, s) -&gt; {</span>
-<span class="nc" id="L103">        });</span>
-    }
-
-    public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L107">        return relaxedDdo(model, limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L108">        });</span>
-    }
-
-    public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L112">        return relaxedDdo(model, s -&gt; false, onSolution);</span>
-    }
-
-    public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L116">        return new RelaxationSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
-    }
-
-    public static &lt;T&gt; Solution restrictedDdo(DdoModel&lt;T&gt; model) {
-<span class="nc" id="L120">        return restrictedDdo(model, stats -&gt; false, (sol, s) -&gt; {</span>
+<span class="nc" id="L120">        return relaxedDdo(model, stats -&gt; false, (sol, s) -&gt; {</span>
 <span class="nc" id="L121">        });</span>
     }
 
+    /**
+     * Solves the given model by compiling a single relaxed decision diagram, stopping when the
+     * provided limit condition becomes true.
+     *
+     * @param &lt;T&gt;   the type of the state
+     * @param model the DDO model to solve
+     * @param limit a predicate defining the stopping criterion
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
+<span class="nc" id="L134">        return relaxedDdo(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L135">        });</span>
+    }
+
+    /**
+     * Solves the given model by compiling a single relaxed decision diagram and triggers a
+     * callback each time a new incumbent solution is found.
+     *
+     * @param &lt;T&gt;        the type of the state
+     * @param model      the DDO model to solve
+     * @param onSolution callback executed when a new best solution is discovered
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="nc" id="L148">        return relaxedDdo(model, s -&gt; false, onSolution);</span>
+    }
+
+    /**
+     * Core method for solving a model by compiling a single relaxed decision diagram, with a
+     * custom stop condition and a solution callback.
+     * &lt;p&gt;
+     * This is mainly used internally and for testing the lower bound produced by a relaxation.
+     *
+     * @param &lt;T&gt;        the type of the state
+     * @param model      the DDO model to solve
+     * @param limit      a predicate defining when the solver should stop
+     * @param onSolution a callback invoked whenever a new best solution is found
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+<span class="nc" id="L164">        return new RelaxationSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+    }
+
+    /**
+     * Solves the given model by compiling a single restricted decision diagram, with default
+     * stopping criteria and no solution callback.
+     * &lt;p&gt;
+     * This is mainly used internally and for testing purposes.
+     *
+     * @param &lt;T&gt;   the type of the state
+     * @param model the DDO model to solve
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
+    public static &lt;T&gt; Solution restrictedDdo(DdoModel&lt;T&gt; model) {
+<span class="nc" id="L178">        return restrictedDdo(model, stats -&gt; false, (sol, s) -&gt; {</span>
+<span class="nc" id="L179">        });</span>
+    }
+
+    /**
+     * Solves the given model by compiling a single restricted decision diagram, stopping when the
+     * provided limit condition becomes true.
+     *
+     * @param &lt;T&gt;   the type of the state
+     * @param model the DDO model to solve
+     * @param limit a predicate defining the stopping criterion
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
     public static &lt;T&gt; Solution restrictedDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L125">        return restrictedDdo(model, limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L126">        });</span>
+<span class="nc" id="L192">        return restrictedDdo(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L193">        });</span>
     }
 
+    /**
+     * Solves the given model by compiling a single restricted decision diagram and triggers a
+     * callback each time a new incumbent solution is found.
+     *
+     * @param &lt;T&gt;        the type of the state
+     * @param model      the DDO model to solve
+     * @param onSolution callback executed when a new best solution is discovered
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
     public static &lt;T&gt; Solution restrictedDdo(DdoModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L130">        return restrictedDdo(model, s -&gt; false, onSolution);</span>
+<span class="nc" id="L206">        return restrictedDdo(model, s -&gt; false, onSolution);</span>
     }
 
+    /**
+     * Core method for solving a model by compiling a single restricted decision diagram, with a
+     * custom stop condition and a solution callback.
+     * &lt;p&gt;
+     * This is mainly used internally and for testing purposes.
+     *
+     * @param &lt;T&gt;        the type of the state
+     * @param model      the DDO model to solve
+     * @param limit      a predicate defining when the solver should stop
+     * @param onSolution a callback invoked whenever a new best solution is found
+     * @return a solution to the related problem with search statistics summarizing the solver's performance
+     */
     public static &lt;T&gt; Solution restrictedDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L134">        return new RestrictionSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="nc" id="L222">        return new RestrictionSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
 
@@ -142,41 +230,44 @@ import java.util.function.Predicate;
     /**
      * Solves the given model using the A* search algorithm with default parameters.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the model to solve
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
-
     public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model) {
-<span class="fc" id="L150">        return minimizeAstar(model, s -&gt; false, (sol, s) -&gt; {</span>
-<span class="fc" id="L151">        });</span>
+<span class="fc" id="L238">        return minimizeAstar(model, s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L239">        });</span>
     }
 
     /**
      * Solves the given model using A* with a specified stop condition.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the model to solve
      * @param limit predicate defining the termination condition
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L162">        return minimizeAstar(model, limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L163">        });</span>
+<span class="nc" id="L251">        return minimizeAstar(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L252">        });</span>
     }
 
     /**
      * Solves the given model using A* and calls back when new incumbent solutions are found.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the model to solve
      * @param onSolution callback triggered for each new best solution
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L174">        return minimizeAstar(model, s -&gt; false, onSolution);</span>
+<span class="fc" id="L264">        return minimizeAstar(model, s -&gt; false, onSolution);</span>
     }
 
     /**
      * Core method for solving a model with the A* search algorithm, with custom limit and callback.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the model to solve
      * @param limit      stopping condition for the search
      * @param onSolution callback invoked when a new best solution is found
@@ -184,7 +275,7 @@ import java.util.function.Predicate;
      */
     public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
 
-<span class="fc" id="L187">        return new AStarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L278">        return new AStarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
     // =============================================================
     // Anytime Column Search (ACS) Solver Methods
@@ -193,35 +284,38 @@ import java.util.function.Predicate;
     /**
      * Solves the given model using the Anytime Column Search (ACS) algorithm.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the ACS model to solve
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model) {
-<span class="fc" id="L200">        return minimizeAcs(model, s -&gt; false, (sol, s) -&gt; {</span>
-<span class="fc" id="L201">        });</span>
+<span class="fc" id="L292">        return minimizeAcs(model, s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L293">        });</span>
     }
 
     /**
      * Solves the given model using ACS, stopping when the limit condition is satisfied.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the ACS model to solve
      * @param limit predicate defining the stopping criterion
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L212">        return minimizeAcs(model, limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L213">        });</span>
+<span class="nc" id="L305">        return minimizeAcs(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L306">        });</span>
     }
 
     /**
      * Solves the given model using ACS and calls the callback when a new incumbent is found.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the ACS model to solve
      * @param onSolution callback executed on discovery of a new best solution
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L224">        return minimizeAcs(model, s -&gt; false, onSolution);</span>
+<span class="fc" id="L318">        return minimizeAcs(model, s -&gt; false, onSolution);</span>
     }
 
     /**
@@ -230,23 +324,25 @@ import java.util.function.Predicate;
      * The method configures and delegates the solving process to an {@link AcsSolver}.
      * &lt;/p&gt;
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the ACS model to solve
      * @param limit      predicate defining the stopping condition
      * @param onSolution callback invoked when new incumbent solutions are found
-     * @return sa solution to the related problem with search statistics summarizing solver's performance
+     * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L239">        return new AcsSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L334">        return new AcsSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
-// Anytime Weighted A* Solver Methods
     // =============================================================
-
+    // Anytime Weighted A* Solver Methods
+    // =============================================================
 
     /**
      * Core method for solving a model with the Anytime Weighted A* search algorithm, with custom
      * limit and callback.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the model to solve
      * @param limit      stopping condition for the search
      * @param onSolution callback invoked when a new best solution is found
@@ -256,44 +352,47 @@ import java.util.function.Predicate;
     public static &lt;T&gt; Solution minimizeAwAStar(AwAstarModel&lt;T&gt; model,
                                                Predicate&lt;SearchStatistics&gt; limit,
                                                BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L259">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="nc" id="L355">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
 
     /**
      * Solves the given model using the Anytime Weighted A* (AWA*) algorithm.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the AWA* model to solve
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAwAStar(AwAstarModel&lt;T&gt; model) {
-<span class="fc" id="L270">        return new AwAstarSolver&lt;&gt;(model).minimize(s -&gt; false, (sol, s) -&gt; {</span>
-<span class="fc" id="L271">        });</span>
+<span class="fc" id="L367">        return new AwAstarSolver&lt;&gt;(model).minimize(s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L368">        });</span>
     }
 
     /**
      * Solves the given model using AWA*, stopping when the limit condition is satisfied.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the AWA* model to solve
      * @param limit predicate defining the stopping criterion
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAwAStar(AwAstarModel&lt;T&gt; model,
                                                Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L283">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L284">        });</span>
+<span class="nc" id="L381">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L382">        });</span>
     }
 
     /**
      * Solves the given model using AWA* and calls the callback when a new incumbent is found.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the AWA* model to solve
      * @param onSolution callback executed on discovery of a new best solution
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeAwAStar(AwAstarModel&lt;T&gt; model,
                                                BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L296">        return new AwAstarSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
+<span class="fc" id="L395">        return new AwAstarSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
     }
 
 
@@ -309,12 +408,13 @@ import java.util.function.Predicate;
      * It is recommended to use this solver for small instances or for testing your model.
      * For larger instances or more advanced strategies, consider using {@link Solvers#minimizeDdo(DdoModel)}.
      *
+     * @param &lt;T&gt;   the type of the state
      * @param model the DDO model to solve
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeExact(ExactModel&lt;T&gt; model) {
-<span class="pc" id="L316">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, (sol, s) -&gt; {</span>
-<span class="fc" id="L317">        });</span>
+<span class="pc" id="L416">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L417">        });</span>
     }
 
 
@@ -328,13 +428,14 @@ import java.util.function.Predicate;
      * For larger instances or more advanced strategies, consider using
      * {@link Solvers#minimizeDdo(DdoModel, Predicate, BiConsumer)} )}.
      *
+     * @param &lt;T&gt;        the type of the state
      * @param model      the DDO model to solve
      * @param onSolution callback invoked when new incumbent solutions are found
      * @return a solution to the related problem with search statistics summarizing solver's performance
      */
     public static &lt;T&gt; Solution minimizeExact(ExactModel&lt;T&gt; model,
                                              BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L337">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
+<span class="nc" id="L438">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
     }
 
 
@@ -344,16 +445,16 @@ import java.util.function.Predicate;
      *
      * @param &lt;T&gt;        the type of state used in the problem
      * @param model      the {@link LnsModel} describing the problem and search heuristics
-     * @param limit      a {@link Predicate} on {@link SearchStatistics} defining when to stop the search.
+     * @param limit      a {@link Predicate} on {@link SearchStatistics} defining when to stop the search
      *                   The search stops when {@code limit.test(stat)} returns {@code true}.
-     * @param onSolution a {@link BiConsumer} called each time a new solution is found.
+     * @param onSolution a {@link BiConsumer} called each time a new solution is found
      *                   The first argument is the solution (array of variable assignments),
      *                   and the second argument is the current search statistics.
      * @return the best {@link Solution} found during the search
      */
 
     public static &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="fc" id="L356">        return new LnsSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L457">        return new LnsSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
     /**
@@ -369,8 +470,8 @@ import java.util.function.Predicate;
      */
 
     public static &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model) {
-<span class="fc" id="L372">        return minimizeLns(model, stats -&gt; false, (sol, s) -&gt; {</span>
-<span class="fc" id="L373">        });</span>
+<span class="fc" id="L473">        return minimizeLns(model, stats -&gt; false, (sol, s) -&gt; {</span>
+<span class="fc" id="L474">        });</span>
     }
 
     /**
@@ -387,8 +488,8 @@ import java.util.function.Predicate;
      */
 
     public static &lt;T&gt; Solution minimizeLns(LnsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L390">        return minimizeLns(model, limit, (sol, s) -&gt; {</span>
-<span class="nc" id="L391">        });</span>
+<span class="nc" id="L491">        return minimizeLns(model, limit, (sol, s) -&gt; {</span>
+<span class="nc" id="L492">        });</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

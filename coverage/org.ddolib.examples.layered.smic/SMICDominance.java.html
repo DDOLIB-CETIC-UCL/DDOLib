@@ -36,7 +36,14 @@ import org.ddolib.layered.modeling.SimpleDominanceChecker;
  * @see SimpleDominanceChecker
  * @see SMICDdoMain
  */
-<span class="fc" id="L39">public class SMICDominance implements Dominance&lt;SMICState&gt; {</span>
+public class SMICDominance implements Dominance&lt;SMICState&gt; {
+
+    /**
+     * Creates a new instance of this dominance relation.
+     */
+<span class="fc" id="L44">    public SMICDominance() {</span>
+<span class="fc" id="L45">    }</span>
+
     /**
      * Returns a key used to group comparable states.
      * &lt;p&gt;
@@ -49,7 +56,7 @@ import org.ddolib.layered.modeling.SimpleDominanceChecker;
      */
     @Override
     public SMICDominanceKey getKey(SMICState state) {
-<span class="fc" id="L52">        return new SMICDominanceKey(state.remainingJobs());</span>
+<span class="fc" id="L59">        return new SMICDominanceKey(state.remainingJobs());</span>
     }
 
     /**
@@ -72,7 +79,7 @@ import org.ddolib.layered.modeling.SimpleDominanceChecker;
 
     @Override
     public boolean isDominatedOrEqual(SMICState state1, SMICState state2) {
-<span class="fc bfc" id="L75" title="All 2 branches covered.">        return state2.currentTime() &lt;= state1.currentTime();</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        return state2.currentTime() &lt;= state1.currentTime();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

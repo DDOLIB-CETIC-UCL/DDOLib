@@ -21,7 +21,10 @@ import java.util.stream.IntStream;
  * checking that states generated from the same origin with the same decision
  * are both equal and have the same hash code.
  */
-<span class="nc" id="L24">public class DebugUtil {</span>
+public class DebugUtil {
+
+    private DebugUtil() {
+    }
 
     /**
      * Checks the consistency of a transition function by generating two states
@@ -40,25 +43,25 @@ import java.util.stream.IntStream;
      */
     public static &lt;T&gt; void checkHashCodeAndEquality(T state, Decision decision,
                                                     BiFunction&lt;T, Decision, T&gt; transition) {
-<span class="fc" id="L43">        T newState = transition.apply(state, decision);</span>
-<span class="fc" id="L44">        T duplicate = transition.apply(state, decision);</span>
-<span class="fc" id="L45">        String transitionDescription = String.format(&quot;\torigin state: %s\n&quot;, state);</span>
-<span class="fc" id="L46">        transitionDescription += String.format(&quot;\tdecision: %s\n&quot;, decision);</span>
-<span class="fc" id="L47">        transitionDescription += String.format(&quot;\tnew state: %s\n&quot;, newState);</span>
-<span class="fc" id="L48">        transitionDescription += String.format(&quot;\tduplicate: %s\n&quot;, duplicate);</span>
-<span class="pc bpc" id="L49" title="1 of 2 branches missed.">        if (newState.hashCode() != duplicate.hashCode()) {</span>
-<span class="nc" id="L50">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
+<span class="fc" id="L46">        T newState = transition.apply(state, decision);</span>
+<span class="fc" id="L47">        T duplicate = transition.apply(state, decision);</span>
+<span class="fc" id="L48">        String transitionDescription = String.format(&quot;\torigin state: %s\n&quot;, state);</span>
+<span class="fc" id="L49">        transitionDescription += String.format(&quot;\tdecision: %s\n&quot;, decision);</span>
+<span class="fc" id="L50">        transitionDescription += String.format(&quot;\tnew state: %s\n&quot;, newState);</span>
+<span class="fc" id="L51">        transitionDescription += String.format(&quot;\tduplicate: %s\n&quot;, duplicate);</span>
+<span class="pc bpc" id="L52" title="1 of 2 branches missed.">        if (newState.hashCode() != duplicate.hashCode()) {</span>
+<span class="nc" id="L53">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
                     &quot;decision does not have the same hash code !\n&quot;;
-<span class="nc" id="L52">            failureMsg += transitionDescription;</span>
+<span class="nc" id="L55">            failureMsg += transitionDescription;</span>
 
-<span class="nc" id="L54">            throw new RuntimeException(failureMsg);</span>
-<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        } else if (!newState.equals(duplicate)) {</span>
-<span class="nc" id="L56">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
+<span class="nc" id="L57">            throw new RuntimeException(failureMsg);</span>
+<span class="pc bpc" id="L58" title="1 of 2 branches missed.">        } else if (!newState.equals(duplicate)) {</span>
+<span class="nc" id="L59">            String failureMsg = &quot;Two states generated from the same origin state with the same &quot; +</span>
                     &quot;decision have the same hash code but are not equals!\n&quot;;
-<span class="nc" id="L58">            failureMsg += transitionDescription;</span>
-<span class="nc" id="L59">            throw new RuntimeException(failureMsg);</span>
+<span class="nc" id="L61">            failureMsg += transitionDescription;</span>
+<span class="nc" id="L62">            throw new RuntimeException(failureMsg);</span>
         }
-<span class="fc" id="L61">    }</span>
+<span class="fc" id="L64">    }</span>
 
     /**
      * Given a set of states check if the {@link org.ddolib.layered.modeling.FastLowerBound} is
@@ -67,68 +70,68 @@ import java.util.stream.IntStream;
      * &lt;p&gt;
      * The checks are performed by running solvers starting for the tested states.
      *
-     * @param toCheck The states to check.
-     * @param model   A model used to initialize solvers ran during the tests.
-     * @param solver  Returns a solver given a root state.
-     * @param &lt;T&gt;     The type of the states.
+     * @param toCheck the states to check
+     * @param model   a model used to initialize solvers ran during the tests
+     * @param solver  returns a solver given a root state
+     * @param &lt;T&gt;     the type of the states
      */
     public static &lt;T&gt; void checkFlbAdmissibility(Set&lt;StateAndDepth&lt;T&gt;&gt; toCheck,
                                                  Model&lt;T&gt; model,
                                                  Function&lt;StateAndDepth&lt;T&gt;, Solver&gt; solver) {
 
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        for (StateAndDepth&lt;T&gt; current : toCheck) {</span>
-<span class="fc" id="L80">            Solver internalSolver = solver.apply(current);</span>
-<span class="fc" id="L81">            Set&lt;Integer&gt; vars =</span>
-<span class="fc" id="L82">                    IntStream.range(current.depth(), model.problem().nbVars()).boxed().collect(Collectors.toSet());</span>
-<span class="fc" id="L83">            double currentFLB = model.lowerBound().fastLowerBound(current.state(), vars);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        for (StateAndDepth&lt;T&gt; current : toCheck) {</span>
+<span class="fc" id="L83">            Solver internalSolver = solver.apply(current);</span>
+<span class="fc" id="L84">            Set&lt;Integer&gt; vars =</span>
+<span class="fc" id="L85">                    IntStream.range(current.depth(), model.problem().nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L86">            double currentFLB = model.lowerBound().fastLowerBound(current.state(), vars);</span>
 
-<span class="fc" id="L85">            internalSolver.minimize(s -&gt; false, (sol, stats) -&gt; {</span>
-<span class="fc" id="L86">            });</span>
-<span class="fc" id="L87">            Optional&lt;Double&gt; shortestFromCurrent = internalSolver.bestValue();</span>
-<span class="fc" id="L88">            Optional&lt;Set&lt;Decision&gt;&gt; shortestPath = internalSolver.bestSolution();</span>
-<span class="fc bfc" id="L89" title="All 4 branches covered.">            if (shortestFromCurrent.isPresent() &amp;&amp; currentFLB - 1e-10 &gt; shortestFromCurrent.get()) {</span>
-<span class="fc" id="L90">                List&lt;Decision&gt; sortedDecisions = new ArrayList&lt;&gt;(shortestPath.get());</span>
-<span class="fc" id="L91">                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));</span>
+<span class="fc" id="L88">            internalSolver.minimize(s -&gt; false, (sol, stats) -&gt; {</span>
+<span class="fc" id="L89">            });</span>
+<span class="fc" id="L90">            Optional&lt;Double&gt; shortestFromCurrent = internalSolver.bestValue();</span>
+<span class="fc" id="L91">            Optional&lt;Set&lt;Decision&gt;&gt; shortestPath = internalSolver.bestSolution();</span>
+<span class="fc bfc" id="L92" title="All 4 branches covered.">            if (shortestFromCurrent.isPresent() &amp;&amp; currentFLB - 1e-10 &gt; shortestFromCurrent.get()) {</span>
+<span class="fc" id="L93">                List&lt;Decision&gt; sortedDecisions = new ArrayList&lt;&gt;(shortestPath.get());</span>
+<span class="fc" id="L94">                sortedDecisions.sort(Comparator.comparingInt(Decision::variable));</span>
 
-<span class="fc" id="L93">                List&lt;Decision&gt; subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());</span>
+<span class="fc" id="L96">                List&lt;Decision&gt; subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());</span>
 
-<span class="fc" id="L95">                DecimalFormat df = new DecimalFormat(&quot;#.#########&quot;);</span>
-<span class="fc" id="L96">                String failureMsg = &quot;Your lower bound is not admissible.\n&quot; +</span>
-<span class="fc" id="L97">                        &quot;State: &quot; + current.state().toString() + &quot;\n&quot; +</span>
-<span class="fc" id="L98">                        &quot;Depth: &quot; + current.depth() + &quot;\n&quot; +</span>
-<span class="fc" id="L99">                        &quot;Path estimation: &quot; + df.format(currentFLB) + &quot;\n&quot; +</span>
-<span class="fc" id="L100">                        &quot;Shortest path length to end: &quot; + df.format(shortestFromCurrent.get())</span>
+<span class="fc" id="L98">                DecimalFormat df = new DecimalFormat(&quot;#.#########&quot;);</span>
+<span class="fc" id="L99">                String failureMsg = &quot;Your lower bound is not admissible.\n&quot; +</span>
+<span class="fc" id="L100">                        &quot;State: &quot; + current.state().toString() + &quot;\n&quot; +</span>
+<span class="fc" id="L101">                        &quot;Depth: &quot; + current.depth() + &quot;\n&quot; +</span>
+<span class="fc" id="L102">                        &quot;Path estimation: &quot; + df.format(currentFLB) + &quot;\n&quot; +</span>
+<span class="fc" id="L103">                        &quot;Shortest path length to end: &quot; + df.format(shortestFromCurrent.get())</span>
                         + &quot;\n\nFull Path to end:\n&quot; +
-<span class="fc" id="L102">                        subPath.stream().map(d -&gt; &quot;\t&quot; + d).collect(Collectors.joining(&quot;\n&quot;))</span>
+<span class="fc" id="L105">                        subPath.stream().map(d -&gt; &quot;\t&quot; + d).collect(Collectors.joining(&quot;\n&quot;))</span>
                         + &quot;\n&quot;;
 
-<span class="fc" id="L105">                throw new RuntimeException(failureMsg);</span>
+<span class="fc" id="L108">                throw new RuntimeException(failureMsg);</span>
             }
-<span class="fc" id="L107">        }</span>
-<span class="fc" id="L108">    }</span>
+<span class="fc" id="L110">        }</span>
+<span class="fc" id="L111">    }</span>
 
     /**
      * Given the current node and one of its successor. Checks if the lower bound is consistent.
      *
-     * @param current        The current node.
-     * @param next           A successor of the current node.
-     * @param transitionCost The transition cost from {@code current} to {@code next}.
-     * @param &lt;T&gt;            The type of the states.
+     * @param current        the current node
+     * @param next           a successor of the current node
+     * @param transitionCost the transition cost from {@code current} to {@code next}
+     * @param &lt;T&gt;            the type of the states
      */
     public static &lt;T&gt; void checkFlbConsistency(
             SubProblem&lt;T&gt; current,
             SubProblem&lt;T&gt; next,
             double transitionCost
     ) {
-<span class="nc" id="L123">        Logger logger = Logger.getLogger(&quot;Debug Mode&quot;);</span>
-<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (current.getLowerBound() - 1e-10 &gt; next.getLowerBound() + transitionCost) {</span>
-<span class="nc" id="L125">            String warningMsg = &quot;Your lower bound is not consistent. You may lose performance.\n&quot; +</span>
+<span class="nc" id="L126">        Logger logger = Logger.getLogger(&quot;Debug Mode&quot;);</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (current.getLowerBound() - 1e-10 &gt; next.getLowerBound() + transitionCost) {</span>
+<span class="nc" id="L128">            String warningMsg = &quot;Your lower bound is not consistent. You may lose performance.\n&quot; +</span>
                     &quot;Current state &quot; + current + &quot;\n&quot; +
                     &quot;Next state: &quot; + next + &quot;\n&quot; +
                     &quot;Transition cost: &quot; + transitionCost + &quot;\n&quot;;
-<span class="nc" id="L129">            logger.warning(warningMsg);</span>
+<span class="nc" id="L132">            logger.warning(warningMsg);</span>
         }
 
-<span class="nc" id="L132">    }</span>
+<span class="nc" id="L135">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

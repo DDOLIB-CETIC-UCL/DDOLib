@@ -4,24 +4,35 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.Problem;
 
+/**
+ * Base model for the Maximum Independent Set Problem (MISP), in the no-layer modeling API.
+ * &lt;p&gt;
+ * Bundles the {@link MispProblem} together with a {@link MispFlb} fast lower bound, so that
+ * the various MISP solver entry points can build on top of it.
+ */
 public class MispModel implements Model&lt;MispState&gt; {
 
     private final MispProblem problem;
     private final FastLowerBound&lt;MispState&gt; lowerBound;
 
-<span class="fc" id="L12">    public MispModel(MispProblem problem) {</span>
-<span class="fc" id="L13">        this.problem = problem;</span>
-<span class="fc" id="L14">        this.lowerBound = new MispFlb(problem);</span>
-<span class="fc" id="L15">    }</span>
+    /**
+     * Creates a new model wrapping the given MISP problem.
+     *
+     * @param problem the MISP problem instance to solve
+     */
+<span class="fc" id="L23">    public MispModel(MispProblem problem) {</span>
+<span class="fc" id="L24">        this.problem = problem;</span>
+<span class="fc" id="L25">        this.lowerBound = new MispFlb(problem);</span>
+<span class="fc" id="L26">    }</span>
 
     @Override
     public Problem&lt;MispState&gt; problem() {
-<span class="fc" id="L19">        return problem;</span>
+<span class="fc" id="L30">        return problem;</span>
     }
 
     @Override
     public FastLowerBound&lt;MispState&gt; lowerBound() {
-<span class="nc" id="L24">        return lowerBound;</span>
+<span class="nc" id="L35">        return lowerBound;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

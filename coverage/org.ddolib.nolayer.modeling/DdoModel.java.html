@@ -40,16 +40,20 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 
     /**
      * Strategy to select which nodes should be merged together on a relaxed DD.
+     *
+     * @return the {@link ReductionStrategy} used to merge nodes in a relaxed decision diagram
      */
     default ReductionStrategy&lt;T&gt; relaxStrategy() {
-<span class="nc" id="L45">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="nc" id="L47">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
      * Strategy to select which nodes should be dropped on a restricted DD.
+     *
+     * @return the {@link ReductionStrategy} used to drop nodes in a restricted decision diagram
      */
     default ReductionStrategy&lt;T&gt; restrictStrategy() {
-<span class="nc" id="L52">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="nc" id="L56">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
@@ -58,7 +62,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if caching is enabled, {@code false} otherwise
      */
     default boolean useCache() {
-<span class="nc" id="L61">        return false;</span>
+<span class="nc" id="L65">        return false;</span>
     }
 
     /**
@@ -67,7 +71,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link NoLayerDominanceChecker} instance
      */
     default NoLayerDominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L70">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
+<span class="fc" id="L74">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
     }
 
     /**
@@ -77,7 +81,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if DOT export is enabled, {@code false} otherwise
      */
     default boolean exportDot() {
-<span class="nc" id="L80">        return false;</span>
+<span class="nc" id="L84">        return false;</span>
     }
 
 }

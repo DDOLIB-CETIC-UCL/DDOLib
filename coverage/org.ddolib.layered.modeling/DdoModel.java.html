@@ -118,35 +118,54 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 
     /**
      * Strategy to select which nodes should be merged together on a relaxed DD.
+     *
+     * @return the {@link ReductionStrategy} used to merge nodes in a relaxed decision diagram
      */
     default ReductionStrategy&lt;T&gt; relaxStrategy() {
-<span class="fc" id="L123">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="fc" id="L125">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
      * Strategy to select which nodes should be dropped on a restricted DD.
+     *
+     * @return the {@link ReductionStrategy} used to drop nodes in a restricted decision diagram
      */
     default ReductionStrategy&lt;T&gt; restrictStrategy() {
-<span class="fc" id="L130">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="fc" id="L134">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
+    /**
+     * Returns the distance measure used to compare states, notably to select the neighborhood
+     * explored by a large neighborhood search.
+     *
+     * @return the {@link StateDistance} used to compare states
+     */
     default StateDistance&lt;T&gt; stateDistance() {
-<span class="nc" id="L134">        return (o1, o2) -&gt; 0;</span>
+<span class="nc" id="L144">        return (o1, o2) -&gt; 0;</span>
     }
 
+    /**
+     * Indicates whether Large Neighborhood Search (LNS) should be used to improve the solution
+     * found by this model.
+     * &lt;p&gt;
+     * By default, LNS is disabled.
+     * &lt;/p&gt;
+     *
+     * @return {@code true} if LNS is enabled, {@code false} otherwise
+     */
     default boolean useLNS() {
-<span class="nc" id="L138">        return false;</span>
+<span class="nc" id="L157">        return false;</span>
     }
 
 
     /**
      * Returns a copy of this model but with a fixed width.
      *
-     * @param width The maximum width of the diagram.
-     * @return A copy of this model but with a fixed width.
+     * @param width the maximum width of the diagram
+     * @return a copy of this model but with a fixed width
      */
     default DdoModel&lt;T&gt; fixWidth(int width) {
-<span class="fc" id="L149">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L168">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -217,11 +236,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
     /**
      * Returns a copy of this model by changing the {@link CutSetType}.
      *
-     * @param type The new cutset type.
-     * @return A copy of this model by changing the {@link CutSetType}.
+     * @param type the new cutset type
+     * @return a copy of this model by changing the {@link CutSetType}
      */
     default DdoModel&lt;T&gt; setCutSetType(CutSetType type) {
-<span class="fc" id="L224">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L243">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -292,11 +311,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
     /**
      * Returns a copy of this model by enabling or disabling the cache.
      *
-     * @param b Whether the cache must be used.
-     * @return A copy of this model by enabling or disabling the cache.
+     * @param b whether the cache must be used
+     * @return a copy of this model by enabling or disabling the cache
      */
     default DdoModel&lt;T&gt; useCache(boolean b) {
-<span class="fc" id="L299">        return new DdoModel&lt;T&gt;() {</span>
+<span class="fc" id="L318">        return new DdoModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -366,7 +385,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 
     @Override
     default DdoModel&lt;T&gt; disableDominance() {
-<span class="fc" id="L369">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L388">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -431,7 +450,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
 
     @Override
     default DdoModel&lt;T&gt; disableLowerBound() {
-<span class="nc" id="L434">        return new DdoModel&lt;&gt;() {</span>
+<span class="nc" id="L453">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -505,7 +524,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a model usable by an {@link ExactModel}
      */
     default ExactModel&lt;T&gt; toExactModel() {
-<span class="nc" id="L508">        return new ExactModel&lt;T&gt;() {</span>
+<span class="nc" id="L527">        return new ExactModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();

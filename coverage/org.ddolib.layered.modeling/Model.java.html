@@ -116,7 +116,7 @@ public interface Model&lt;T&gt; {
     /**
      * Returns a copy of this model but without dominance.
      *
-     * @return A copy of this model but without dominance.
+     * @return a copy of this model but without dominance
      */
     default Model&lt;T&gt; disableDominance() {
 <span class="fc" id="L122">        return new Model&lt;&gt;() {</span>
@@ -150,7 +150,7 @@ public interface Model&lt;T&gt; {
     /**
      * Returns a copy of this model but without {@link FastLowerBound}.
      *
-     * @return A copy of this model but without {@link FastLowerBound}.
+     * @return a copy of this model but without {@link FastLowerBound}
      */
     default Model&lt;T&gt; disableLowerBound() {
 <span class="nc" id="L156">        return new Model&lt;&gt;() {</span>

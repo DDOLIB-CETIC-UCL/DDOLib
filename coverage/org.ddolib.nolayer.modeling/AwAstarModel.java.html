@@ -3,6 +3,16 @@
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 
+/**
+ * Defines the structure of an optimization model solved using the
+ * &lt;b&gt;Anytime Weighted A* (AWA*)&lt;/b&gt; algorithm within the no-layer framework.
+ * &lt;p&gt;
+ * The Anytime Weighted A* algorithm is derived from the A* algorithm. By adding a weight to
+ * the heuristic function, it speeds up reaching a feasible solution, then incrementally
+ * improves the best solution found.
+ *
+ * @param &lt;T&gt; the type of states in the problem
+ */
 public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
 
     /**
@@ -11,17 +21,17 @@ public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the weight to add to the heuristic function (5 by default)
      */
     default double weight() {
-<span class="fc" id="L14">        return 5.0;</span>
+<span class="fc" id="L24">        return 5.0;</span>
     }
 
     /**
      * Returns a copy of this model but with another weight.
      *
-     * @param w The weight to use.
-     * @return a copy of this model but with another weight.
+     * @param w the weight to use
+     * @return a copy of this model but with another weight
      */
     default AwAstarModel&lt;T&gt; setWeight(double w) {
-<span class="nc" id="L24">        return new AwAstarModel&lt;T&gt;() {</span>
+<span class="nc" id="L34">        return new AwAstarModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return AwAstarModel.this.problem();
