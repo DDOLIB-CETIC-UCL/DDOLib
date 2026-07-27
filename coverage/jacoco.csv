@@ -116,8 +116,8 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.maximumcoverage,Ma
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.maximumcoverage,MaxCoverRanking,0,11,0,0,0,3,0,2,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.maximumcoverage,MaxCoverFastLowerBound,0,46,0,4,0,10,0,4,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPRanking,0,23,0,0,0,5,0,2,0,2
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPFastLowerBound,0,442,2,52,0,80,2,32,0,7
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPFastLowerBound.DepartmentAndLength,0,15,0,0,0,2,0,2,0,2
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPFastLowerBound,0,442,2,52,0,80,2,32,0,7
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPProblem,70,620,9,47,11,100,7,38,1,16
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPState,2,118,2,8,1,9,2,7,0,4
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.layered.srflp,SRFLPRelax,0,127,0,6,0,23,0,6,0,3
@@ -266,7 +266,7 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.nolayer.modeling,DdoModel,27,4,0,0,
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispModel,3,15,0,0,1,5,1,2,1,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispProblem,40,331,3,29,9,63,4,25,1,12
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispNoLayerDominanceChecker.DominanceEntry,0,11,0,0,0,4,0,1,0,1
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispNoLayerDominanceChecker,0,147,0,22,0,25,0,17,0,6
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispDdoModel,4,0,0,0,2,0,1,0,1,0
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispNoLayerDominanceChecker,0,147,0,22,0,25,0,17,0,6
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispState,0,16,0,0,0,2,0,2,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispFlb,0,35,0,2,0,7,0,3,0,2
