@@ -266,7 +266,7 @@ io.github.ddolib-cetic-ucl:ddolib,org.ddolib.nolayer.modeling,DdoModel,27,4,0,0,
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispModel,3,15,0,0,1,5,1,2,1,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispProblem,40,331,3,29,9,63,4,25,1,12
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispNoLayerDominanceChecker.DominanceEntry,0,11,0,0,0,4,0,1,0,1
-io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispDdoModel,4,0,0,0,2,0,1,0,1,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispNoLayerDominanceChecker,0,147,0,22,0,25,0,17,0,6
+io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispDdoModel,4,0,0,0,2,0,1,0,1,0
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispState,0,16,0,0,0,2,0,2,0,2
 io.github.ddolib-cetic-ucl:ddolib,org.ddolib.examples.nolayer.misp,MispFlb,0,35,0,2,0,7,0,3,0,2
