@@ -1,29 +1,23 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.solving.ddo.core.Decision;
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
 
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
-
-import static java.lang.Integer.max;
-import static java.lang.Integer.min;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Implementation of a relaxation for the Single Row Facility Layout Problem (SRFLP).
  *
- * <p>
- * In this relaxation, multiple SRFLP states can be merged into a single state
- * to reduce the search space. The merged state over-approximates the possible
- * states by combining the "must" and "maybe" sets and taking minimal cut values.
- * </p>
+ * <p>In this relaxation, multiple SRFLP states can be merged into a single state to reduce the
+ * search space. The merged state over-approximates the possible states by combining the "must" and
+ * "maybe" sets and taking minimal cut values.
  *
- * <p>
- * This class implements the {@link Relaxation} interface and is typically used
- * in decision diagram or DDO-based algorithms for SRFLP to enable state merging
- * and efficient pruning.
- * </p>
+ * <p>This class implements the {@link Relaxation} interface and is typically used in decision
+ * diagram or DDO-based algorithms for SRFLP to enable state merging and efficient pruning.
  */
 public class SRFLPRelax implements Relaxation<SRFLPState> {
 
@@ -36,20 +30,18 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
      */
     public SRFLPRelax(SRFLPProblem problem) {
         this.problem = problem;
-
     }
 
     /**
      * Merges multiple SRFLP states into a single relaxed state.
      *
-     * <p>
-     * The merged state:
-     * </p>
+     * <p>The merged state:
+     *
      * <ul>
-     *     <li>Intersects the "must" sets of all input states.</li>
-     *     <li>Unites the "must" and "maybe" sets into the merged "maybe" set.</li>
-     *     <li>Takes the minimal cut values for each department.</li>
-     *     <li>Uses the maximum depth among all merged states.</li>
+     *   <li>Intersects the "must" sets of all input states.
+     *   <li>Unites the "must" and "maybe" sets into the merged "maybe" set.
+     *   <li>Takes the minimal cut values for each department.
+     *   <li>Uses the maximum depth among all merged states.
      * </ul>
      *
      * @param states an iterator over the states to merge
@@ -88,21 +80,19 @@ public class SRFLPRelax implements Relaxation<SRFLPState> {
     /**
      * Relaxation of an edge cost between two states.
      *
-     * <p>
-     * In this implementation, the edge cost is not modified by the relaxation and
-     * is returned as-is.
-     * </p>
+     * <p>In this implementation, the edge cost is not modified by the relaxation and is returned
+     * as-is.
      *
-     * @param from   the source state
-     * @param to     the target state
+     * @param from the source state
+     * @param to the target state
      * @param merged the merged state containing this edge
-     * @param d      the decision taken to move from {@code from} to {@code to}
-     * @param cost   the original cost of the edge
+     * @param d the decision taken to move from {@code from} to {@code to}
+     * @param cost the original cost of the edge
      * @return the relaxed cost of the edge, which in this case is equal to {@code cost}
      */
     @Override
-    public double relaxEdge(SRFLPState from, SRFLPState to, SRFLPState merged, Decision d,
-                            double cost) {
+    public double relaxEdge(
+            SRFLPState from, SRFLPState to, SRFLPState merged, Decision d, double cost) {
         return cost;
     }
 }

@@ -1,46 +1,46 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Scanner;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
- * The {@code SMICProblem} class represents an instance of the
- * <b>Single Machine with Inventory Constraint (SMIC)</b> scheduling problem.
- * <p>
- * In this problem, a set of jobs must be processed on a single machine,
- * subject to release times, inventory capacity limits, and job types
- * that either consume or produce inventory units.
+ * The {@code SMICProblem} class represents an instance of the <b>Single Machine with Inventory
+ * Constraint (SMIC)</b> scheduling problem.
+ *
+ * <p>In this problem, a set of jobs must be processed on a single machine, subject to release
+ * times, inventory capacity limits, and job types that either consume or produce inventory units.
  * The objective is typically to minimize the total completion time or a related cost.
- * </p>
  *
- * <p>
- * Each job is defined by:
- * </p>
+ * <p>Each job is defined by:
+ *
  * <ul>
- *     <li>Its {@code processing} time,</li>
- *     <li>Its {@code release} time,</li>
- *     <li>Its {@code type} (0 = consuming, 1 = producing inventory),</li>
- *     <li>Its {@code inventory} change (how much it consumes or produces),</li>
- *     <li>Its {@code weight}, used in objective computations (if applicable).</li>
+ *   <li>Its {@code processing} time,
+ *   <li>Its {@code release} time,
+ *   <li>Its {@code type} (0 = consuming, 1 = producing inventory),
+ *   <li>Its {@code inventory} change (how much it consumes or produces),
+ *   <li>Its {@code weight}, used in objective computations (if applicable).
  * </ul>
- * The machine starts with an initial inventory {@code initInventory} and must never
- * exceed the maximum capacity {@code capaInventory} nor drop below zero.
  *
- * <p>
- * This class implements the {@link Problem} interface, making it compatible
- * with DDO (Decision Diagram Optimization) and other optimization frameworks.
- * It provides methods to define:
- * </p>
+ * <p>The machine starts with an initial inventory {@code initInventory} and must never exceed the
+ * maximum capacity {@code capaInventory} nor drop below zero.
+ *
+ * <p>This class implements the {@link Problem} interface, making it compatible with DDO (Decision
+ * Diagram Optimization) and other optimization frameworks. It provides methods to define:
+ *
  * <ul>
- *     <li>The initial state of the problem,</li>
- *     <li>The possible transitions between states,</li>
- *     <li>The associated transition costs,</li>
- *     <li>The domain of feasible decisions at each step.</li>
+ *   <li>The initial state of the problem,
+ *   <li>The possible transitions between states,
+ *   <li>The associated transition costs,
+ *   <li>The domain of feasible decisions at each step.
  * </ul>
  *
  * @see SMICState
@@ -51,80 +51,61 @@ import java.util.*;
  */
 public class SMICProblem implements Problem<SMICState> {
 
-    /**
-     * Name or identifier of the problem instance.
-     */
+    /** Name or identifier of the problem instance. */
     final String name;
 
-    /**
-     * Total number of jobs in the instance.
-     */
+    /** Total number of jobs in the instance. */
     final int nbJob;
 
-    /**
-     * Initial inventory level at the beginning of the schedule.
-     */
+    /** Initial inventory level at the beginning of the schedule. */
     final int initInventory;
 
-    /**
-     * Maximum allowed inventory capacity.
-     */
+    /** Maximum allowed inventory capacity. */
     final int capaInventory;
 
-    /**
-     * Job types (0 for consumption, 1 for production).
-     */
+    /** Job types (0 for consumption, 1 for production). */
     final int[] type;
 
-    /**
-     * Processing times of each job.
-     */
+    /** Processing times of each job. */
     final int[] processing;
 
-    /**
-     * Weights associated with each job (optional for weighted objectives).
-     */
+    /** Weights associated with each job (optional for weighted objectives). */
     final int[] weight;
 
-    /**
-     * Release times for each job (when the job becomes available).
-     */
+    /** Release times for each job (when the job becomes available). */
     final int[] release;
 
-    /**
-     * Inventory variation of each job (how much it consumes or produces).
-     */
+    /** Inventory variation of each job (how much it consumes or produces). */
     final int[] inventory;
 
-    /**
-     * Optional known optimal value (used for benchmarking).
-     */
+    /** Optional known optimal value (used for benchmarking). */
     private final Optional<Double> optimal;
 
     /**
      * Constructs a {@code SMICProblem} instance with full specification.
      *
-     * @param name          the name of the instance
-     * @param nbJob         number of jobs
+     * @param name the name of the instance
+     * @param nbJob number of jobs
      * @param initInventory initial inventory level
      * @param capaInventory maximum inventory capacity
-     * @param type          job types (0 = consume, 1 = produce)
-     * @param processing    processing times for each job
-     * @param weight        weights associated with each job
-     * @param release       release times for each job
-     * @param inventory     inventory change (positive for production, negative for consumption)
-     * @param optimal       optional optimal objective value (if known)
+     * @param type job types (0 = consume, 1 = produce)
+     * @param processing processing times for each job
+     * @param weight weights associated with each job
+     * @param release release times for each job
+     * @param inventory inventory change (positive for production, negative for consumption)
+     * @param optimal optional optimal objective value (if known)
      */
-    public SMICProblem(String name,
-                       int nbJob,
-                       int initInventory,
-                       int capaInventory,
-                       int[] type,
-                       int[] processing,
-                       int[] weight,
-                       int[] release,
-                       int[] inventory,
-                       Optional<Double> optimal) {
+    public SMICProblem(
+            String name,
+            int nbJob,
+            int initInventory,
+            int capaInventory,
+            int[] type,
+            int[] processing,
+            int[] weight,
+            int[] release,
+            int[] inventory,
+            Optional<Double> optimal) {
         this.name = name;
         this.nbJob = nbJob;
         this.initInventory = initInventory;
@@ -139,9 +120,9 @@ public class SMICProblem implements Problem<SMICState> {
 
     /**
      * Constructs a {@code SMICProblem} instance by parsing a text file.
-     * <p>
-     * The file format must follow the convention:
-     * </p>
+     *
+     * <p>The file format must follow the convention:
+     *
      * <pre>
      * nbJob  initInventory  capaInventory
      * type_i  processing_i  weight_i  release_i  inventory_i  (for each job)
@@ -153,26 +134,18 @@ public class SMICProblem implements Problem<SMICState> {
      */
     public SMICProblem(String filename) throws IOException {
         Scanner s = new Scanner(new File(filename)).useDelimiter("\\s+");
-        int nbJob;
-        int initInventory;
-        int capaInventory;
-        int[] type;
-        int[] processing;
-        int[] weight;
-        int[] release;
-        int[] inventory;
         this.name = filename;
         while (!s.hasNextLine()) {
             s.nextLine();
         }
-        nbJob = s.nextInt();
-        initInventory = s.nextInt();
-        capaInventory = s.nextInt();
-        type = new int[nbJob];
-        processing = new int[nbJob];
-        weight = new int[nbJob];
-        release = new int[nbJob];
-        inventory = new int[nbJob];
+        final int nbJob = s.nextInt();
+        final int initInventory = s.nextInt();
+        final int capaInventory = s.nextInt();
+        final int[] type = new int[nbJob];
+        final int[] processing = new int[nbJob];
+        final int[] weight = new int[nbJob];
+        final int[] release = new int[nbJob];
+        final int[] inventory = new int[nbJob];
         Optional<Double> opti = Optional.empty();
         for (int i = 0; i < nbJob; i++) {
             type[i] = s.nextInt();
@@ -196,25 +169,21 @@ public class SMICProblem implements Problem<SMICState> {
         this.optimal = opti;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public String toString() {
         return name;
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public int nbVars() {
         return nbJob;
     }
 
     /**
-     * Returns the initial state of the problem, where all jobs remain to be processed
-     * and the machine starts at time 0 with the initial inventory.
+     * Returns the initial state of the problem, where all jobs remain to be processed and the
+     * machine starts at time 0 with the initial inventory.
      *
      * @return the initial {@link SMICState}
      */
@@ -225,23 +194,20 @@ public class SMICProblem implements Problem<SMICState> {
         return new SMICState(jobs, 0, initInventory, initInventory);
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public double initialValue() {
         return 0;
     }
 
     /**
-     * Returns the feasible domain of jobs that can be scheduled next,
-     * given the current inventory and remaining capacity constraints.
+     * Returns the feasible domain of jobs that can be scheduled next, given the current inventory
+     * and remaining capacity constraints.
      *
      * @param state the current {@link SMICState}
-     * @param var   the current decision variable index (unused)
+     * @param var the current decision variable index (unused)
      * @return an iterator over feasible job indices
      */
-
     @Override
     public Iterator<Integer> domain(SMICState state, int var) {
         ArrayList<Integer> domain = new ArrayList<>();
@@ -262,12 +228,11 @@ public class SMICProblem implements Problem<SMICState> {
 
     /**
      * Applies a decision to transition from the current state to the next.
-     * <p>
-     * The method removes the scheduled job from the remaining set,
-     * updates the current time and adjusts inventory levels.
-     * </p>
      *
-     * @param state    the current state
+     * <p>The method removes the scheduled job from the remaining set, updates the current time and
+     * adjusts inventory levels.
+     *
+     * @param state the current state
      * @param decision the job to schedule next
      * @return the resulting {@link SMICState} after applying the decision
      */
@@ -277,30 +242,30 @@ public class SMICProblem implements Problem<SMICState> {
         int job = decision.value();
         remaining.clear(job);
         int currentTime = Math.max(state.currentTime(), release[job]) + processing[job];
-        int minCurrentInventory = state.minCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
-        int maxCurrentInventory = state.maxCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
+        int minCurrentInventory =
+                state.minCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
+        int maxCurrentInventory =
+                state.maxCurrentInventory() + (type[job] == 0 ? -1 : 1) * inventory[job];
         return new SMICState(remaining, currentTime, minCurrentInventory, maxCurrentInventory);
     }
 
     /**
      * Computes the cost associated with scheduling a job from the current state.
-     * <p>
-     * The cost includes any waiting time due to release constraints and
-     * the job’s processing time.
-     * </p>
      *
-     * @param state    the current state
+     * <p>The cost includes any waiting time due to release constraints and the job’s processing
+     * time.
+     *
+     * @param state the current state
      * @param decision the decision (job) being scheduled
      * @return the cost of performing the transition
      */
     @Override
     public double transitionCost(SMICState state, Decision decision) {
-        return Math.max(release[decision.value()] - state.currentTime(), 0) + processing[decision.value()];
+        return Math.max(release[decision.value()] - state.currentTime(), 0)
+                + processing[decision.value()];
     }
 
-    /**
-     * {@inheritDoc}
-     */
+    /** {@inheritDoc} */
     @Override
     public Optional<Double> optimalValue() {
         return optimal;
@@ -309,8 +274,10 @@ public class SMICProblem implements Problem<SMICState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not match " + "the number %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         int time = 0;
@@ -319,12 +286,17 @@ public class SMICProblem implements Problem<SMICState> {
             time = Math.max(time, release[job]) + processing[job];
             capa += type[job] == 0 ? -inventory[job] : inventory[job];
             if (capa < 0) {
-                String msg = String.format("The inventory for solution %s goes below zero", Arrays.toString(solution));
+                String msg =
+                        String.format(
+                                "The inventory for solution %s goes below zero",
+                                Arrays.toString(solution));
                 throw new InvalidSolutionException(msg);
             } else if (capa > capaInventory) {
-                String msg = String.format("The inventory for solution %s (%d) exceeds the max " +
-                                "capacity (%d) when performing job %d", Arrays.toString(solution), capa,
-                        capaInventory, job);
+                String msg =
+                        String.format(
+                                "The inventory for solution %s (%d) exceeds the max "
+                                        + "capacity (%d) when performing job %d",
+                                Arrays.toString(solution), capa, capaInventory, job);
                 throw new InvalidSolutionException(msg);
             }
         }

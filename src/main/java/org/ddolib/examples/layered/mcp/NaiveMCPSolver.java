@@ -1,13 +1,11 @@
 package org.ddolib.examples.layered.mcp;
 
-/**
- * Naive MCP solver which enumerates all the solution to find the best one. Used for tests.
- */
+/** Naive MCP solver which enumerates all the solution to find the best one. Used for tests. */
 public class NaiveMCPSolver {
 
     private final MCPProblem problem;
-    private int _best = Integer.MIN_VALUE;
-    private int[] _bestSolution;
+    private int best = Integer.MIN_VALUE;
+    private int[] bestSolution;
 
     /**
      * Creates a new naive solver for the given MCP instance.
@@ -16,7 +14,7 @@ public class NaiveMCPSolver {
      */
     public NaiveMCPSolver(MCPProblem problem) {
         this.problem = problem;
-        _bestSolution = new int[problem.nbVars()];
+        bestSolution = new int[problem.nbVars()];
     }
 
     /**
@@ -39,7 +37,7 @@ public class NaiveMCPSolver {
      * @return the best value found so far
      */
     public int best() {
-        return _best;
+        return best;
     }
 
     /**
@@ -48,19 +46,17 @@ public class NaiveMCPSolver {
      * @return the best solution found so far
      */
     public int[] bestSolution() {
-        return _bestSolution;
+        return bestSolution;
     }
 
-    /**
-     * Enumerates all possible partitions and keeps track of the best one.
-     */
+    /** Enumerates all possible partitions and keeps track of the best one. */
     public void maximize() {
         int[][] solutions = generatesBinaryValues(problem.nbVars());
         for (int[] sol : solutions) {
             int value = evaluateSolution(sol);
-            if (value > _best) {
-                _best = value;
-                _bestSolution = sol;
+            if (value > best) {
+                best = value;
+                bestSolution = sol;
             }
         }
     }
@@ -88,7 +84,9 @@ public class NaiveMCPSolver {
         int toReturn = 0;
         for (int u = 0; u < problem.nbVars(); u++) {
             for (int v = u + 1; v < problem.nbVars(); v++) {
-                if (solution[u] != solution[v]) toReturn += problem.graph.weightOf(u, v);
+                if (solution[u] != solution[v]) {
+                    toReturn += problem.graph.weightOf(u, v);
+                }
             }
         }
         return toReturn;

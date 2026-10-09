@@ -2,24 +2,19 @@ package org.ddolib.examples.layered.alp;
 
 import java.util.Objects;
 
-/**
- * State of a runway : last landing time and last aircraft's class
- */
+/** State of a runway : last landing time and last aircraft's class. */
 public class RunwayState implements Comparable<RunwayState> {
-    /**
-     * The previous landing time on this runway.
-     */
+    /** The previous landing time on this runway. */
     public int prevTime;
-    /**
-     * The class of the previous aircraft that landed on this runway.
-     */
+
+    /** The class of the previous aircraft that landed on this runway. */
     public int prevClass;
 
     /**
      * Creates a new runway state.
      *
      * @param prevClass the class of the previous aircraft that landed
-     * @param prevTime  the previous landing time
+     * @param prevTime the previous landing time
      */
     public RunwayState(int prevClass, int prevTime) {
         this.prevClass = prevClass;
@@ -48,7 +43,9 @@ public class RunwayState implements Comparable<RunwayState> {
 
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         RunwayState that = (RunwayState) o;
         return prevTime == that.prevTime && prevClass == that.prevClass;
     }

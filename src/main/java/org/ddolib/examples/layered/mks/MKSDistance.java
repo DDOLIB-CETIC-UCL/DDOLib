@@ -1,25 +1,21 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
-
 import static org.ddolib.common.util.DistanceUtil.euclideanDistance;
+
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 
 /**
  * Computes a normalized distance between Multi-dimensional Knapsack (MKS) states.
  *
- * <p>
- * This class implements {@link StateDistance} for {@link MKSState} objects. The distance
- * is based on the Euclidean distance between the remaining capacities of two states,
- * normalized by the maximal distance of the knapsack capacities.
+ * <p>This class implements {@link StateDistance} for {@link MKSState} objects. The distance is
+ * based on the Euclidean distance between the remaining capacities of two states, normalized by the
+ * maximal distance of the knapsack capacities.
  *
- * <p>
- * This distance can be used in clustering or merging strategies in decision diagram
- * optimization algorithms to guide state aggregation.
+ * <p>This distance can be used in clustering or merging strategies in decision diagram optimization
+ * algorithms to guide state aggregation.
  */
 public class MKSDistance implements StateDistance<MKSState> {
-    /**
-     * The MKS problem instance for which distances are computed.
-     */
+    /** The MKS problem instance for which distances are computed. */
     final MKSProblem instance;
 
     /**
@@ -51,6 +47,7 @@ public class MKSDistance implements StateDistance<MKSState> {
      */
     @Override
     public double distanceWithRoot(MKSState a) {
-        return euclideanDistance(a.capacities, instance.initialState().capacities) / instance.maximalDistance;
+        return euclideanDistance(a.capacities, instance.initialState().capacities)
+                / instance.maximalDistance;
     }
 }

@@ -1,44 +1,44 @@
 package org.ddolib.examples.layered.pdp;
 
+import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
+
+import java.io.IOException;
+import java.util.Random;
 import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.util.Random;
-
-import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
 
 /**
- * Single Vehicle Pick-up and Delivery Problem (PDP) with AsTar.
- * Main class for solving the <b>Pickup and Delivery Problem (PDP)</b> using the
- * <b>A* (A-star) search algorithm</b>.
- * <p>
- * This class demonstrates how to configure and execute an A* solver
- * on a randomly generated PDP instance.
- * The PDP consists of a set of paired pickup and delivery requests that must be
- * scheduled optimally, typically to minimize total travel cost or time while respecting
- * precedence and capacity constraints.
- * </p>
+ * Single Vehicle Pick-up and Delivery Problem (PDP) with AsTar. Main class for solving the
+ * <b>Pickup and Delivery Problem (PDP)</b> using the <b>A* (A-star) search algorithm</b>.
  *
- * <p><b>Execution details:</b></p>
+ * <p>This class demonstrates how to configure and execute an A* solver on a randomly generated PDP
+ * instance. The PDP consists of a set of paired pickup and delivery requests that must be scheduled
+ * optimally, typically to minimize total travel cost or time while respecting precedence and
+ * capacity constraints.
+ *
+ * <p><b>Execution details:</b>
+ *
  * <ul>
- *   <li>A random PDP instance is generated using {@link PDPGenerator#genInstance(int, int, int, java.util.Random)}.</li>
+ *   <li>A random PDP instance is generated using {@link PDPGenerator#genInstance(int, int, int,
+ *       java.util.Random)}.
  *   <li>The problem is wrapped into a {@link Model} that specifies:
- *     <ul>
- *       <li>the {@link Problem} to solve ({@link PDPProblem}),</li>
- *       <li>a fast lower bound through {@link PDPFastLowerBound} to guide A* search.</li>
- *     </ul>
- *   </li>
- *   <li>The solver is then launched using {@link Solvers#minimizeAstar(Model, java.util.function.BiConsumer)}.</li>
- *   <li>Each discovered solution is printed using {@link SolutionPrinter#printSolution(SearchStatistics, int[])}.</li>
- *   <li>Search statistics are displayed at the end of the execution.</li>
+ *       <ul>
+ *         <li>the {@link Problem} to solve ({@link PDPProblem}),
+ *         <li>a fast lower bound through {@link PDPFastLowerBound} to guide A* search.
+ *       </ul>
+ *   <li>The solver is then launched using {@link Solvers#minimizeAstar(Model,
+ *       java.util.function.BiConsumer)}.
+ *   <li>Each discovered solution is printed using {@link
+ *       SolutionPrinter#printSolution(SearchStatistics, int[])}.
+ *   <li>Search statistics are displayed at the end of the execution.
  * </ul>
  *
- * <p><b>Usage example:</b></p>
+ * <p><b>Usage example:</b>
+ *
  * <pre>{@code
  * // Run the A* PDP solver
  * java PDPAstarMain
@@ -48,12 +48,13 @@ import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
  * SearchStatistics{status=OPTIMAL, iterations=..., time=...}
  * }</pre>
  *
- * <p><b>Notes:</b></p>
+ * <p><b>Notes:</b>
+ *
  * <ul>
- *   <li>The PDP instance is generated with a fixed random seed ({@code new Random(1)})
- *       to ensure reproducible experiments.</li>
+ *   <li>The PDP instance is generated with a fixed random seed ({@code new Random(1)}) to ensure
+ *       reproducible experiments.
  *   <li>This class serves as a demonstration of how to apply A* to combinatorial optimization
- *       within the PDP framework.</li>
+ *       within the PDP framework.
  * </ul>
  *
  * @see PDPProblem
@@ -64,40 +65,41 @@ import static org.ddolib.examples.layered.pdp.PDPGenerator.genInstance;
  */
 public final class PDPAstarMain {
 
-    private PDPAstarMain() {
-    }
+    private PDPAstarMain() {}
 
     /**
-     * Entry point for solving a randomly generated Pickup and Delivery Problem (PDP)
-     * instance using the A* algorithm.
-     * <p>
-     * The instance is created with fixed parameters and solved by the A* search framework
+     * Entry point for solving a randomly generated Pickup and Delivery Problem (PDP) instance using
+     * the A* algorithm.
+     *
+     * <p>The instance is created with fixed parameters and solved by the A* search framework
      * provided by the {@link Solvers} utility.
-     * </p>
      *
      * @param args optional command-line arguments (not used in this example)
      * @throws IOException if an error occurs while reading or generating the instance
      */
     public static void main(final String[] args) throws IOException {
         final PDPProblem problem = genInstance(18, 2, 3, new Random(1));
-        Model<PDPState> model = new Model<>() {
-            @Override
-            public Problem<PDPState> problem() {
-                return problem;
-            }
+        Model<PDPState> model =
+                new Model<>() {
+                    @Override
+                    public Problem<PDPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public PDPFastLowerBound lowerBound() {
-                return new PDPFastLowerBound(problem);
-            }
-        };
+                    @Override
+                    public PDPFastLowerBound lowerBound() {
+                        return new PDPFastLowerBound(problem);
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeAstar(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
     }
-
 }

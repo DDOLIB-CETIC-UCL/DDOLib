@@ -1,89 +1,92 @@
 package org.ddolib.examples.layered.pdp;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents a Pickup and Delivery Problem (PDP) instance with a single vehicle.
- * <p>
- * In this problem:
- * </p>
+ *
+ * <p>In this problem:
+ *
  * <ul>
- *     <li>Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before its associated delivery node.</li>
- *     <li>There may also be unrelated nodes that are not part of any pair.</li>
- *     <li>The vehicle has a capacity limit that restricts how many pickups can be carried simultaneously.</li>
- *     <li>The problem is represented as a TSP-like graph with distances between nodes.</li>
+ *   <li>Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before
+ *       its associated delivery node.
+ *   <li>There may also be unrelated nodes that are not part of any pair.
+ *   <li>The vehicle has a capacity limit that restricts how many pickups can be carried
+ *       simultaneously.
+ *   <li>The problem is represented as a TSP-like graph with distances between nodes.
  * </ul>
  *
- * <p>The class implements the {@link Problem} interface, providing methods for:</p>
+ * <p>The class implements the {@link Problem} interface, providing methods for:
+ *
  * <ul>
- *     <li>Number of variables {@link #nbVars()}</li>
- *     <li>Initial state {@link #initialState()}</li>
- *     <li>Transition function {@link #transition(PDPState, Decision)}</li>
- *     <li>Transition cost {@link #transitionCost(PDPState, Decision)}</li>
- *     <li>Domain of possible decisions {@link #domain(PDPState, int)}</li>
+ *   <li>Number of variables {@link #nbVars()}
+ *   <li>Initial state {@link #initialState()}
+ *   <li>Transition function {@link #transition(PDPState, Decision)}
+ *   <li>Transition cost {@link #transitionCost(PDPState, Decision)}
+ *   <li>Domain of possible decisions {@link #domain(PDPState, int)}
  * </ul>
  *
+ * <p>States are represented by {@link PDPState}, including:
  *
- * <p>States are represented by {@link PDPState}, including:</p>
  * <ul>
- *     <li>The set of currently visited nodes</li>
- *     <li>The set of nodes still to visit</li>
- *     <li>The current vehicle load</li>
+ *   <li>The set of currently visited nodes
+ *   <li>The set of nodes still to visit
+ *   <li>The current vehicle load
  * </ul>
  */
 public class PDPProblem implements Problem<PDPState> {
-    /**
-     * Distance matrix between all nodes.
-     */
+    /** Distance matrix between all nodes. */
     public final double[][] distanceMatrix;
-    /**
-     * Maximum capacity of the vehicle.
-     */
+
+    /** Maximum capacity of the vehicle. */
     public final int maxCapa;
-    /**
-     * Number of nodes in the problem.
-     */
+
+    /** Number of nodes in the problem. */
+    @SuppressWarnings("checkstyle:MemberName") // public API
     public int n;
-    /**
-     * Map of pickup nodes to their associated delivery nodes.
-     */
+
+    /** Map of pickup nodes to their associated delivery nodes. */
     public HashMap<Integer, Integer> pickupToAssociatedDelivery;
-    /**
-     * Set of nodes that are not part of any pickup-delivery pair.
-     */
+
+    /** Set of nodes that are not part of any pickup-delivery pair. */
     public Set<Integer> unrelatedNodes;
-    /**
-     * Map of delivery nodes to their associated pickup nodes.
-     */
+
+    /** Map of delivery nodes to their associated pickup nodes. */
     HashMap<Integer, Integer> deliveryToAssociatedPickup;
-    /**
-     * Optional known optimal value of the problem.
-     */
+
+    /** Optional known optimal value of the problem. */
     private Optional<Double> optimal;
 
-    /**
-     * Optional name of the instance to ease readability in tests.
-     */
+    /** Optional name of the instance to ease readability in tests. */
     private Optional<String> name = Optional.empty();
 
     /**
-     * Constructs a PDPProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
+     * Constructs a PDPProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum
+     * vehicle capacity.
      *
-     * @param distanceMatrix             distance matrix between all nodes
+     * @param distanceMatrix distance matrix between all nodes
      * @param pickupToAssociatedDelivery mapping from pickup nodes to delivery nodes
-     * @param maxCapa                    maximum capacity of the vehicle
+     * @param maxCapa maximum capacity of the vehicle
      */
-    public PDPProblem(final double[][] distanceMatrix,
-                      HashMap<Integer, Integer> pickupToAssociatedDelivery, int maxCapa) {
+    public PDPProblem(
+            final double[][] distanceMatrix,
+            HashMap<Integer, Integer> pickupToAssociatedDelivery,
+            int maxCapa) {
         this.distanceMatrix = distanceMatrix;
         this.n = distanceMatrix.length;
         this.maxCapa = maxCapa;
@@ -103,13 +106,13 @@ public class PDPProblem implements Problem<PDPState> {
 
     /**
      * Constructs a PDPProblem by reading an instance from a file.
-     * <p>
-     * The file format should include:
-     * </p>
+     *
+     * <p>The file format should include:
+     *
      * <ul>
-     *     <li>The number of nodes and optionally the optimal value.</li>
-     *     <li>The distance matrix between nodes.</li>
-     *     <li>The pickup-delivery pairs.</li>
+     *   <li>The number of nodes and optionally the optimal value.
+     *   <li>The distance matrix between nodes.
+     *   <li>The pickup-delivery pairs.
      * </ul>
      *
      * @param fname path to the instance file
@@ -140,11 +143,15 @@ public class PDPProblem implements Problem<PDPState> {
                     int node = linesCount - skip - 1;
                     String[] tokens = line.split("\\s+");
                     double[] row =
-                            Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();
+                            Arrays.stream(tokens)
+                                    .filter(s -> !s.isEmpty())
+                                    .mapToDouble(Double::parseDouble)
+                                    .toArray();
                     matrix[node] = row;
                 } else { // read pick-up and delivery pairs
                     String[] tokens = line.split(" -> ");
-                    pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
+                    pickupToAssociatedDelivery.put(
+                            Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
                 }
 
                 linesCount++;
@@ -174,15 +181,14 @@ public class PDPProblem implements Problem<PDPState> {
 
     /**
      * Returns the number of variables (decisions) in the problem.
-     * <p>
-     * Note: the last decision corresponds to returning to the depot (node 0).
-     * </p>
+     *
+     * <p>Note: the last decision corresponds to returning to the depot (node 0).
      *
      * @return number of variables
      */
     @Override
     public int nbVars() {
-        return n; //the last decision will be to come back to point zero
+        return n; // the last decision will be to come back to point zero
     }
 
     /**
@@ -216,28 +222,32 @@ public class PDPProblem implements Problem<PDPState> {
     }
 
     /**
-     * Returns the domain of possible decisions (nodes to visit) from a given state and variable index.
+     * Returns the domain of possible decisions (nodes to visit) from a given state and variable
+     * index.
      *
      * @param state current {@link PDPState}
-     * @param var   index of the decision variable
+     * @param var index of the decision variable
      * @return iterator over possible node indices for the decision
      */
     @Override
     public Iterator<Integer> domain(PDPState state, int var) {
         if (var == n - 1) {
-            //the final decision is to come back to node zero
+            // the final decision is to come back to node zero
             return singleton(0).stream().iterator();
         } else {
 
             boolean canIncludePickups = state.minContent < maxCapa;
             boolean canIncludeDeliveries = state.maxContent != 0;
 
-            return state
-                    .openToVisit
-                    .stream()
-                    .filter(point ->
-                            ((canIncludePickups | !pickupToAssociatedDelivery.containsKey(point))
-                                    && (canIncludeDeliveries | !deliveryToAssociatedPickup.containsKey(point))))
+            return state.openToVisit.stream()
+                    .filter(
+                            point ->
+                                    ((canIncludePickups
+                                                    | !pickupToAssociatedDelivery.containsKey(
+                                                            point))
+                                            && (canIncludeDeliveries
+                                                    | !deliveryToAssociatedPickup.containsKey(
+                                                            point))))
                     .boxed()
                     .iterator();
         }
@@ -246,7 +256,7 @@ public class PDPProblem implements Problem<PDPState> {
     /**
      * Computes the next state given a current state and a decision.
      *
-     * @param state    current {@link PDPState}
+     * @param state current {@link PDPState}
      * @param decision the {@link Decision} made
      * @return new {@link PDPState} after applying the decision
      */
@@ -275,23 +285,22 @@ public class PDPProblem implements Problem<PDPState> {
             newMaxContent -= 1;
         }
 
-        if (newMinContent < 0) newMinContent = 0;
-        if (newMaxContent > maxCapa) newMaxContent = maxCapa;
+        if (newMinContent < 0) {
+            newMinContent = 0;
+        }
+        if (newMaxContent > maxCapa) {
+            newMaxContent = maxCapa;
+        }
         return new PDPState(
-                state.singleton(node),
-                newOpenToVisit,
-                newAllToVisit,
-                newMinContent,
-                newMaxContent);
+                state.singleton(node), newOpenToVisit, newAllToVisit, newMinContent, newMaxContent);
     }
 
     /**
      * Computes the cost of transitioning from a state via a decision.
-     * <p>
-     * Typically corresponds to the travel distance from the current node to the chosen node.
-     * </p>
      *
-     * @param state    current {@link PDPState}
+     * <p>Typically corresponds to the travel distance from the current node to the chosen node.
+     *
+     * @param state current {@link PDPState}
      * @param decision the {@link Decision} made
      * @return cost of the transition
      */
@@ -299,7 +308,9 @@ public class PDPProblem implements Problem<PDPState> {
     public double transitionCost(PDPState state, Decision decision) {
         return state.current.stream()
                 .filter(possibleCurrentNode -> possibleCurrentNode != decision.value())
-                .mapToDouble(possibleCurrentNode -> distanceMatrix[possibleCurrentNode][decision.value()])
+                .mapToDouble(
+                        possibleCurrentNode ->
+                                distanceMatrix[possibleCurrentNode][decision.value()])
                 .min()
                 .getAsDouble();
     }
@@ -317,19 +328,21 @@ public class PDPProblem implements Problem<PDPState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not match " + "the number %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
-        Map<Integer, Long> count = Arrays.stream(solution)
-                .boxed()
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+        Map<Integer, Long> count =
+                Arrays.stream(solution)
+                        .boxed()
+                        .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
             String msg = "The solution has duplicated nodes and does not reache each node";
             throw new InvalidSolutionException(msg);
         }
-
 
         int[] posInRoute = new int[nbVars()];
         for (int i = 0; i < nbVars(); i++) {
@@ -343,32 +356,45 @@ public class PDPProblem implements Problem<PDPState> {
                 int pickUpPos = posInRoute[node];
                 int deliveryPos = posInRoute[delivery];
                 if (pickUpPos >= deliveryPos) {
-                    String msg = String.format("The precedance constraint %d -> %d is not " +
-                            "respected in %s", node, delivery, Arrays.toString(solution));
+                    String msg =
+                            String.format(
+                                    "The precedance constraint %d -> %d is not "
+                                            + "respected in %s",
+                                    node, delivery, Arrays.toString(solution));
                     throw new InvalidSolutionException(msg);
                 }
-
             }
         }
 
-        double value = distanceMatrix[0][solution[0]]; //Start from the depot.
+        double value = distanceMatrix[0][solution[0]]; // Start from the depot.
         int vehicleContent = 0;
-        if (pickupToAssociatedDelivery.containsKey(solution[0])) vehicleContent++;
-        else if (deliveryToAssociatedPickup.containsKey(solution[0])) vehicleContent--;
+        if (pickupToAssociatedDelivery.containsKey(solution[0])) {
+            vehicleContent++;
+        } else if (deliveryToAssociatedPickup.containsKey(solution[0])) {
+            vehicleContent--;
+        }
         for (int i = 1; i < nbVars(); i++) {
             value += distanceMatrix[solution[i - 1]][solution[i]];
-            if (pickupToAssociatedDelivery.containsKey(solution[i])) vehicleContent++;
-            else if (deliveryToAssociatedPickup.containsKey(solution[i])) vehicleContent--;
+            if (pickupToAssociatedDelivery.containsKey(solution[i])) {
+                vehicleContent++;
+            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {
+                vehicleContent--;
+            }
             if (vehicleContent > maxCapa) {
-                String msg = String.format("The capacity of %s (%d) exceeds the capacity " +
-                        "of the vehicle (%d)", Arrays.toString(solution), vehicleContent, maxCapa);
+                String msg =
+                        String.format(
+                                "The capacity of %s (%d) exceeds the capacity "
+                                        + "of the vehicle (%d)",
+                                Arrays.toString(solution), vehicleContent, maxCapa);
                 throw new InvalidSolutionException(msg);
             } else if (vehicleContent < 0) {
-                String msg = String.format("The capacity of %s (%d) goes below 0", Arrays.toString(solution), vehicleContent);
+                String msg =
+                        String.format(
+                                "The capacity of %s (%d) goes below 0",
+                                Arrays.toString(solution), vehicleContent);
                 throw new InvalidSolutionException(msg);
             }
         }
-
 
         return value;
     }
@@ -392,10 +418,22 @@ public class PDPProblem implements Problem<PDPState> {
      */
     @Override
     public String toString() {
-        String str = "PDP(\n\tn:" + n + "\n" +
-                "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
-                "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
-                "\t" + Arrays.stream(distanceMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
+        String str =
+                "PDP(\n\tn:"
+                        + n
+                        + "\n"
+                        + "\tpdp:"
+                        + pickupToAssociatedDelivery.keySet().stream()
+                                .map(p -> p + "->" + pickupToAssociatedDelivery.get(p))
+                                .toList()
+                        + "\n"
+                        + "\tunrelated:"
+                        + unrelatedNodes.stream().toList()
+                        + "\n"
+                        + "\t"
+                        + Arrays.stream(distanceMatrix)
+                                .map(l -> "\n\t " + Arrays.toString(l))
+                                .toList();
 
         return name.orElse(str);
     }
@@ -420,7 +458,7 @@ public class PDPProblem implements Problem<PDPState> {
                 return -1;
             }
         }
-        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; //final come back
+        toReturn = toReturn + distanceMatrix[solution[solution.length - 1]][0]; // final come back
         return toReturn;
     }
 }

@@ -1,22 +1,18 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.util.BitSet;
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Computes a fast lower bound for the Maximum Independent Set Problem (MISP).
- * <p>
- * This implementation of {@link FastLowerBound} estimates the best possible solution
- * from a given state by considering all remaining vertices optimistically.
- * The bound is used in search algorithms to prune suboptimal branches efficiently.
- * </p>
+ *
+ * <p>This implementation of {@link FastLowerBound} estimates the best possible solution from a
+ * given state by considering all remaining vertices optimistically. The bound is used in search
+ * algorithms to prune suboptimal branches efficiently.
  */
 public class MispFastLowerBound implements FastLowerBound<BitSet> {
-    /**
-     * The MISP problem instance for which the lower bound is computed.
-     */
+    /** The MISP problem instance for which the lower bound is computed. */
     private final MispProblem problem;
 
     /**
@@ -24,19 +20,17 @@ public class MispFastLowerBound implements FastLowerBound<BitSet> {
      *
      * @param problem the MISP problem instance
      */
-
     public MispFastLowerBound(MispProblem problem) {
         this.problem = problem;
     }
 
     /**
      * Computes a fast lower bound for the given state and set of remaining variables.
-     * <p>
-     * The method sums the weights of all vertices already selected in the current {@code state}
-     * and returns its negation, which corresponds to the maximal independent set assumption.
-     * </p>
      *
-     * @param state     the current state of the solution as a {@link BitSet}
+     * <p>The method sums the weights of all vertices already selected in the current {@code state}
+     * and returns its negation, which corresponds to the maximal independent set assumption.
+     *
+     * @param state the current state of the solution as a {@link BitSet}
      * @param variables the set of remaining variable indices (unused in this implementation)
      * @return a fast lower bound on the optimal solution value
      */

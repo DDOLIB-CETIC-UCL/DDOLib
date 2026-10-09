@@ -1,27 +1,25 @@
 package org.ddolib.nolayer.solver;
 
-import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.layered.solving.ddo.core.Decision;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
- * Interface representing a generic solver for no-layered decision diagram based optimization problems.
- * <p>
- * A solver explores the search space defined by a decision diagram, applies bounds and relaxations,
- * and can return the best solution found along with its value.
- * </p>
+ * Interface representing a generic solver for no-layered decision diagram based optimization
+ * problems.
  *
- * <p>
- * Implementations of this interface typically provide algorithms such as:
- * </p>
+ * <p>A solver explores the search space defined by a decision diagram, applies bounds and
+ * relaxations, and can return the best solution found along with its value.
+ *
+ * <p>Implementations of this interface typically provide algorithms such as:
+ *
  * <ul>
- *     <li>Dynamic programming on decision diagrams</li>
- *     <li>A* search</li>
- *     <li>Branch-and-bound or anytime search strategies</li>
+ *   <li>Dynamic programming on decision diagrams
+ *   <li>A* search
+ *   <li>Branch-and-bound or anytime search strategies
  * </ul>
  *
  * @see SearchStatistics
@@ -32,13 +30,15 @@ public interface Solver {
     /**
      * Minimizes the objective function according to the solver strategy.
      *
-     * @param limit      a {@link Predicate} that can limit or stop the search based on current {@link SearchStatistics}
-     * @param onSolution a {@link BiConsumer} invoked on each new solution found; receives the solution array and
-     *                   current statistics
+     * @param limit a {@link Predicate} that can limit or stop the search based on current {@link
+     *     SearchStatistics}
+     * @param onSolution a {@link BiConsumer} invoked on each new solution found; receives the
+     *     solution array and current statistics
      * @return the statistics of the search after completion
      */
-    Solution minimize(Predicate<SearchStatistics> limit,
-                      BiConsumer<List<Integer>, SearchStatistics> onSolution);
+    Solution minimize(
+            Predicate<SearchStatistics> limit,
+            BiConsumer<List<Integer>, SearchStatistics> onSolution);
 
     /**
      * Returns the value of the best solution found so far by this solver, if any.
@@ -53,5 +53,4 @@ public interface Solver {
      * @return the ordered list of labels leading to the best solution from the initial state
      */
     List<Integer> bestSolution();
-
 }

@@ -1,5 +1,16 @@
 package org.ddolib.layered.solving.awastar.core.solver;
 
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -8,26 +19,24 @@ import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.modeling.AwAstarModel;
+import org.ddolib.layered.modeling.DefaultFastLowerBound;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.util.debug.DebugUtil;
 
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 /**
- * Implementation of an Anytime Weighted A* search (AWA*) solver for decision diagram-based optimization problems.
+ * Implementation of an Anytime Weighted A* search (AWA*) solver for decision diagram-based
+ * optimization problems.
  *
- * <p>The solver uses a combination of a lower bound, dominance rules to explore the
- * search space efficiently. It adds a weight to the heuristic function of the A* algorithm. This
- * weight speed-up reaching feasible solution.
- * </p>
+ * <p>The solver uses a combination of a lower bound, dominance rules to explore the search space
+ * efficiently. It adds a weight to the heuristic function of the A* algorithm. This weight speed-up
+ * reaching feasible solution.
  *
  * @param <T> the type of states in a problem
  * @see Solver
@@ -38,7 +47,6 @@ import java.util.stream.IntStream;
  * @see AwAstarModel
  */
 public final class AwAstarSolver<T> implements Solver {
-
 
     // The problem we want to minimize
     private final Problem<T> problem;
@@ -58,29 +66,27 @@ public final class AwAstarSolver<T> implements Solver {
     private final PriorityQueue<SubProblem<T>> open;
     private final PriorityQueue<SubProblem<T>> openByF;
 
-
     private final SubProblem<T> root;
 
-
     /**
-     * <ul>g
-     *     <li>0: no verbosity</li>
-     *     <li>1: display newBest whenever there is a newBest</li>
-     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
-     *     <li>3: 2 + every developed subproblem</li>
-     *     <li>4: 3 + details about the developed state</li>
+     * Verbosity level of the solver, i.e. what is printed during the search.
+     *
+     * <ul>
+     *   <li>0: no verbosity
+     *   <li>1: display newBest whenever there is a newBest
+     *   <li>2: 1 + statistics about the front every half a second (or so)
+     *   <li>3: 2 + every developed subproblem
+     *   <li>4: 3 + details about the developed state
      * </ul>
-     * <p>
-     * <p>
-     * 3: 2 + every developed subproblem
-     * 4: 3 + details about the developed state
      */
     private final VerboseMode verboseMode;
+
     /**
-     * The debug level of the compilation to add additional checks (see
-     * {@link DebugLevel for details}
+     * The debug level of the compilation to add additional checks (see {@link DebugLevel} for
+     * details).
      */
     private final DebugLevel debugLevel;
+
     private final boolean defaultLowerBoundValue;
 
     private AstarStats statistics;
@@ -88,7 +94,6 @@ public final class AwAstarSolver<T> implements Solver {
     private double bestUB;
     // If set, this keeps the info about the best solution so far.
     private Optional<Set<Decision>> bestSol;
-
 
     /**
      * Constructs a solver via a {@link AwAstarModel}.
@@ -99,8 +104,8 @@ public final class AwAstarSolver<T> implements Solver {
     public AwAstarSolver(AwAstarModel<T> model) {
 
         if (model.weight() < 1) {
-            throw new IllegalArgumentException("The weight associated to the heuristic function " +
-                    "must be >= 1 !");
+            throw new IllegalArgumentException(
+                    "The weight associated to the heuristic function " + "must be >= 1 !");
         }
 
         this.problem = model.problem();
@@ -114,14 +119,15 @@ public final class AwAstarSolver<T> implements Solver {
         this.debugLevel = model.debugMode();
 
         this.weight = model.weight();
-        this.open = new PriorityQueue<>(
-                Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
+        this.open =
+                new PriorityQueue<>(
+                        Comparator.comparingDouble(
+                                sub -> sub.getValue() + weight * sub.getLowerBound()));
 
         this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
-
 
     private AwAstarSolver(AwAstarModel<T> model, StateAndDepth<T> rootKey) {
         this.problem = model.problem();
@@ -135,44 +141,53 @@ public final class AwAstarSolver<T> implements Solver {
         this.debugLevel = DebugLevel.OFF;
 
         this.weight = model.weight();
-        this.open = new PriorityQueue<>(
-                Comparator.comparingDouble(sub -> sub.getValue() + weight * sub.getLowerBound()));
+        this.open =
+                new PriorityQueue<>(
+                        Comparator.comparingDouble(
+                                sub -> sub.getValue() + weight * sub.getLowerBound()));
         this.openByF = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::f));
         this.root = constructRoot(rootKey.state(), 0, rootKey.depth());
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.add(root);
         openByF.add(root);
-        present.put(new StateAndDepth<>(root.getState(), root.getDepth()),
+        present.put(
+                new StateAndDepth<>(root.getState(), root.getDepth()),
                 root.getValue() + weight * root.getLowerBound());
 
-        if (root.getDepth() == problem.nbVars()) { //The root is the solution
+        if (root.getDepth() == problem.nbVars()) { // The root is the solution
             bestSol = Optional.of(root.getPath());
             bestUB = root.getValue();
-            statistics = statistics.updateIncumbent(bestUB, gap())
-                    .updateStatus(SearchStatus.OPTIMAL);
+            statistics =
+                    statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.OPTIMAL);
             return new Solution(bestSolution(), statistics);
         }
 
         while (!open.isEmpty()) {
             // -- debug, stat, verbosity, stopping  ---
 
-            verboseMode.detailedSearchState(statistics.nbIterations(), open.size(), bestUB,
-                    open.peek().getLowerBound(), statistics.gap());
+            verboseMode.detailedSearchState(
+                    statistics.nbIterations(),
+                    open.size(),
+                    bestUB,
+                    open.peek().getLowerBound(),
+                    statistics.gap());
 
-            statistics = statistics.incrementNbIter()
-                    .updateFrontierMaxSize(open.size())
-                    .updateTime(System.currentTimeMillis())
-                    .updateGap(gap());
-
+            statistics =
+                    statistics
+                            .incrementNbIter()
+                            .updateFrontierMaxSize(open.size())
+                            .updateTime(System.currentTimeMillis())
+                            .updateGap(gap());
 
             if (limit.test(statistics)) { // user-defined stopping criterion
-                return new Solution(bestSolution(),
-                        statistics.updateTime(System.currentTimeMillis()));
+                return new Solution(
+                        bestSolution(), statistics.updateTime(System.currentTimeMillis()));
             }
             // -- end debug, stat, verbosity, stopping  ---
 
@@ -180,20 +195,28 @@ public final class AwAstarSolver<T> implements Solver {
             openByF.remove(sub);
 
             // if current state is dominated, we skip it
-            if (dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) continue;
+            if (dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                continue;
+            }
 
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
             double subFprime = present.remove(subKey);
 
             // The current node has been explored. We can skip it.
-            if (closed.containsKey(subKey)) continue;
+            if (closed.containsKey(subKey)) {
+                continue;
+            }
 
             closed.put(subKey, subFprime);
 
             // Sub can only lead to less good solution.
-            if (sub.f() + 1e-10 >= bestUB) continue;
+            if (sub.f() + 1e-10 >= bestUB) {
+                continue;
+            }
 
-            if (sub.getDepth() < problem.nbVars()) addChildren(sub, onSolution);
+            if (sub.getDepth() < problem.nbVars()) {
+                addChildren(sub, onSolution);
+            }
         }
 
         if (debugLevel != DebugLevel.OFF) {
@@ -201,8 +224,11 @@ public final class AwAstarSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
-        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        if (bestSol.isPresent()) {
+            statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
+        } else {
+            statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        }
 
         return new Solution(bestSolution(), statistics);
     }
@@ -218,16 +244,20 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     private double gap() {
-        if (Double.isInfinite(bestUB)) return Double.POSITIVE_INFINITY;
+        if (Double.isInfinite(bestUB)) {
+            return Double.POSITIVE_INFINITY;
+        }
 
-        if (open.isEmpty()) return 0.0;
+        if (open.isEmpty()) {
+            return 0.0;
+        }
 
         double globalLB = defaultLowerBoundValue ? openByF.peek().getValue() : openByF.peek().f();
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
     }
 
-    private void addChildren(SubProblem<T> subProblem,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    private void addChildren(
+            SubProblem<T> subProblem, BiConsumer<int[], SearchStatistics> onSolution) {
         T state = subProblem.getState();
         int var = subProblem.getDepth();
 
@@ -249,13 +279,16 @@ public final class AwAstarSolver<T> implements Solver {
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
             // h-cost from this state to the target
-            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
+            double h =
+                    lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
 
             double f = g + h;
             double fprime = g + weight * h;
 
             // this child can only lead to less good solution
-            if (f + 1e-10 >= bestUB) continue;
+            if (f + 1e-10 >= bestUB) {
+                continue;
+            }
 
             SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
             StateAndDepth<T> newKey = new StateAndDepth<>(newState, newSub.getDepth());
@@ -275,7 +308,9 @@ public final class AwAstarSolver<T> implements Solver {
                 nbSelectedChildren++;
 
                 Double closedFprime = closed.get(newKey);
-                if (closedFprime != null && fprime < closedFprime) closed.remove(newKey);
+                if (closedFprime != null && fprime < closedFprime) {
+                    closed.remove(newKey);
+                }
             }
 
             // is the new state a solution?
@@ -283,8 +318,8 @@ public final class AwAstarSolver<T> implements Solver {
                 assert (Math.abs(h) <= 1e-10);
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                statistics = statistics.updateIncumbent(bestUB, gap())
-                        .updateStatus(SearchStatus.SAT);
+                statistics =
+                        statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
                 onSolution.accept(constructSolution(path), statistics);
                 verboseMode.newBest(bestUB);
             }
@@ -293,8 +328,8 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     /**
-     * Construct the root of a problem given the state, the value and the depth of the root node.
-     * A non-zero depth is used for debug. For debug, the value of root is 0.
+     * Construct the root of a problem given the state, the value and the depth of the root node. A
+     * non-zero depth is used for debug. For debug, the value of root is 0.
      *
      * @param state the states of the current root
      * @param value the value of the current root
@@ -310,41 +345,36 @@ public final class AwAstarSolver<T> implements Solver {
                 nullDecisions.add(new Decision(i, 0));
             }
         }
-        return new SubProblem<>(
-                state,
-                value,
-                lb.fastLowerBound(state, vars),
-                nullDecisions);
+        return new SubProblem<>(state, value, lb.fastLowerBound(state, vars), nullDecisions);
     }
 
-    /**
-     * Checks if the lower bound of explored nodes of the search is admissible.
-     */
+    /** Checks if the lower bound of explored nodes of the search is admissible. */
     private void checkFLBAdmissibility() {
 
         HashSet<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
-        AwAstarModel<T> model = new AwAstarModel<>() {
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+        AwAstarModel<T> model =
+                new AwAstarModel<>() {
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return lb;
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return lb;
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return dominance;
-            }
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return dominance;
+                    }
 
-            @Override
-            public double weight() {
-                return weight;
-            }
-        };
+                    @Override
+                    public double weight() {
+                        return weight;
+                    }
+                };
 
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AwAstarSolver<>(model, key));
     }

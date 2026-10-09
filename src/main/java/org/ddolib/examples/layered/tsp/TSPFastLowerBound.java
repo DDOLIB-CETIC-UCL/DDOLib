@@ -1,30 +1,24 @@
 package org.ddolib.examples.layered.tsp;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Implementation of a fast lower bound for the Traveling Salesman Problem (TSP).
  *
- * <p>
- * This lower bound estimates the minimum additional cost required to complete a partial tour.
- * For each unvisited node, it considers the smallest incident edge (minimum distance to any other node)
- * and sums these minimum distances. It also includes the starting node (assumed as node 0) to
+ * <p>This lower bound estimates the minimum additional cost required to complete a partial tour.
+ * For each unvisited node, it considers the smallest incident edge (minimum distance to any other
+ * node) and sums these minimum distances. It also includes the starting node (assumed as node 0) to
  * account for the final return to the origin.
- * </p>
  *
- * <p>
- * The bound is not guaranteed to be tight but is computed very efficiently, making it suitable for
- * heuristic or branch-and-bound algorithms where fast estimations are required.
- * </p>
+ * <p>The bound is not guaranteed to be tight but is computed very efficiently, making it suitable
+ * for heuristic or branch-and-bound algorithms where fast estimations are required.
  *
- * <p>
- * Usage:
- * </p>
+ * <p>Usage:
+ *
  * <pre>
  * TSPFastLowerBound lbCalculator = new TSPFastLowerBound(problem);
  * double lb = lbCalculator.fastLowerBound(state, unassignedNodes);
@@ -36,14 +30,14 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
     /**
      * Constructs a fast lower bound calculator for the given TSP problem.
      *
-     * @param problem the TSP problem instance containing the distance matrix.
-     *                It is assumed that the matrix is symmetric and distances are non-negative.
+     * @param problem the TSP problem instance containing the distance matrix. It is assumed that
+     *     the matrix is symmetric and distances are non-negative.
      */
     public TSPFastLowerBound(TSPProblem problem) {
-        this.leastIncidentEdge = new double[problem.n];
-        for (int i = 0; i < problem.n; i++) {
+        this.leastIncidentEdge = new double[problem.nbCities];
+        for (int i = 0; i < problem.nbCities; i++) {
             double min = Double.POSITIVE_INFINITY;
-            for (int j = 0; j < problem.n; j++) {
+            for (int j = 0; j < problem.nbCities; j++) {
                 if (i != j) {
                     min = Math.min(min, problem.distanceMatrix[i][j]);
                 }
@@ -55,12 +49,10 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
     /**
      * Computes a fast lower bound on the cost to complete the TSP tour from the given state.
      *
-     * <p>
-     * The bound is computed by summing the smallest incident edges for each unvisited node,
+     * <p>The bound is computed by summing the smallest incident edges for each unvisited node,
      * including the starting node to account for returning to the origin.
-     * </p>
      *
-     * @param state               the current state of the tour, containing the set of nodes yet to visit
+     * @param state the current state of the tour, containing the set of nodes yet to visit
      * @param unassignedVariables the set of variables (nodes) not yet assigned in the tour
      * @return a fast-computed lower bound on the remaining tour cost
      */
@@ -69,7 +61,7 @@ public class TSPFastLowerBound implements FastLowerBound<TSPState> {
         BitSet toVisit = state.toVisit;
         // for each unvisited node, we take the smallest incident edge
         ArrayList<Double> toVisitLB = new ArrayList<>(unassignedVariables.size());
-        toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back
+        toVisitLB.add(leastIncidentEdge[0]); // adding zero for the final come back
         for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
             toVisitLB.add(leastIncidentEdge[i]);
         }

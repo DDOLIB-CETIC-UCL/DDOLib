@@ -1,27 +1,22 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.solving.ddo.core.Decision;
-
 import java.util.BitSet;
 import java.util.Iterator;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Implementation of a relaxation for the Talent Scheduling problem (TSP).
  *
- * <p>
- * This class defines how multiple {@link TSState} instances can be merged into a single
- * relaxed state and how edge costs are relaxed in the context of DDO or other
- * relaxed decision diagrams.
- * </p>
+ * <p>This class defines how multiple {@link TSState} instances can be merged into a single relaxed
+ * state and how edge costs are relaxed in the context of DDO or other relaxed decision diagrams.
  *
- * <p>
- * The relaxation is implemented by merging the remaining and maybe scenes from multiple states:
- * </p>
+ * <p>The relaxation is implemented by merging the remaining and maybe scenes from multiple states:
+ *
  * <ul>
- *     <li>{@code mergedRemaining} is the intersection of all {@code remainingScenes} sets.</li>
- *     <li>{@code mergedMaybe} is the union of all {@code remainingScenes} and {@code maybeScenes},
- *         minus the {@code mergedRemaining} scenes.</li>
+ *   <li>{@code mergedRemaining} is the intersection of all {@code remainingScenes} sets.
+ *   <li>{@code mergedMaybe} is the union of all {@code remainingScenes} and {@code maybeScenes},
+ *       minus the {@code mergedRemaining} scenes.
  * </ul>
  */
 public class TSRelax implements Relaxation<TSState> {
@@ -57,24 +52,26 @@ public class TSRelax implements Relaxation<TSState> {
         }
         mergedMaybe.andNot(mergedRemaining);
 
-        return new TSState(mergedRemaining, mergedMaybe, problem.onLocationActors(mergedRemaining, mergedMaybe));
+        return new TSState(
+                mergedRemaining,
+                mergedMaybe,
+                problem.onLocationActors(mergedRemaining, mergedMaybe));
     }
 
     /**
      * Returns the relaxed edge cost between two states.
      *
-     * <p>In this implementation, the cost is not changed and returned as-is.</p>
+     * <p>In this implementation, the cost is not changed and returned as-is.
      *
-     * @param from   the source state
-     * @param to     the target state
+     * @param from the source state
+     * @param to the target state
      * @param merged the merged state if multiple states are combined
-     * @param d      the decision associated with the edge
-     * @param cost   the original edge cost
+     * @param d the decision associated with the edge
+     * @param cost the original edge cost
      * @return the relaxed edge cost (here equal to {@code cost})
      */
     @Override
     public double relaxEdge(TSState from, TSState to, TSState merged, Decision d, double cost) {
         return cost;
     }
-
 }

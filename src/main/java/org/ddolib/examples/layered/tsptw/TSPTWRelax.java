@@ -1,31 +1,25 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.solving.ddo.core.Decision;
-
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Relaxation class for the Traveling Salesman Problem with Time Windows (TSPTW).
- * <p>
- * This class implements the {@link Relaxation} interface for {@link TSPTWState}.
- * It provides methods to merge multiple states into a relaxed state and
- * to relax the cost of transitions (edges) between states.
- * </p>
+ *
+ * <p>This class implements the {@link Relaxation} interface for {@link TSPTWState}. It provides
+ * methods to merge multiple states into a relaxed state and to relax the cost of transitions
+ * (edges) between states.
  */
 public class TSPTWRelax implements Relaxation<TSPTWState> {
 
-    /**
-     * Represents infinity for arrival time.
-     */
+    /** Represents infinity for arrival time. */
     private static final int INFINITY = Integer.MAX_VALUE;
 
-    /**
-     * Number of variables/nodes in the TSPTW problem.
-     */
+    /** Number of variables/nodes in the TSPTW problem. */
     private final int numVar;
 
     /**
@@ -39,16 +33,16 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
 
     /**
      * Merges multiple TSPTW states into a single relaxed state.
-     * <p>
-     * The merge operation consists of:
-     * </p>
+     *
+     * <p>The merge operation consists of:
+     *
      * <ul>
-     *     <li>Combining visited positions (union of all positions).</li>
-     *     <li>Computing the intersection of all "must visit" sets.</li>
-     *     <li>Building the "possibly visit" set as the union of all "must visit" and "possibly visit" sets,
-     *         then removing the nodes that are mandatory.</li>
-     *     <li>Selecting the minimum arrival time among all states.</li>
-     *     <li>Keeping the depth of the last processed state.</li>
+     *   <li>Combining visited positions (union of all positions).
+     *   <li>Computing the intersection of all "must visit" sets.
+     *   <li>Building the "possibly visit" set as the union of all "must visit" and "possibly visit"
+     *       sets, then removing the nodes that are mandatory.
+     *   <li>Selecting the minimum arrival time among all states.
+     *   <li>Keeping the depth of the last processed state.
      * </ul>
      *
      * @param states an iterator over the states to merge
@@ -64,7 +58,7 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         int mergedDepth = 0;
         while (states.hasNext()) {
             TSPTWState current = states.next();
-            //The merged position is the union of all the position
+            // The merged position is the union of all the position
             switch (current.position()) {
                 case TSPNode(int value) -> mergedPos.add(value);
                 case VirtualNodes(Set<Integer> nodes) -> mergedPos.addAll(nodes);
@@ -81,27 +75,27 @@ public class TSPTWRelax implements Relaxation<TSPTWState> {
         // We exclude the intersection of the must from the merged possibly
         mergedPossibly.andNot(mergedMust);
 
-        return new TSPTWState(new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
+        return new TSPTWState(
+                new VirtualNodes(mergedPos), mergedTime, mergedMust, mergedPossibly, mergedDepth);
     }
 
     /**
      * Relaxes the cost of an edge (transition) between two states.
-     * <p>
-     * In this implementation, the cost is not modified, and the method simply
-     * returns the provided value. This method can be extended to apply more
-     * sophisticated relaxations if needed.
-     * </p>
      *
-     * @param from   the source state
-     * @param to     the target state
+     * <p>In this implementation, the cost is not modified, and the method simply returns the
+     * provided value. This method can be extended to apply more sophisticated relaxations if
+     * needed.
+     *
+     * @param from the source state
+     * @param to the target state
      * @param merged the state resulting from the merge or relaxation
-     * @param d      the decision associated with this transition
-     * @param cost   the cost of the transition
+     * @param d the decision associated with this transition
+     * @param cost the cost of the transition
      * @return the relaxed cost of the transition
      */
     @Override
-    public double relaxEdge(TSPTWState from, TSPTWState to, TSPTWState merged, Decision d, double cost) {
+    public double relaxEdge(
+            TSPTWState from, TSPTWState to, TSPTWState merged, Decision d, double cost) {
         return cost;
     }
-
 }

@@ -1,34 +1,35 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.PrettyPrint;
-import org.ddolib.common.util.io.SolutionPrinter;
-
 import java.io.IOException;
 import java.nio.file.Path;
+import org.ddolib.common.util.PrettyPrint;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.AwAstarModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Knapsack Problem (KS) with Anytime Weighted A* (AWA*).
- * <p>
- * This class demonstrates how to solve an instance of the Knapsack Problem (KS)
- * using the Anytime Weighted A* search algorithm.
- * </p>
- * <p>
- * The program performs the following steps:
- * </p>
+ *
+ * <p>This class demonstrates how to solve an instance of the Knapsack Problem (KS) using the
+ * Anytime Weighted A* search algorithm.
+ *
+ * <p>The program performs the following steps:
+ *
  * <ol>
- *     <li>Loads a knapsack instance from a data file.</li>
- *     <li>Defines an {@link AwAstarModel} with a weight, fast lower bound, and dominance checker.</li>
- *     <li>Runs the AWA* algorithm with a stopping criterion based on relative improvement.</li>
- *     <li>Prints updates when a new incumbent solution is found.</li>
- *     <li>Outputs the final search statistics and displays a progress chart.</li>
+ *   <li>Loads a knapsack instance from a data file.
+ *   <li>Defines an {@link AwAstarModel} with a weight, fast lower bound, and dominance checker.
+ *   <li>Runs the AWA* algorithm with a stopping criterion based on relative improvement.
+ *   <li>Prints updates when a new incumbent solution is found.
+ *   <li>Outputs the final search statistics and displays a progress chart.
  * </ol>
  */
 public class KSAwAstarMain {
 
-    private KSAwAstarMain() {
-    }
+    private KSAwAstarMain() {}
 
     /**
      * Entry point of the AWA* demonstration for the Knapsack Problem.
@@ -37,52 +38,55 @@ public class KSAwAstarMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
-                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance =
+                args.length == 0
+                        ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString()
+                        : args[0];
         final KSProblem problem = new KSProblem(instance);
 
         long t0 = System.currentTimeMillis();
         final double ub = KSAlgo.greedyKS(problem);
         final long greedyDuration = System.currentTimeMillis() - t0;
 
+        final AwAstarModel<Integer> model =
+                new AwAstarModel<>() {
+                    @Override
+                    public Problem<Integer> problem() {
+                        return problem;
+                    }
 
-        final AwAstarModel<Integer> model = new AwAstarModel<>() {
-            @Override
-            public Problem<Integer> problem() {
-                return problem;
-            }
+                    @Override
+                    public KSFastLowerBound lowerBound() {
+                        return new KSFastLowerBound(problem);
+                    }
 
-            @Override
-            public KSFastLowerBound lowerBound() {
-                return new KSFastLowerBound(problem);
-            }
+                    @Override
+                    public DominanceChecker<Integer> dominance() {
+                        return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+                    }
 
-            @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
+                    @Override
+                    public double weight() {
+                        return 15;
+                    }
 
-            @Override
-            public double weight() {
-                return 15;
-            }
-
-            @Override
-            public double upperBound() {
-                return 0;
-            }
-        };
-        Solution bestSolution = Solvers.minimizeAwAStar(
-                model,
-                (sol, s) -> {
-                    SolutionPrinter.printSolution(s, sol);
-                }
-        );
-
+                    @Override
+                    public double upperBound() {
+                        return 0;
+                    }
+                };
+        Solution bestSolution =
+                Solvers.minimizeAwAStar(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
         System.out.printf("Greedy Upper Bound: %f%n", model.upperBound());
-        System.out.printf("Total duration: %s%n", PrettyPrint.formatMs(greedyDuration + bestSolution.statistics().runtime()));
+        System.out.printf(
+                "Total duration: %s%n",
+                PrettyPrint.formatMs(greedyDuration + bestSolution.statistics().runtime()));
     }
 }

@@ -1,45 +1,48 @@
 package org.ddolib.examples.layered.smic;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.frontier.SimpleFrontier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solver.Solution;
 import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Path;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 
 /**
- * The Single Machine with Inventory Constraint (SMIC) with Ddo.
- * The {@code SMICDdoMain} class provides the entry point for solving instances of the
- * <b>Single Machine with Inventory Constraint (SMIC)</b> problem using the
- * <b> Decision Diagram Optimization (DDO)</b> approach.
+ * The Single Machine with Inventory Constraint (SMIC) with Ddo. The {@code SMICDdoMain} class
+ * provides the entry point for solving instances of the <b>Single Machine with Inventory Constraint
+ * (SMIC)</b> problem using the <b> Decision Diagram Optimization (DDO)</b> approach.
  *
- * <p>
- * This main program performs the following steps:
- * </p>
+ * <p>This main program performs the following steps:
+ *
  * <ul>
- *   <li>Loads a SMIC instance from a data file (default: {@code data/SMIC/data10_2.txt});</li>
+ *   <li>Loads a SMIC instance from a data file (default: {@code data/SMIC/data10_2.txt});
  *   <li>Builds a {@link DdoModel} that defines the problem, relaxation operator, ranking function,
- *       lower bound estimator, and dominance relations between states;</li>
- *   <li>Specifies a frontier management policy ({@link SimpleFrontier}) with a
- *       {@link CutSetType#Frontier} strategy;</li>
- *   <li>Executes the optimization via {@link Solvers#minimizeDdo(DdoModel, java.util.function.BiConsumer)};</li>
- *   <li>Prints the resulting solution and search statistics.</li>
+ *       lower bound estimator, and dominance relations between states;
+ *   <li>Specifies a frontier management policy ({@link SimpleFrontier}) with a {@link
+ *       CutSetType#Frontier} strategy;
+ *   <li>Executes the optimization via {@link Solvers#minimizeDdo(DdoModel,
+ *       java.util.function.BiConsumer)};
+ *   <li>Prints the resulting solution and search statistics.
  * </ul>
  *
+ * <p><b>Usage:</b>
  *
- * <p><b>Usage:</b></p>
  * <pre>
  *   java SMICDdoMain [instanceFile]
  * </pre>
- * If no file is provided as an argument, the program defaults to
- * {@code data/SMIC/data10_2.txt}.
  *
- * <p><b>Example:</b></p>
+ * <p>If no file is provided as an argument, the program defaults to {@code data/SMIC/data10_2.txt}.
+ *
+ * <p><b>Example:</b>
+ *
  * <pre>
  *   java SMICDdoMain data/SMIC/data20_3.txt
  * </pre>
@@ -55,70 +58,74 @@ import java.nio.file.Path;
  */
 public class SMICDdoMain {
 
-    private SMICDdoMain() {
-    }
+    private SMICDdoMain() {}
 
     /**
-     * Entry point of the SMIC solver using the Dynamic Decision Diagram Optimization (DDO) algorithm.
-     * Initializes the problem instance, builds the DDO model, and executes the optimization.
+     * Entry point of the SMIC solver using the Dynamic Decision Diagram Optimization (DDO)
+     * algorithm. Initializes the problem instance, builds the DDO model, and executes the
+     * optimization.
      *
-     * @param args command-line arguments; the first argument may specify the path
-     *             to the SMIC instance file. If omitted, the default instance
-     *             {@code data/SMIC/data10_2.txt} is used.
+     * @param args command-line arguments; the first argument may specify the path to the SMIC
+     *     instance file. If omitted, the default instance {@code data/SMIC/data10_2.txt} is used.
      * @throws IOException if an error occurs while reading the instance file
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "SMIC", "example.txt").toString() : args[0];
+        final String instance =
+                args.length == 0 ? Path.of("data", "SMIC", "example.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
-        DdoModel<SMICState> model = new DdoModel<>() {
-            @Override
-            public Problem<SMICState> problem() {
-                return problem;
-            }
+        DdoModel<SMICState> model =
+                new DdoModel<>() {
+                    @Override
+                    public Problem<SMICState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public SMICFastLowerBound lowerBound() {
-                return new SMICFastLowerBound(problem);
-            }
+                    @Override
+                    public SMICFastLowerBound lowerBound() {
+                        return new SMICFastLowerBound(problem);
+                    }
 
-            @Override
-            public DominanceChecker<SMICState> dominance() {
-                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
-            }
+                    @Override
+                    public DominanceChecker<SMICState> dominance() {
+                        return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+                    }
 
-            @Override
-            public SMICRelax relaxation() {
-                return new SMICRelax(problem);
-            }
+                    @Override
+                    public SMICRelax relaxation() {
+                        return new SMICRelax(problem);
+                    }
 
-            @Override
-            public SMICRanking ranking() {
-                return new SMICRanking();
-            }
+                    @Override
+                    public SMICRanking ranking() {
+                        return new SMICRanking();
+                    }
 
-            @Override
-            public Frontier<SMICState> frontier() {
-                return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
-            }
+                    @Override
+                    public Frontier<SMICState> frontier() {
+                        return new SimpleFrontier<>(ranking(), CutSetType.LastExactLayer);
+                    }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
+                    @Override
+                    public boolean useCache() {
+                        return true;
+                    }
 
-            @Override
-            public boolean exportDot() {
-                return true;
-            }
+                    @Override
+                    public boolean exportDot() {
+                        return true;
+                    }
 
-            @Override
-            public WidthHeuristic<SMICState> widthHeuristic() {
-                return new FixedWidth<>(2);
-            }
-        };
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+                    @Override
+                    public WidthHeuristic<SMICState> widthHeuristic() {
+                        return new FixedWidth<>(2);
+                    }
+                };
+        Solution bestSolution =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

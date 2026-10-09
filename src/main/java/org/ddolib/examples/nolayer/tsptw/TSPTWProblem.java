@@ -1,36 +1,41 @@
 package org.ddolib.examples.nolayer.tsptw;
 
-import org.ddolib.nolayer.modeling.Problem;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Traveling Salesman Problem with Time Windows (TSPTW), using the no-layer modeling API.
- * <p>
- * Models the TSPTW: starting from and returning to city 0, visit every other city exactly
- * once, arriving within its time window (waiting if arriving early), while minimizing the
- * total elapsed time. States are represented by {@link TSPTWState} (current city, current
- * time, and set of cities still to visit).
- * </p>
+ *
+ * <p>Models the TSPTW: starting from and returning to city 0, visit every other city exactly once,
+ * arriving within its time window (waiting if arriving early), while minimizing the total elapsed
+ * time. States are represented by {@link TSPTWState} (current city, current time, and set of cities
+ * still to visit).
  */
 public class TSPTWProblem implements Problem<TSPTWState> {
 
     /** Travel distance (duration) matrix between cities, indexed by origin and destination city. */
     public final int[][] distance;
+
     /** Time window of each city, indexed by city number. */
     public final TimeWindow[] timeWindows;
+
     /** Number of cities. */
     public final int nbVars;
 
     /**
      * Creates a new TSPTW instance.
      *
-     * @param distance    travel distance (duration) matrix between cities, indexed by origin
-     *                    and destination city
+     * @param distance travel distance (duration) matrix between cities, indexed by origin and
+     *     destination city
      * @param timeWindows time window of each city, indexed by city number
      */
     public TSPTWProblem(int[][] distance, TimeWindow[] timeWindows) {
@@ -55,7 +60,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             int lineCount = 0;
             String line;
             while ((line = br.readLine()) != null) {
-                //Skip comment
+                // Skip comment
                 if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
@@ -108,7 +113,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             return dom.iterator();
         }
 
-        for (int i = state.mustVisit().nextSetBit(0); i >= 0; i = state.mustVisit().nextSetBit(i + 1)) {
+        for (int i = state.mustVisit().nextSetBit(0);
+                i >= 0;
+                i = state.mustVisit().nextSetBit(i + 1)) {
             if (reachable(state, i)) {
                 dom.add(i);
             } else {
@@ -138,30 +145,36 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     @Override
     public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         if (solution.size() != nbVars) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", solution, nbVars));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            solution, nbVars));
         }
 
-        java.util.Map<Integer, Long> count = solution.stream()
-                .collect(java.util.stream.Collectors.groupingBy(x -> x, java.util.stream.Collectors.counting()));
+        java.util.Map<Integer, Long> count =
+                solution.stream()
+                        .collect(
+                                java.util.stream.Collectors.groupingBy(
+                                        x -> x, java.util.stream.Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
             String msg = "The solution has duplicated nodes and does not reach each node";
             throw new InvalidSolutionException(msg);
         }
 
-        double value = distance[0][solution.get(0)]; //Start from the depot.
+        double value = distance[0][solution.get(0)]; // Start from the depot.
         value += Math.max(0, timeWindows[solution.get(0)].start() - value);
-
 
         for (int i = 1; i < nbVars; i++) {
             int from = solution.get(i - 1);
             int to = solution.get(i);
             value += distance[from][to];
             if (value > timeWindows[to].end()) {
-                String msg = String.format("This solution does not respect time windows. \nYou " +
-                                "arrive at node %d at time %f. Its time window is %s", to, value,
-                        timeWindows[to]);
+                String msg =
+                        String.format(
+                                "This solution does not respect time windows. \nYou "
+                                        + "arrive at node %d at time %f. Its time window is %s",
+                                to, value, timeWindows[to]);
                 throw new InvalidSolutionException(msg);
             }
             value += Math.max(0, timeWindows[to].start() - value);

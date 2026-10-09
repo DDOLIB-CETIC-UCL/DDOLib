@@ -1,34 +1,40 @@
 package org.ddolib.examples.nolayer.misp;
 
-import org.ddolib.nolayer.modeling.Problem;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
 import org.ddolib.common.util.InvalidSolutionException;
-
-import java.util.*;
+import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * The Maximum Independent Set Problem (MISP), in the no-layer modeling API.
- * <p>
- * The problem is represented as an undirected graph where each node has a weight, and the
- * goal is to select a subset of non-adjacent nodes (an independent set) that maximizes the
- * total weight. Since the library only minimizes, weights are negated in
- * {@link #transitionCost} and {@link #evaluate}.
+ *
+ * <p>The problem is represented as an undirected graph where each node has a weight, and the goal
+ * is to select a subset of non-adjacent nodes (an independent set) that maximizes the total weight.
+ * Since the library only minimizes, weights are negated in {@link #transitionCost} and {@link
+ * #evaluate}.
  */
 public class MispProblem implements Problem<MispState> {
 
     /** For each node, the set of nodes it is adjacent to. */
     public final BitSet[] neighbors;
+
     /** The weight of each node. */
     public final int[] weight;
+
     /** The number of nodes in the graph. */
     public final int nbVars;
+
     private final Optional<String> name;
 
     /**
      * Creates a new MISP instance with the given adjacency and weights.
      *
      * @param neighbors for each node, the set of nodes it is adjacent to
-     * @param weight    the weight of each node
-     * @param name      a name identifying this instance, typically the file it was loaded from
+     * @param weight the weight of each node
+     * @param name a name identifying this instance, typically the file it was loaded from
      */
     public MispProblem(BitSet[] neighbors, int[] weight, String name) {
         this.neighbors = neighbors;
@@ -37,12 +43,11 @@ public class MispProblem implements Problem<MispState> {
         this.name = Optional.of(name);
     }
 
-
     /**
      * Creates a new, unnamed MISP instance with the given adjacency and weights.
      *
      * @param neighbors for each node, the set of nodes it is adjacent to
-     * @param weight    the weight of each node
+     * @param weight the weight of each node
      */
     public MispProblem(BitSet[] neighbors, int[] weight) {
         this.neighbors = neighbors;
@@ -52,9 +57,9 @@ public class MispProblem implements Problem<MispState> {
     }
 
     /**
-     * Reads a MISP instance from a DOT file, where each node line may carry a
-     * {@code weight=} attribute (defaulting to {@code 1} when absent) and edges are listed
-     * as {@code source -- target} lines.
+     * Reads a MISP instance from a DOT file, where each node line may carry a {@code weight=}
+     * attribute (defaulting to {@code 1} when absent) and edges are listed as {@code source --
+     * target} lines.
      *
      * @param fname the path to the DOT file describing the instance
      * @return the MISP instance read from the file
@@ -64,11 +69,14 @@ public class MispProblem implements Problem<MispState> {
         java.util.ArrayList<Integer> weight = new java.util.ArrayList<>();
         BitSet[] neighbor;
         int n;
-        try (java.io.BufferedReader br = new java.io.BufferedReader(new java.io.FileReader(fname))) {
+        try (java.io.BufferedReader br =
+                new java.io.BufferedReader(new java.io.FileReader(fname))) {
             br.readLine();
             String line;
             while ((line = br.readLine()) != null && !line.contains("--")) {
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
 
                 if (line.contains("optimal")) {
                     // Ignore optimal
@@ -149,10 +157,14 @@ public class MispProblem implements Problem<MispState> {
 
         for (int i = 0; i < nbVars; i++) {
             if (binarySol[i] == 1) {
-                for (int j = neighbors[i].nextSetBit(0); j >= 0; j = neighbors[i].nextSetBit(j + 1)) {
+                for (int j = neighbors[i].nextSetBit(0);
+                        j >= 0;
+                        j = neighbors[i].nextSetBit(j + 1)) {
                     if (binarySol[j] == 1) {
-                        String msg = String.format("The solution %s contains adjacent nodes (%d, %d)",
-                                solution, i, j);
+                        String msg =
+                                String.format(
+                                        "The solution %s contains adjacent nodes (%d, %d)",
+                                        solution, i, j);
                         throw new InvalidSolutionException(msg);
                     }
                 }

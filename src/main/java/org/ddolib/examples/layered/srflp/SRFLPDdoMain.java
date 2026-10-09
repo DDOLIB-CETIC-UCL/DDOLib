@@ -1,44 +1,48 @@
 package org.ddolib.examples.layered.srflp;
 
-import org.ddolib.common.heuristics.width.FixedWidth;
-import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
 import java.io.IOException;
 import java.nio.file.Paths;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.layered.solver.Solution;
 
 /**
- * The Single-Row Facility Layout Problem (SRFLP) with Ddo.
- * Entry point for solving the Single-Row Facility Layout Problem (SRFLP)
- * using the Decision Diagram Optimization (DDO) algorithm.
- * <p>
- * <strong>Usage:</strong>
- * </p>
+ * The Single-Row Facility Layout Problem (SRFLP) with Ddo. Entry point for solving the Single-Row
+ * Facility Layout Problem (SRFLP) using the Decision Diagram Optimization (DDO) algorithm.
+ *
+ * <p><strong>Usage:</strong>
+ *
  * <pre>{@code
  * java SRFLPDdoMain [instanceFile] [maxWidth]
  * }</pre>
- * - {@code instanceFile} (optional): Path to the SRFLP instance file. Defaults to {@code data/SRFLP/simple}.
- * - {@code maxWidth} (optional): Maximum width of the relaxed decision diagram. Defaults to 50.
  *
- * <p>
- * The DDO model requires the following components:
- * </p>
+ * <p>- {@code instanceFile} (optional): Path to the SRFLP instance file. Defaults to {@code
+ * data/SRFLP/simple}. - {@code maxWidth} (optional): Maximum width of the relaxed decision diagram.
+ * Defaults to 50.
+ *
+ * <p>The DDO model requires the following components:
+ *
  * <ul>
- *     <li>{@link SRFLPProblem} – the problem definition (distance/cost matrix, number of facilities, etc.),</li>
- *     <li>{@link SRFLPRelax} – relaxation method used to merge states in the diagram,</li>
- *     <li>{@link SRFLPRanking} – state ranking used for node prioritization,</li>
- *     <li>{@link FixedWidth} – width control heuristic for the relaxed diagram,</li>
- *     <li>{@link SRFLPFastLowerBound} – fast lower-bound estimator for pruning.</li>
+ *   <li>{@link SRFLPProblem} – the problem definition (distance/cost matrix, number of facilities,
+ *       etc.),
+ *   <li>{@link SRFLPRelax} – relaxation method used to merge states in the diagram,
+ *   <li>{@link SRFLPRanking} – state ranking used for node prioritization,
+ *   <li>{@link FixedWidth} – width control heuristic for the relaxed diagram,
+ *   <li>{@link SRFLPFastLowerBound} – fast lower-bound estimator for pruning.
  * </ul>
  *
- * <p>
- * After the search is completed, the program prints:
- * </p>
+ * <p>After the search is completed, the program prints:
+ *
  * <ul>
- *     <li>Search statistics returned by {@link Solvers#minimizeDdo},</li>
- *     <li>The best solution found as an array of facility indices.</li>
+ *   <li>Search statistics returned by {@link Solvers#minimizeDdo},
+ *   <li>The best solution found as an array of facility indices.
  * </ul>
  *
  * @see SRFLPProblem
@@ -52,55 +56,57 @@ import java.nio.file.Paths;
  */
 public final class SRFLPDdoMain {
 
-    private SRFLPDdoMain() {
-    }
+    private SRFLPDdoMain() {}
 
     /**
-     * Entry point of the program. Builds a {@link SRFLPProblem} instance and solves it using
-     * the DDO algorithm.
+     * Entry point of the program. Builds a {@link SRFLPProblem} instance and solves it using the
+     * DDO algorithm.
      *
      * @param args optional command-line arguments: the instance file path, then the maximum
-     *             decision diagram width
+     *     decision diagram width
      * @throws IOException if there is an error reading the instance file
      */
     public static void main(String[] args) throws IOException {
-        final String filename = args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() :
-                args[0];
+        final String filename =
+                args.length == 0 ? Paths.get("data", "SRFLP", "simple").toString() : args[0];
         final int maxWidth = args.length > 1 ? Integer.parseInt(args[1]) : 50;
 
         final SRFLPProblem problem = new SRFLPProblem(filename);
 
-        DdoModel<SRFLPState> model = new DdoModel<>() {
-            @Override
-            public Problem<SRFLPState> problem() {
-                return problem;
-            }
+        DdoModel<SRFLPState> model =
+                new DdoModel<>() {
+                    @Override
+                    public Problem<SRFLPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<SRFLPState> lowerBound() {
-                return new SRFLPFastLowerBound(problem);
-            }
+                    @Override
+                    public FastLowerBound<SRFLPState> lowerBound() {
+                        return new SRFLPFastLowerBound(problem);
+                    }
 
-            @Override
-            public Relaxation<SRFLPState> relaxation() {
-                return new SRFLPRelax(problem);
-            }
+                    @Override
+                    public Relaxation<SRFLPState> relaxation() {
+                        return new SRFLPRelax(problem);
+                    }
 
-            @Override
-            public StateRanking<SRFLPState> ranking() {
-                return new SRFLPRanking();
-            }
+                    @Override
+                    public StateRanking<SRFLPState> ranking() {
+                        return new SRFLPRanking();
+                    }
 
-            @Override
-            public WidthHeuristic<SRFLPState> widthHeuristic() {
-                return new FixedWidth<>(maxWidth);
-            }
-        };
+                    @Override
+                    public WidthHeuristic<SRFLPState> widthHeuristic() {
+                        return new FixedWidth<>(maxWidth);
+                    }
+                };
 
-
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, stat) -> {
-            SolutionPrinter.printSolution(stat, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, stat) -> {
+                            SolutionPrinter.printSolution(stat, sol);
+                        });
 
         System.out.println("\n");
         System.out.println("===== Optimal Solution =====");

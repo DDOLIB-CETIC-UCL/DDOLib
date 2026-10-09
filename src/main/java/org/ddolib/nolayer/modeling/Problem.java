@@ -1,14 +1,13 @@
 package org.ddolib.nolayer.modeling;
 
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
 
 /**
- * Represents an optimization problem formulated as a labeled transition
- * system, without requiring an a priori fixed number of variables.
+ * Represents an optimization problem formulated as a labeled transition system, without requiring
+ * an a priori fixed number of variables.
  *
  * @param <T> the type representing a state in the problem
  */
@@ -45,8 +44,8 @@ public interface Problem<T> {
     Iterator<Integer> domain(final T state);
 
     /**
-     * Applies a label/action to a state, computing the next state according
-     * to the problem's transition function.
+     * Applies a label/action to a state, computing the next state according to the problem's
+     * transition function.
      *
      * @param state the state from which the transition originates
      * @param label the label to apply
@@ -55,8 +54,7 @@ public interface Problem<T> {
     T transition(final T state, final int label);
 
     /**
-     * Computes the change in objective value resulting from applying
-     * a label to a given state.
+     * Computes the change in objective value resulting from applying a label to a given state.
      *
      * @param state the state from which the transition originates
      * @param label the label to apply
@@ -74,8 +72,8 @@ public interface Problem<T> {
     }
 
     /**
-     * Given a solution (a sequence of applied labels), returns its value and checks
-     * if the solution respects the problem's constraints.
+     * Given a solution (a sequence of applied labels), returns its value and checks if the solution
+     * respects the problem's constraints.
      *
      * @param solution a solution of the problem (sequence of labels)
      * @return the value of the input solution

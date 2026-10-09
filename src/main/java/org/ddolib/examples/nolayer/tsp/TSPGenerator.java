@@ -1,8 +1,9 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Random;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -11,26 +12,19 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Random;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
-/**
- * Class to generate and handle instances of the Traveling Salesman Problem (TSP).
- */
+/** Class to generate and handle instances of the Traveling Salesman Problem (TSP). */
 public class TSPGenerator {
-    /**
-     * Best known objective value (optional, -1 if unknown)
-     */
+    /** Best known objective value (optional, -1 if unknown). */
     public final double objective;
-    /**
-     * Distance matrix between cities
-     */
+
+    /** Distance matrix between cities. */
     public double[][] distanceMatrix;
-    /**
-     * Number of cities
-     */
+
+    /** Number of cities. */
+    @SuppressWarnings("checkstyle:MemberName") // public API
     public int n;
 
     /**
@@ -38,7 +32,6 @@ public class TSPGenerator {
      *
      * @param distanceMatrix the distance matrix
      */
-
     public TSPGenerator(double[][] distanceMatrix) {
         n = distanceMatrix.length;
         this.distanceMatrix = new double[n][n];
@@ -67,42 +60,41 @@ public class TSPGenerator {
     /**
      * Constructs a Euclidean TSP instance by randomly sampling coordinates in a square.
      *
-     * @param n            number of cities
-     * @param seed         random seed for reproducibility
+     * @param n number of cities
+     * @param seed random seed for reproducibility
      * @param squareLength length of the square in which coordinates are sampled
      */
     public TSPGenerator(int n, int seed, int squareLength) {
         this.n = n;
         Random rand = new Random(seed);
-        double[] xCoord = new double[n];
-        double[] yCoord = new double[n];
+        double[] coordX = new double[n];
+        double[] coordY = new double[n];
         distanceMatrix = new double[n][n];
         for (int i = 0; i < n; i++) {
-            xCoord[i] = rand.nextInt(squareLength);
-            yCoord[i] = rand.nextInt(squareLength);
+            coordX[i] = rand.nextInt(squareLength);
+            coordY[i] = rand.nextInt(squareLength);
         }
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                distanceMatrix[i][j] = dist(xCoord[i], yCoord[i], xCoord[j], yCoord[j]);
+                distanceMatrix[i][j] = dist(coordX[i], coordY[i], coordX[j], coordY[j]);
                 distanceMatrix[j][i] = distanceMatrix[i][j];
             }
         }
         this.objective = -1;
     }
 
-
     /**
      * Constructs a Euclidean TSP instance from given x/y coordinates.
      *
-     * @param xCoord array of x-coordinates
-     * @param yCoord array of y-coordinates
+     * @param coordX array of x-coordinates
+     * @param coordY array of y-coordinates
      */
-    public TSPGenerator(int[] xCoord, int[] yCoord) {
-        this.n = xCoord.length;
+    public TSPGenerator(int[] coordX, int[] coordY) {
+        this.n = coordX.length;
         distanceMatrix = new double[n][n];
         for (int i = 0; i < n; i++) {
             for (int j = i + 1; j < n; j++) {
-                distanceMatrix[i][j] = dist(xCoord[i], yCoord[i], xCoord[j], yCoord[j]);
+                distanceMatrix[i][j] = dist(coordX[i], coordY[i], coordX[j], coordY[j]);
                 distanceMatrix[j][i] = distanceMatrix[i][j];
             }
         }
@@ -112,20 +104,17 @@ public class TSPGenerator {
     /**
      * Writes an XML Document to an OutputStream.
      *
-     * @param doc    the XML document
+     * @param doc the XML document
      * @param output the output stream
      * @throws TransformerException if an error occurs during transformation
      */
-    private static void writeXml(Document doc,
-                                 OutputStream output)
-            throws TransformerException {
+    private static void writeXml(Document doc, OutputStream output) throws TransformerException {
 
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
         StreamResult result = new StreamResult(output);
         transformer.transform(source, result);
-
     }
 
     /**
@@ -133,6 +122,7 @@ public class TSPGenerator {
      *
      * @return the number of cities
      */
+    @SuppressWarnings("checkstyle:MethodName") // public API
     public int nCities() {
         return n;
     }
@@ -166,7 +156,7 @@ public class TSPGenerator {
     /**
      * Saves the TSP instance in XML format following XML-TSPLIB standards.
      *
-     * @param path      path to the XML file
+     * @param path path to the XML file
      * @param objective best known solution value
      */
     public void saveXml(String path, int objective) {
@@ -200,7 +190,6 @@ public class TSPGenerator {
                 graph.appendChild(vertex);
             }
 
-
             rootElement.appendChild(graph);
 
             FileOutputStream output = new FileOutputStream(path);
@@ -210,5 +199,4 @@ public class TSPGenerator {
             throw new RuntimeException(e);
         }
     }
-
 }

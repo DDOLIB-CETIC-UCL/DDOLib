@@ -4,31 +4,26 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an edge in a decision diagram that connects two nodes.
- * <p>
- * Each edge has a source node, an associated decision, and a weight.
- * It is used to represent transitions between nodes in a decision diagram.
- * </p>
+ *
+ * <p>Each edge has a source node, an associated decision, and a weight. It is used to represent
+ * transitions between nodes in a decision diagram.
  */
 public final class Edge {
-    /**
-     * The source node of this edge.
-     */
+    /** The source node of this edge. */
     public final Node origin;
-    /**
-     * The decision associated with this edge.
-     */
+
+    /** The decision associated with this edge. */
     public final Decision decision;
-    /**
-     * The weight of the edge.
-     */
+
+    /** The weight of the edge. */
     public double weight;
 
     /**
      * Creates a new edge connecting a source node with a decision and a weight.
      *
      * @param src the source node of the edge
-     * @param d   the decision taken to traverse this edge
-     * @param w   the weight of the edge
+     * @param d the decision taken to traverse this edge
+     * @param w the weight of the edge
      */
     public Edge(final Node src, final Decision d, final double w) {
         this.origin = src;

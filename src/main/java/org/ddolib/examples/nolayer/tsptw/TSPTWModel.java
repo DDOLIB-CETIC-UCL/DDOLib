@@ -5,12 +5,11 @@ import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.Problem;
 
 /**
- * Base model for the Traveling Salesman Problem with Time Windows (TSPTW), using the
- * no-layer modeling API.
- * <p>
- * Bundles a {@link TSPTWProblem} instance together with a fast lower bound (summing, for
- * each city still to visit, its least-cost incident edge) used to guide and prune the search.
- * </p>
+ * Base model for the Traveling Salesman Problem with Time Windows (TSPTW), using the no-layer
+ * modeling API.
+ *
+ * <p>Bundles a {@link TSPTWProblem} instance together with a fast lower bound (summing, for each
+ * city still to visit, its least-cost incident edge) used to guide and prune the search.
  */
 public class TSPTWModel implements Model<TSPTWState> {
 
@@ -37,17 +36,18 @@ public class TSPTWModel implements Model<TSPTWState> {
             leastIncidentEdge[i] = min;
         }
 
-        this.lowerBound = state -> {
-            if (state.mustVisit().isEmpty() && state.currentCity() == 0) {
-                return 0.0;
-            }
-            var toVisit = state.mustVisit();
-            double lb = leastIncidentEdge[0]; // for returning to origin
-            for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
-                lb += leastIncidentEdge[i];
-            }
-            return lb;
-        };
+        this.lowerBound =
+                state -> {
+                    if (state.mustVisit().isEmpty() && state.currentCity() == 0) {
+                        return 0.0;
+                    }
+                    var toVisit = state.mustVisit();
+                    double lb = leastIncidentEdge[0]; // for returning to origin
+                    for (int i = toVisit.nextSetBit(0); i >= 0; i = toVisit.nextSetBit(i + 1)) {
+                        lb += leastIncidentEdge[i];
+                    }
+                    return lb;
+                };
     }
 
     @Override

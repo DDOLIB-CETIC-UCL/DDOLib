@@ -1,27 +1,24 @@
 package org.ddolib.layered.modeling;
 
-import org.ddolib.layered.solving.ddo.core.heuristics.variable.DefaultVariableHeuristic;
-import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.solving.ddo.core.heuristics.variable.DefaultVariableHeuristic;
+import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 
 /**
- * Defines the core model interface for describing an optimization problem to be
- * solved within the Decision Diagram Optimization (DDO) framework.
- * <p>
- * A {@code Model} encapsulates all components required to define, evaluate,
- * and guide the resolution of an optimization problem. It specifies the
- * {@link Problem} instance to solve and optionally provides custom heuristics,
- * dominance relations, and debugging or verbosity configurations.
- * </p>
+ * Defines the core model interface for describing an optimization problem to be solved within the
+ * Decision Diagram Optimization (DDO) framework.
  *
- * <p>
- * Implementations of this interface typically serve as the entry point for
- * configuring solvers such as {@link org.ddolib.layered.solving.ddo.core.solver.ExactSolver} or
- * {@link org.ddolib.layered.solving.ddo.core.solver.SequentialSolver}. Users can override the
- * default methods to customize behavior such as lower bound evaluation,
- * variable selection heuristics, or dominance checking.
- * </p>
+ * <p>A {@code Model} encapsulates all components required to define, evaluate, and guide the
+ * resolution of an optimization problem. It specifies the {@link Problem} instance to solve and
+ * optionally provides custom heuristics, dominance relations, and debugging or verbosity
+ * configurations.
+ *
+ * <p>Implementations of this interface typically serve as the entry point for configuring solvers
+ * such as {@link org.ddolib.layered.solving.ddo.core.solver.ExactSolver} or {@link
+ * org.ddolib.layered.solving.ddo.core.solver.SequentialSolver}. Users can override the default
+ * methods to customize behavior such as lower bound evaluation, variable selection heuristics, or
+ * dominance checking.
  *
  * @param <T> the type representing the state space of the problem
  */
@@ -29,18 +26,16 @@ public interface Model<T> {
     /**
      * Returns the optimization problem instance associated with this model.
      *
-     * @return the {@link Problem} defining the structure, transitions,
-     * and objective function of the optimization task
+     * @return the {@link Problem} defining the structure, transitions, and objective function of
+     *     the optimization task
      */
     Problem<T> problem();
 
     /**
-     * Returns a heuristic that estimates a lower bound on the objective value
-     * for a given state.
-     * <p>
-     * By default, this method provides a {@link DefaultFastLowerBound} instance,
-     * which can be overridden for problem-specific bound estimation.
-     * </p>
+     * Returns a heuristic that estimates a lower bound on the objective value for a given state.
+     *
+     * <p>By default, this method provides a {@link DefaultFastLowerBound} instance, which can be
+     * overridden for problem-specific bound estimation.
      *
      * @return the {@link FastLowerBound} heuristic used to compute lower bounds
      */
@@ -51,10 +46,9 @@ public interface Model<T> {
     /**
      * Returns a precomputed upper bound on the optimal value.
      *
-     * <p> This bound allows to start the search with a better upper bound and start pruning
-     * earlier.</p>
+     * <p>This bound allows to start the search with a better upper bound and start pruning earlier.
      *
-     * <p>By default, it returns {@code Double.POSITIVE_INFINITY}</p>
+     * <p>By default, it returns {@code Double.POSITIVE_INFINITY}
      *
      * @return a precomputed upper bound on the optimal value
      */
@@ -64,10 +58,9 @@ public interface Model<T> {
 
     /**
      * Returns the dominance checker used to prune dominated states from the search space.
-     * <p>
-     * By default, this method provides a {@link DefaultDominanceChecker} instance,
-     * which can be replaced by custom dominance logic tailored to the problem.
-     * </p>
+     *
+     * <p>By default, this method provides a {@link DefaultDominanceChecker} instance, which can be
+     * replaced by custom dominance logic tailored to the problem.
      *
      * @return the {@link DominanceChecker} used for dominance testing
      */
@@ -76,11 +69,10 @@ public interface Model<T> {
     }
 
     /**
-     * Returns the heuristic used to determine the next variable to branch on
-     * during decision diagram compilation.
-     * <p>
-     * By default, this method returns a {@link DefaultVariableHeuristic} instance.
-     * </p>
+     * Returns the heuristic used to determine the next variable to branch on during decision
+     * diagram compilation.
+     *
+     * <p>By default, this method returns a {@link DefaultVariableHeuristic} instance.
      *
      * @return the {@link VariableHeuristic} guiding variable selection
      */
@@ -90,9 +82,8 @@ public interface Model<T> {
 
     /**
      * Returns the verbosity level of the solver when this model is executed.
-     * <p>
-     * By default, the verbosity level is {@link VerbosityLevel#SILENT}.
-     * </p>
+     *
+     * <p>By default, the verbosity level is {@link VerbosityLevel#SILENT}.
      *
      * @return the desired {@link VerbosityLevel}
      */
@@ -102,16 +93,14 @@ public interface Model<T> {
 
     /**
      * Returns the debugging level to apply during the compilation and solving phases.
-     * <p>
-     * By default, debugging is disabled ({@link DebugLevel#OFF}).
-     * </p>
+     *
+     * <p>By default, debugging is disabled ({@link DebugLevel#OFF}).
      *
      * @return the {@link DebugLevel} controlling debug behavior
      */
     default DebugLevel debugMode() {
         return DebugLevel.OFF;
     }
-
 
     /**
      * Returns a copy of this model but without dominance.
@@ -179,6 +168,5 @@ public interface Model<T> {
                 return Model.this.debugMode();
             }
         };
-
     }
 }

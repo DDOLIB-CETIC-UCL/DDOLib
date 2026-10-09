@@ -1,23 +1,21 @@
 package org.ddolib.examples.nolayer.gruler;
 
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
 
 /**
  * Golomb Ruler Problem (GRP) with ACS.
- * <p>
- * This program demonstrates how to build a {@link GRProblem} instance, wrap it into an
- * {@link AcsModel} using the no-layer framework, and solve it with the Anytime Column Search
- * algorithm.
+ *
+ * <p>This program demonstrates how to build a {@link GRProblem} instance, wrap it into an {@link
+ * AcsModel} using the no-layer framework, and solve it with the Anytime Column Search algorithm.
  */
 public final class GRAcsMain {
 
-    private GRAcsMain() {
-    }
+    private GRAcsMain() {}
 
     /**
      * Main entry point of the program.
@@ -29,33 +27,36 @@ public final class GRAcsMain {
         final GRProblem problem = new GRProblem(n);
         final GRModel baseModel = new GRModel(problem);
 
-        final AcsModel<GRState> model = new AcsModel<>() {
-            @Override
-            public Problem<GRState> problem() {
-                return problem;
-            }
+        final AcsModel<GRState> model =
+                new AcsModel<>() {
+                    @Override
+                    public Problem<GRState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<GRState> lowerBound() {
-                return baseModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<GRState> lowerBound() {
+                        return baseModel.lowerBound();
+                    }
 
-            @Override
-            public NoLayerDominanceChecker<GRState> dominance() {
-                return baseModel.dominance();
-            }
+                    @Override
+                    public NoLayerDominanceChecker<GRState> dominance() {
+                        return baseModel.dominance();
+                    }
 
-            @Override
-            public int columnWidth() {
-                return 10;
-            }
-        };
+                    @Override
+                    public int columnWidth() {
+                        return 10;
+                    }
+                };
 
-        Solution bestSolution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model,
-                stats -> false,
-                (sol, stats) -> {
-                    SolutionPrinter.printSolution(stats, sol);
-                });
+        Solution bestSolution =
+                org.ddolib.nolayer.modeling.Solvers.minimizeAcs(
+                        model,
+                        stats -> false,
+                        (sol, stats) -> {
+                            SolutionPrinter.printSolution(stats, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

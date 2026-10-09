@@ -1,33 +1,34 @@
 package org.ddolib.examples.layered.max2sat;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents a <b>Maximum 2-Satisfiability (MAX2SAT)</b> problem instance.
- * <p>
- * In a MAX2SAT problem, each clause involves at most two literals, and each clause
- * has an associated weight. The objective is to find an assignment to the variables
- * that maximizes the sum of the weights of satisfied clauses.
- * </p>
  *
- * <p>
- * This class implements the {@link Problem} interface with states of type {@link Max2SatState}.
+ * <p>In a MAX2SAT problem, each clause involves at most two literals, and each clause has an
+ * associated weight. The objective is to find an assignment to the variables that maximizes the sum
+ * of the weights of satisfied clauses.
+ *
+ * <p>This class implements the {@link Problem} interface with states of type {@link Max2SatState}.
  * It provides methods for generating the domain of a variable, computing transitions, and
  * evaluating the cost of a transition.
- * </p>
  *
- * <p>
- * Decision variables are indexed from 0 internally, but the {@link BinaryClause} representation
- * requires indices starting from 1. The methods {@link #t(int)} and {@link #f(int)} handle
- * this mapping for positive and negated literals, respectively.
- * </p>
+ * <p>Decision variables are indexed from 0 internally, but the {@link BinaryClause} representation
+ * requires indices starting from 1. The methods {@link #t(int)} and {@link #f(int)} handle this
+ * mapping for positive and negated literals, respectively.
  *
  * @see Max2SatState
  * @see BinaryClause
@@ -35,42 +36,33 @@ import java.util.*;
  */
 public class Max2SatProblem implements Problem<Max2SatState> {
 
-    /**
-     * Value representing a decision of TRUE.
-     */
-    final static int T = 1;
+    /** Value representing a decision of TRUE. */
+    static final int T = 1;
 
-    /**
-     * Value representing a decision of FALSE.
-     */
-    final static int F = 0;
-    /**
-     * Map storing the weight of each binary clause.
-     */
+    /** Value representing a decision of FALSE. */
+    static final int F = 0;
+
+    /** Map storing the weight of each binary clause. */
     final HashMap<BinaryClause, Integer> weights;
-    /**
-     * Number of decision variables in this MAX2SAT instance.
-     */
+
+    /** Number of decision variables in this MAX2SAT instance. */
     private final int numVar;
-    /**
-     * Optional value of the known optimal solution.
-     */
+
+    /** Optional value of the known optimal solution. */
     private final Optional<Double> optimal;
 
-    /**
-     * Optional name of the instance (e.g., filename).
-     */
+    /** Optional name of the instance (e.g., filename). */
     private Optional<String> name = Optional.empty();
 
     /**
      * Constructs a MAX2SAT problem instance.
      *
-     * @param numVar  number of decision variables
+     * @param numVar number of decision variables
      * @param weights map of binary clauses to their weights
      * @param optimal optional known optimal value
      */
-    public Max2SatProblem(int numVar, HashMap<BinaryClause, Integer> weights,
-                          Optional<Double> optimal) {
+    public Max2SatProblem(
+            int numVar, HashMap<BinaryClause, Integer> weights, Optional<Double> optimal) {
         this.numVar = numVar;
         this.weights = weights;
         this.optimal = optimal;
@@ -78,16 +70,16 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     /**
      * Constructs a MAX2SAT problem instance from a file.
-     * <p>
-     * The file format:
+     *
+     * <p>The file format:
+     *
      * <ul>
-     *   <li>First line: number of variables [optimal value (optional)]</li>
+     *   <li>First line: number of variables [optimal value (optional)]
      *   <li>Subsequent lines: each line is a clause:
-     *     <ul>
-     *       <li>Unary clause: variable index and weight</li>
-     *       <li>Binary clause: two variable indices and weight</li>
-     *     </ul>
-     *   </li>
+     *       <ul>
+     *         <li>Unary clause: variable index and weight
+     *         <li>Binary clause: two variable indices and weight
+     *       </ul>
      * </ul>
      *
      * @param fname path to the input file
@@ -147,9 +139,9 @@ public class Max2SatProblem implements Problem<Max2SatState> {
 
     /**
      * Computes the initial value of the problem.
-     * <p>
-     * Unary clauses of the form (x_i OR NOT x_i) are always satisfied,
-     * so their weight is added directly at the start.
+     *
+     * <p>Unary clauses of the form (x_i OR NOT x_i) are always satisfied, so their weight is added
+     * directly at the start.
      *
      * @return the initial value
      */
@@ -174,15 +166,19 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         int k = decision.variable();
         if (decision.value() == T) {
             for (int l = k + 1; l < nbVars(); l++) {
-                // If the variable k has been set to T, and then we set the variable l to T, we gain the weight of the
+                // If the variable k has been set to T, and then we set the variable l to T, we gain
+                // the weight of the
                 // clause (!xk || xl). But we lose the weight of the clause (!xk || !xl).
-                newBenefit.set(l, state.netBenefit().get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));
+                newBenefit.set(
+                        l, state.netBenefit().get(l) + weight(f(k), t(l)) - weight(f(k), f(l)));
             }
         } else {
             for (int l = k + 1; l < nbVars(); l++) {
-                // If the variable k has been set to F, and then we set the variable l to T, we gain the weight of the
+                // If the variable k has been set to F, and then we set the variable l to T, we gain
+                // the weight of the
                 // clause (xk || xl). But we lose the weight of the clause (xk || !xl).
-                newBenefit.set(l, state.netBenefit().get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));
+                newBenefit.set(
+                        l, state.netBenefit().get(l) + weight(t(k), t(l)) - weight(t(k), f(l)));
             }
         }
 
@@ -195,26 +191,32 @@ public class Max2SatProblem implements Problem<Max2SatState> {
         int k = decision.variable();
         int toReturn;
         if (decision.value() == T) {
-            // If k has been set to T, we gain the net benefit if it is > 0 and the weight of the unary clause xk.
+            // If k has been set to T, we gain the net benefit if it is > 0 and the weight of the
+            // unary clause xk.
             toReturn = positiveOrNull(state.netBenefit().get(k)) + weight(t(k), t(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 // We gain the weight of the clauses (xk || xl) and (xk || !xl)
                 toReturn += weight(t(k), f(l)) + weight(t(k), t(l));
-                int s_k_l = state.netBenefit().get(l);
+                int netBenefitL = state.netBenefit().get(l);
                 // According to the decision on l, we can gain (!xk || xl) or (!xk || !xl)
-                toReturn += Integer.min(positiveOrNull(s_k_l) + weight(f(k), t(l)),
-                        positiveOrNull(-s_k_l) + weight(f(k), f(l)));
+                toReturn +=
+                        Integer.min(
+                                positiveOrNull(netBenefitL) + weight(f(k), t(l)),
+                                positiveOrNull(-netBenefitL) + weight(f(k), f(l)));
             }
         } else {
-            // If k has been set to F, we gain the net benefit if it is < 0 and the weight of the unary clause /xk.
+            // If k has been set to F, we gain the net benefit if it is < 0 and the weight of the
+            // unary clause /xk.
             toReturn = positiveOrNull(-state.netBenefit().get(k)) + weight(f(k), f(k));
             for (int l = k + 1; l < nbVars(); l++) {
                 // We gain the weight of the clauses (!xk || !xl) and (!xk || xl)
                 toReturn += weight(f(k), f(l)) + weight(f(k), t(l));
-                int s_k_l = state.netBenefit().get(l);
+                int netBenefitL = state.netBenefit().get(l);
                 // According to the decision on l, we can gain (xk || xl) or (xk || !xl)
-                toReturn += Integer.min(positiveOrNull(s_k_l) + weight(t(k), t(l)),
-                        positiveOrNull(-s_k_l) + weight(t(k), f(l)));
+                toReturn +=
+                        Integer.min(
+                                positiveOrNull(netBenefitL) + weight(t(k), t(l)),
+                                positiveOrNull(-netBenefitL) + weight(t(k), f(l)));
             }
         }
         return -toReturn;
@@ -228,8 +230,10 @@ public class Max2SatProblem implements Problem<Max2SatState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         int value = 0;
@@ -260,6 +264,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      * @param x variable index
      * @return value representing x_i
      */
+    @SuppressWarnings("checkstyle:MethodName") // public API
     public int t(int x) {
         return toBinaryClauseVariable(x);
     }
@@ -270,6 +275,7 @@ public class Max2SatProblem implements Problem<Max2SatState> {
      * @param x variable index
      * @return value representing NOT x_i
      */
+    @SuppressWarnings("checkstyle:MethodName") // public API
     public int f(int x) {
         return -toBinaryClauseVariable(x);
     }

@@ -1,5 +1,12 @@
 package org.ddolib.examples.nolayer.knapsack;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.util.debug.DebugLevel;
@@ -12,18 +19,19 @@ import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.nolayer.testbench.NoLayerTestDataSupplier;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Stream;
-
+/**
+ * Supplies the knapsack instances (read from the files of a directory) and the no-layer model used
+ * to solve them in the tests.
+ */
 public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProblem> {
 
     private final Path dir;
 
+    /**
+     * Creates a supplier reading the instances from the given directory.
+     *
+     * @param dir the directory containing the instance files
+     */
     public KSTestDataSupplier(Path dir) {
         this.dir = dir;
     }
@@ -32,13 +40,14 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
     protected List<KSProblem> generateProblems() {
         try (Stream<Path> stream = Files.walk(dir)) {
             return stream.filter(Files::isRegularFile) // get only files
-                    .map(filePath -> {
-                        try {
-                            return KSProblem.fromFile(filePath.toString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
+                    .map(
+                            filePath -> {
+                                try {
+                                    return KSProblem.fromFile(filePath.toString());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
                     .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -60,8 +69,14 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
 
                         while (it.hasNext()) {
                             KSState s = it.next();
-                            maxCapacity = Math.max(maxCapacity, s.remainingCapacity()); // Relax by taking max capacity
-                            currentItem = Math.min(currentItem, s.currentItem()); // Relax by taking min currentItem
+                            maxCapacity =
+                                    Math.max(
+                                            maxCapacity,
+                                            s.remainingCapacity()); // Relax by taking max capacity
+                            currentItem =
+                                    Math.min(
+                                            currentItem,
+                                            s.currentItem()); // Relax by taking min currentItem
                         }
                         return new KSState(currentItem, maxCapacity);
                     }
@@ -82,22 +97,27 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
             @Override
             public NoLayerDominanceChecker<KSState> dominance() {
                 return new NoLayerDominanceChecker<KSState>() {
-                    private final java.util.Map<Integer, java.util.TreeSet<ValueState>> bestStates = new java.util.HashMap<>();
+                    private final java.util.Map<Integer, java.util.TreeSet<ValueState>> bestStates =
+                            new java.util.HashMap<>();
 
                     @Override
                     public boolean updateDominance(KSState state, double value) {
-                        java.util.TreeSet<ValueState> set = bestStates
-                                .computeIfAbsent(state.currentItem(), k -> new java.util.TreeSet<>());
+                        java.util.TreeSet<ValueState> set =
+                                bestStates.computeIfAbsent(
+                                        state.currentItem(), k -> new java.util.TreeSet<>());
                         ValueState vs = new ValueState(state, value);
                         ValueState floor = set.floor(vs);
-                        if (floor != null && floor.state.remainingCapacity() >= state.remainingCapacity() && floor.value <= value) {
+                        if (floor != null
+                                && floor.state.remainingCapacity() >= state.remainingCapacity()
+                                && floor.value <= value) {
                             return true; // Dominated!
                         }
 
                         java.util.Iterator<ValueState> iterator = set.tailSet(vs).iterator();
                         while (iterator.hasNext()) {
                             ValueState higher = iterator.next();
-                            if (state.remainingCapacity() >= higher.state.remainingCapacity() && value <= higher.value) {
+                            if (state.remainingCapacity() >= higher.state.remainingCapacity()
+                                    && value <= higher.value) {
                                 iterator.remove();
                             } else {
                                 break;
@@ -123,8 +143,11 @@ public class KSTestDataSupplier extends NoLayerTestDataSupplier<KSState, KSProbl
 
                         @Override
                         public int compareTo(ValueState o) {
-                            if (this.value != o.value) return Double.compare(this.value, o.value);
-                            return Integer.compare(this.state.remainingCapacity(), o.state.remainingCapacity());
+                            if (this.value != o.value) {
+                                return Double.compare(this.value, o.value);
+                            }
+                            return Integer.compare(
+                                    this.state.remainingCapacity(), o.state.remainingCapacity());
                         }
                     }
                 };

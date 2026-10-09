@@ -1,62 +1,55 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Class representing an instance of the Traveling Salesman Problem with Time Windows (TSPTW).
  *
- * <p>
- * Each node has a time window during which it must be visited, and travel between nodes
- * is defined by a distance matrix. This class implements the {@link Problem} interface
- * for use in decision diagram solvers.
- * </p>
+ * <p>Each node has a time window during which it must be visited, and travel between nodes is
+ * defined by a distance matrix. This class implements the {@link Problem} interface for use in
+ * decision diagram solvers.
  *
- * <p>
- * The problem instance can optionally provide the known optimal solution.
- * </p>
+ * <p>The problem instance can optionally provide the known optimal solution.
  *
  * <h2>Data file format</h2>
+ *
  * <ul>
- *     <li>First line: number of nodes (variables). Optionally, a second value may be provided for the optimal objective.</li>
- *     <li>Next lines: the distance matrix, one row per node.</li>
- *     <li>Following lines: time windows for each node, specified as two integers (start and end) per line.</li>
+ *   <li>First line: number of nodes (variables). Optionally, a second value may be provided for the
+ *       optimal objective.
+ *   <li>Next lines: the distance matrix, one row per node.
+ *   <li>Following lines: time windows for each node, specified as two integers (start and end) per
+ *       line.
  * </ul>
  *
- * <p>
- * The distance matrix defines the travel times between nodes, and the {@link TimeWindow} array defines
- * the allowed visit times for each node.
- * </p>
+ * <p>The distance matrix defines the travel times between nodes, and the {@link TimeWindow} array
+ * defines the allowed visit times for each node.
  */
 public class TSPTWProblem implements Problem<TSPTWState> {
 
-    /**
-     * Distance matrix between nodes. distance[i][j] is the travel time from node i to node j.
-     */
+    /** Distance matrix between nodes. distance[i][j] is the travel time from node i to node j. */
     public final int[][] distance;
 
-    /**
-     * Time windows for each node.
-     */
+    /** Time windows for each node. */
     public final TimeWindow[] timeWindows;
 
-    /**
-     * Optional known optimal value for the instance.
-     */
+    /** Optional known optimal value for the instance. */
     public final Optional<Double> optimal;
 
-    /**
-     * Optional name of the instance, typically the file path.
-     */
+    /** Optional name of the instance, typically the file path. */
     private final Optional<String> name;
-
 
     /**
      * Constructs a TSPTW problem instance from a data file.
@@ -74,7 +67,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             int lineCount = 0;
             String line;
             while ((line = br.readLine()) != null) {
-                //Skip comment
+                // Skip comment
                 if (line.startsWith("#") || line.isEmpty()) {
                     continue;
                 }
@@ -83,7 +76,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
                     numVar = Integer.parseInt(tokens[0]);
                     dist = new int[numVar][numVar];
                     tw = new TimeWindow[numVar];
-                    if (tokens.length == 2) opti = Optional.of(Double.parseDouble(tokens[1]));
+                    if (tokens.length == 2) {
+                        opti = Optional.of(Double.parseDouble(tokens[1]));
+                    }
                 } else if (1 <= lineCount && lineCount <= numVar) {
                     int i = lineCount - 1;
                     String[] distanceFromI = line.split("\\s+");
@@ -108,11 +103,14 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append("\n");
         sb.append(Arrays.toString(timeWindows)).append("\n");
-        String timeStr = Arrays.stream(distance)
-                .map(row -> Arrays.stream(row)
-                        .mapToObj(x -> String.format("%4s", x))
-                        .collect(Collectors.joining(" ")))
-                .collect(Collectors.joining("\n"));
+        String timeStr =
+                Arrays.stream(distance)
+                        .map(
+                                row ->
+                                        Arrays.stream(row)
+                                                .mapToObj(x -> String.format("%4s", x))
+                                                .collect(Collectors.joining(" ")))
+                        .collect(Collectors.joining("\n"));
         sb.append(timeStr);
         return name.orElse(sb.toString());
     }
@@ -139,7 +137,7 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     public Iterator<Integer> domain(TSPTWState state, int var) {
         BitSet toReturn = new BitSet(state.mustVisit().length());
         if (state.depth() == nbVars() - 1) {
-            //The only decision for the last variable is to go back to the depot
+            // The only decision for the last variable is to go back to the depot
             toReturn.set(0, reachable(state, 0));
         } else {
 
@@ -157,7 +155,8 @@ public class TSPTWProblem implements Problem<TSPTWState> {
             }
 
             if (state.mustVisit().cardinality() < nbVars() - state.depth()) {
-                // The state is a merged state. Its mustVisit set can be too small. In that case, we can take decision
+                // The state is a merged state. Its mustVisit set can be too small. In that case, we
+                // can take decision
                 // from the possiblyVisit state.
                 var possiblyIt = state.possiblyVisit().stream().iterator();
                 while (possiblyIt.hasNext()) {
@@ -189,7 +188,6 @@ public class TSPTWProblem implements Problem<TSPTWState> {
         int arrival = state.time() + travel;
         int waiting = arrival < timeWindows[to].start() ? timeWindows[to].start() - arrival : 0;
         return travel + waiting;
-
     }
 
     @Override
@@ -200,31 +198,35 @@ public class TSPTWProblem implements Problem<TSPTWState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
-        Map<Integer, Long> count = Arrays.stream(solution)
-                .boxed()
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+        Map<Integer, Long> count =
+                Arrays.stream(solution)
+                        .boxed()
+                        .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
             String msg = "The solution has duplicated nodes and does not reach each node";
             throw new InvalidSolutionException(msg);
         }
 
-        double value = distance[0][solution[0]]; //Start from the depot.
+        double value = distance[0][solution[0]]; // Start from the depot.
         value += Math.max(0, timeWindows[solution[0]].start() - value);
-
 
         for (int i = 1; i < nbVars(); i++) {
             int from = solution[i - 1];
             int to = solution[i];
             value += distance[from][to];
             if (value > timeWindows[to].end()) {
-                String msg = String.format("This solution does not respect time windows. \nYou " +
-                                "arrive at node %d at time %f. Its time window is %s", to, value,
-                        timeWindows[to]);
+                String msg =
+                        String.format(
+                                "This solution does not respect time windows. \nYou "
+                                        + "arrive at node %d at time %f. Its time window is %s",
+                                to, value, timeWindows[to]);
                 throw new InvalidSolutionException(msg);
             }
             value += Math.max(0, timeWindows[to].start() - value);
@@ -237,8 +239,9 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      * Checks if a target node is reachable from the given state within its time window.
      *
      * @param from current state
-     * @param to   target node
-     * @return {@code true} if node can be reached before its time window closes; {@code false} otherwise
+     * @param to target node
+     * @return {@code true} if node can be reached before its time window closes; {@code false}
+     *     otherwise
      */
     boolean reachable(TSPTWState from, Integer to) {
         int duration = minDuration(from, to);
@@ -249,32 +252,27 @@ public class TSPTWProblem implements Problem<TSPTWState> {
      * Computes the minimal duration to reach a target node from the current state.
      *
      * @param from current state
-     * @param to   target node
+     * @param to target node
      * @return minimum travel time to reach node {@code to}
      */
     int minDuration(TSPTWState from, Integer to) {
         return switch (from.position()) {
             case TSPNode(int value) -> distance[value][to];
-            case VirtualNodes(Set<Integer> nodes) -> nodes.stream().mapToInt(x -> distance[x][to]).min().getAsInt();
+            case VirtualNodes(Set<Integer> nodes) ->
+                    nodes.stream().mapToInt(x -> distance[x][to]).min().getAsInt();
         };
     }
 
     /**
-     * Computes the arrival time at a target node, accounting for travel time and waiting
-     * until the time window opens.
+     * Computes the arrival time at a target node, accounting for travel time and waiting until the
+     * time window opens.
      *
      * @param from current state
-     * @param to   target node
+     * @param to target node
      * @return arrival time at node {@code to}
      */
     int arrivalTime(TSPTWState from, Integer to) {
         int time = from.time() + minDuration(from, to);
         return Integer.max(time, timeWindows[to].start());
     }
-
 }
-
-
-
-
-

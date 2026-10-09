@@ -4,8 +4,7 @@ import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
- * Defines the core model interface for describing an optimization problem
- * in the NoLayer API.
+ * Defines the core model interface for describing an optimization problem in the NoLayer API.
  *
  * @param <T> the type representing the state space of the problem
  */
@@ -14,14 +13,12 @@ public interface Model<T> {
     /**
      * Returns the optimization problem instance associated with this model.
      *
-     * @return the {@link Problem} defining the structure, transitions,
-     * and objective function
+     * @return the {@link Problem} defining the structure, transitions, and objective function
      */
     Problem<T> problem();
 
     /**
-     * Returns a heuristic that estimates a lower bound on the objective value
-     * for a given state.
+     * Returns a heuristic that estimates a lower bound on the objective value for a given state.
      *
      * @return the {@link FastLowerBound} heuristic
      */

@@ -18,13 +18,12 @@ public interface Relaxation<T> {
     T merge(Collection<T> states);
 
     /**
-     * Optional method to compute a local bound (or backward bound component)
-     * when taking a transition from an origin to a destination state.
-     * This bound helps in providing a stronger dual bound in the backward pass.
-     * By default, it returns 0.0.
+     * Optional method to compute a local bound (or backward bound component) when taking a
+     * transition from an origin to a destination state. This bound helps in providing a stronger
+     * dual bound in the backward pass. By default, it returns 0.0.
      *
-     * @param origin      the state before the transition
-     * @param label       the transition action/label
+     * @param origin the state before the transition
+     * @param label the transition action/label
      * @param destination the state after the transition
      * @return the local bound cost
      */

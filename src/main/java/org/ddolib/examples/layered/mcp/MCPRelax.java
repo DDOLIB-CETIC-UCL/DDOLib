@@ -1,35 +1,31 @@
 package org.ddolib.examples.layered.mcp;
 
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.solving.ddo.core.Decision;
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
+import static java.lang.Integer.signum;
+import static java.lang.Math.abs;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-
-import static java.lang.Integer.*;
-import static java.lang.Math.abs;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Implements a relaxation strategy for the <b>Maximum Cut Problem (MCP)</b>.
- * <p>
- * This relaxation is used in dynamic programming or branch-and-bound algorithms to
- * merge multiple states into a single optimistic state while preserving bounds.
- * </p>
  *
- * <p>
- * The merging strategy works as follows:
- * </p>
+ * <p>This relaxation is used in dynamic programming or branch-and-bound algorithms to merge
+ * multiple states into a single optimistic state while preserving bounds.
+ *
+ * <p>The merging strategy works as follows:
+ *
  * <ul>
- *     <li>If all net benefits for a variable are positive, the merged state keeps the smallest value.</li>
- *     <li>If all net benefits for a variable are negative, the merged state keeps the largest value.</li>
- *     <li>If net benefits have mixed signs, the merged value is set to 0.</li>
+ *   <li>If all net benefits for a variable are positive, the merged state keeps the smallest value.
+ *   <li>If all net benefits for a variable are negative, the merged state keeps the largest value.
+ *   <li>If net benefits have mixed signs, the merged value is set to 0.
  * </ul>
  *
- * <p>
- * The {@link #relaxEdge(MCPState, MCPState, MCPState, Decision, double)} method adjusts
- * the transition cost to ensure the relaxation remains an over-approximation of the
- * true cost.
- * </p>
+ * <p>The {@link #relaxEdge(MCPState, MCPState, MCPState, Decision, double)} method adjusts the
+ * transition cost to ensure the relaxation remains an over-approximation of the true cost.
  *
  * @see MCPProblem
  * @see MCPState
@@ -37,9 +33,7 @@ import static java.lang.Math.abs;
  */
 public class MCPRelax implements Relaxation<MCPState> {
 
-    /**
-     * The MCP problem instance for which this relaxation is applied.
-     */
+    /** The MCP problem instance for which this relaxation is applied. */
     final MCPProblem problem;
 
     /**
@@ -53,10 +47,9 @@ public class MCPRelax implements Relaxation<MCPState> {
 
     /**
      * Merges multiple MCP states into a single optimistic state.
-     * <p>
-     * The merged state keeps a conservative estimate of net benefits for remaining
-     * decision variables in order to maintain an over-approximation of the optimal solution.
-     * </p>
+     *
+     * <p>The merged state keeps a conservative estimate of net benefits for remaining decision
+     * variables in order to maintain an over-approximation of the optimal solution.
      *
      * @param states an iterator over states to merge
      * @return a new {@link MCPState} representing the merged state
@@ -73,9 +66,8 @@ public class MCPRelax implements Relaxation<MCPState> {
                 Integer mergedI = merged.get(i);
                 Integer currentI = current.netBenefit().get(i);
 
-
                 if (signum(mergedI) == 1 && signum(currentI) == 1) {
-                    //If all the net benefits are positive, we keep the smallest one
+                    // If all the net benefits are positive, we keep the smallest one
                     merged.set(i, min(mergedI, currentI));
                 } else if (signum(mergedI) == -1 && signum(currentI) == -1) {
                     // If all the net benefits are negative, we keep the biggest one
@@ -91,20 +83,18 @@ public class MCPRelax implements Relaxation<MCPState> {
 
     /**
      * Computes the relaxed transition cost from one state to another given a merged state.
-     * <p>
-     * This method adjusts the cost to account for the differences between the actual net
-     * benefits in the target state and the merged state, ensuring that the relaxation
-     * remains optimistic.
-     * </p>
      *
-     * @param from   the initial state
-     * @param to     the target state
+     * <p>This method adjusts the cost to account for the differences between the actual net
+     * benefits in the target state and the merged state, ensuring that the relaxation remains
+     * optimistic.
+     *
+     * @param from the initial state
+     * @param to the target state
      * @param merged the merged state used for relaxation
-     * @param d      the decision applied to reach the target state
-     * @param cost   the original transition cost
+     * @param d the decision applied to reach the target state
+     * @param cost the original transition cost
      * @return the relaxed transition cost
      */
-
     @Override
     public double relaxEdge(MCPState from, MCPState to, MCPState merged, Decision d, double cost) {
         double toReturn = -cost;

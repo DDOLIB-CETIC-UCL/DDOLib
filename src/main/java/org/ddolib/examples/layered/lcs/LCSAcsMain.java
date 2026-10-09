@@ -1,38 +1,34 @@
 package org.ddolib.examples.layered.lcs;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.AcsModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Longest Common Subsequence (LCS) with Acs.
- * <p>
- * Main class to solve an instance of the Longest Common Subsequence problem using
- * the Anytime Column Search (ACS) algorithm.
- * </p>
- * <p>
- * This class demonstrates how to:
- * </p>
+ *
+ * <p>Main class to solve an instance of the Longest Common Subsequence problem using the Anytime
+ * Column Search (ACS) algorithm.
+ *
+ * <p>This class demonstrates how to:
+ *
  * <ul>
- *     <li>Load an LCS problem instance from a file.</li>
- *     <li>Instantiate an {@link AcsModel} with a fast lower bound heuristic.</li>
- *     <li>Use the {@link Solvers} to minimize the objective function via ACS.</li>
- *     <li>Track and print new incumbent solutions and search statistics.</li>
+ *   <li>Load an LCS problem instance from a file.
+ *   <li>Instantiate an {@link AcsModel} with a fast lower bound heuristic.
+ *   <li>Use the {@link Solvers} to minimize the objective function via ACS.
+ *   <li>Track and print new incumbent solutions and search statistics.
  * </ul>
- * <p>
- * The ACS algorithm iteratively explores the state space, updating the best solution
- * found while optionally applying a stopping criterion.
- * </p>
+ *
+ * <p>The ACS algorithm iteratively explores the state space, updating the best solution found while
+ * optionally applying a stopping criterion.
  */
 public final class LCSAcsMain {
 
-    private LCSAcsMain() {
-    }
+    private LCSAcsMain() {}
 
     /**
      * Entry point of the ACS demonstration for the Longest Common Subsequence problem.
@@ -41,25 +37,33 @@ public final class LCSAcsMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("src", "test", "resources", "LCS", "LCS_3_3_10_test.txt").toString() : args[0];
+        final String instance =
+                args.length == 0
+                        ? Path.of("src", "test", "resources", "LCS", "LCS_3_3_10_test.txt")
+                                .toString()
+                        : args[0];
         final LCSProblem problem = new LCSProblem(instance);
-        AcsModel<LCSState> model = new AcsModel<>() {
-            @Override
-            public Problem<LCSState> problem() {
-                return problem;
-            }
+        AcsModel<LCSState> model =
+                new AcsModel<>() {
+                    @Override
+                    public Problem<LCSState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public LCSFastLowerBound lowerBound() {
-                return new LCSFastLowerBound(problem);
-            }
-        };
+                    @Override
+                    public LCSFastLowerBound lowerBound() {
+                        return new LCSFastLowerBound(problem);
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeAcs(model, s -> false, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeAcs(
+                        model,
+                        s -> false,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-
     }
 }

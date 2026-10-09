@@ -1,38 +1,43 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
 import java.io.IOException;
 import java.nio.file.Path;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.AcsModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 
 /**
- * The Single Machine with Inventory Constraint (SMIC) with Acs.
- * The {@code SMICAcsMain} class provides the entry point for solving instances of the
- * <b>Single Machine with Inventory Constraint (SMIC)</b> problem using the
- * <b>Anytime Column Search (ACS)</b> algorithm.
- * <p>
- * This main program:
- * </p>
+ * The Single Machine with Inventory Constraint (SMIC) with Acs. The {@code SMICAcsMain} class
+ * provides the entry point for solving instances of the <b>Single Machine with Inventory Constraint
+ * (SMIC)</b> problem using the <b>Anytime Column Search (ACS)</b> algorithm.
+ *
+ * <p>This main program:
+ *
  * <ul>
- *   <li>Loads an instance of the SMIC problem from a file (by default {@code data/SMIC/data10_2.txt});</li>
- *   <li>Constructs an {@link AcsModel} composed of the problem definition, a fast lower bound estimator,
- *       and a dominance checker to prune dominated states during search;</li>
- *   <li>Invokes the {@link Solvers#minimizeAcs(AcsModel, java.util.function.BiConsumer)} method
- *       to perform the optimization using ACS;</li>
- *   <li>Prints the best found solution and search statistics.</li>
+ *   <li>Loads an instance of the SMIC problem from a file (by default {@code
+ *       data/SMIC/data10_2.txt});
+ *   <li>Constructs an {@link AcsModel} composed of the problem definition, a fast lower bound
+ *       estimator, and a dominance checker to prune dominated states during search;
+ *   <li>Invokes the {@link Solvers#minimizeAcs(AcsModel, java.util.function.BiConsumer)} method to
+ *       perform the optimization using ACS;
+ *   <li>Prints the best found solution and search statistics.
  * </ul>
  *
+ * <p><b>Usage:</b>
  *
- * <p><b>Usage:</b></p>
  * <pre>
  *   java SMICAcsMain [instanceFile]
  * </pre>
- * If no instance file is provided as an argument, the program defaults to
- * {@code data/SMIC/data10_2.txt}.
  *
- * <p><b>Example:</b></p>
+ * <p>If no instance file is provided as an argument, the program defaults to {@code
+ * data/SMIC/data10_2.txt}.
+ *
+ * <p><b>Example:</b>
+ *
  * <pre>
  *   java SMICAcsMain data/SMIC/data20_3.txt
  * </pre>
@@ -46,42 +51,44 @@ import java.nio.file.Path;
  */
 public class SMICAcsMain {
 
-    private SMICAcsMain() {
-    }
+    private SMICAcsMain() {}
 
     /**
-     * Entry point of the SMIC Anytime Column Search solver.
-     * Initializes the problem instance, builds the ACS model,
-     * and executes the optimization process.
+     * Entry point of the SMIC Anytime Column Search solver. Initializes the problem instance,
+     * builds the ACS model, and executes the optimization process.
      *
-     * @param args command-line arguments; the first argument may specify the path
-     *             to the SMIC instance file. If omitted, the default instance
-     *             {@code data/SMIC/data10_2.txt} is used.
+     * @param args command-line arguments; the first argument may specify the path to the SMIC
+     *     instance file. If omitted, the default instance {@code data/SMIC/data10_2.txt} is used.
      * @throws IOException if the instance file cannot be read
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "SMIC", "data10_1.txt").toString() : args[0];
+        final String instance =
+                args.length == 0 ? Path.of("data", "SMIC", "data10_1.txt").toString() : args[0];
         final SMICProblem problem = new SMICProblem(instance);
-        AcsModel<SMICState> model = new AcsModel<>() {
-            @Override
-            public Problem<SMICState> problem() {
-                return problem;
-            }
+        AcsModel<SMICState> model =
+                new AcsModel<>() {
+                    @Override
+                    public Problem<SMICState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public SMICFastLowerBound lowerBound() {
-                return new SMICFastLowerBound(problem);
-            }
+                    @Override
+                    public SMICFastLowerBound lowerBound() {
+                        return new SMICFastLowerBound(problem);
+                    }
 
-            @Override
-            public DominanceChecker<SMICState> dominance() {
-                return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
-            }
-        };
+                    @Override
+                    public DominanceChecker<SMICState> dominance() {
+                        return new SimpleDominanceChecker<>(new SMICDominance(), problem.nbVars());
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeAcs(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

@@ -1,9 +1,5 @@
 package org.ddolib.examples.layered.knapsack;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,59 +8,50 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an instance of the Knapsack Problem (KS).
- * <p>
- * The state of the problem is the remaining capacity of the knapsack (represented as an {@link Integer}).
- * Decisions correspond to selecting or not selecting a specific item (1 for selected, 0 for not selected).
- * </p>
- * <p>
- * This class supports creating instances from:
- * </p>
+ *
+ * <p>The state of the problem is the remaining capacity of the knapsack (represented as an {@link
+ * Integer}). Decisions correspond to selecting or not selecting a specific item (1 for selected, 0
+ * for not selected).
+ *
+ * <p>This class supports creating instances from:
+ *
  * <ul>
- *     <li>Explicit arrays of profits and weights, with or without a known optimal value.</li>
- *     <li>A file formatted with the number of items, capacity, (optional) optimal value,
- *     and a list of item profits and weights.</li>
+ *   <li>Explicit arrays of profits and weights, with or without a known optimal value.
+ *   <li>A file formatted with the number of items, capacity, (optional) optimal value, and a list
+ *       of item profits and weights.
  * </ul>
  *
- * <p>
- * Costs are negated profits to allow using solvers designed for minimization.
- * </p>
+ * <p>Costs are negated profits to allow using solvers designed for minimization.
  */
 public class KSProblem implements Problem<Integer> {
 
-    /**
-     * Maximum capacity of the knapsack.
-     */
+    /** Maximum capacity of the knapsack. */
     public final int capa;
 
-    /**
-     * Profits of the items.
-     */
+    /** Profits of the items. */
     public final int[] profit;
 
-    /**
-     * Weights of the items.
-     */
+    /** Weights of the items. */
     public final int[] weight;
 
-    /**
-     * Optional known optimal solution value.
-     */
+    /** Optional known optimal solution value. */
     public final Optional<Double> optimal;
 
-    /**
-     * Optional name of the instance (usually the filename).
-     */
+    /** Optional name of the instance (usually the filename). */
     public final Optional<String> name;
 
     /**
      * Constructs a Knapsack problem with given capacity, profits, weights, and known optimal value.
      *
-     * @param capa    maximum capacity of the knapsack
-     * @param profit  array of item profits
-     * @param weight  array of item weights
+     * @param capa maximum capacity of the knapsack
+     * @param profit array of item profits
+     * @param weight array of item weights
      * @param optimal known optimal value
      */
     public KSProblem(final int capa, final int[] profit, final int[] weight, final double optimal) {
@@ -76,10 +63,10 @@ public class KSProblem implements Problem<Integer> {
     }
 
     /**
-     * Constructs a Knapsack problem with given capacity, profits, and weights.
-     * No optimal value is provided.
+     * Constructs a Knapsack problem with given capacity, profits, and weights. No optimal value is
+     * provided.
      *
-     * @param capa   maximum capacity of the knapsack
+     * @param capa maximum capacity of the knapsack
      * @param profit array of item profits
      * @param weight array of item weights
      */
@@ -93,11 +80,12 @@ public class KSProblem implements Problem<Integer> {
 
     /**
      * Constructs a Knapsack problem from a file.
-     * <p>
-     * The file format should contain:
+     *
+     * <p>The file format should contain:
+     *
      * <ul>
-     *     <li>First line: number of items, capacity, (optional) optimal value.</li>
-     *     <li>Following lines: item profit and weight for each item.</li>
+     *   <li>First line: number of items, capacity, (optional) optimal value.
+     *   <li>Following lines: item profit and weight for each item.
      * </ul>
      *
      * @param fname path to the file
@@ -143,12 +131,13 @@ public class KSProblem implements Problem<Integer> {
         final int[] w = weight;
         final int[] p = profit;
 
-        Arrays.sort(items, (o1, o2) -> {
-            double ratio1 = (double) p[o1] / w[o1];
-            double ratio2 = (double) p[o2] / w[o2];
-            return Double.compare(ratio2, ratio1);
-        });
-
+        Arrays.sort(
+                items,
+                (o1, o2) -> {
+                    double ratio1 = (double) p[o1] / w[o1];
+                    double ratio2 = (double) p[o2] / w[o2];
+                    return Double.compare(ratio2, ratio1);
+                });
 
         this.profit = new int[items.length];
         this.weight = new int[items.length];
@@ -166,10 +155,10 @@ public class KSProblem implements Problem<Integer> {
 
     @Override
     public String toString() {
-        return name.orElse(String.format("Max capacity: %d\nProfits: %s\nWeights: %s",
-                capa,
-                Arrays.toString(profit),
-                Arrays.toString(weight)));
+        return name.orElse(
+                String.format(
+                        "Max capacity: %d\nProfits: %s\nWeights: %s",
+                        capa, Arrays.toString(profit), Arrays.toString(weight)));
     }
 
     @Override
@@ -198,7 +187,8 @@ public class KSProblem implements Problem<Integer> {
 
     @Override
     public Integer transition(Integer state, Decision decision) {
-        // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
+        // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it
+        // unchanged
         return state - weight[decision.variable()] * decision.value();
     }
 
@@ -216,8 +206,10 @@ public class KSProblem implements Problem<Integer> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         int totalProfit = 0;
@@ -228,12 +220,13 @@ public class KSProblem implements Problem<Integer> {
         }
 
         if (totalWeight > capa) {
-            String msg = String.format("The weight of %s (%d) exceeds the capatity of the " +
-                    "knapsack (%d)", Arrays.toString(solution), totalWeight, capa);
+            String msg =
+                    String.format(
+                            "The weight of %s (%d) exceeds the capatity of the " + "knapsack (%d)",
+                            Arrays.toString(solution), totalWeight, capa);
             throw new InvalidSolutionException(msg);
         }
 
         return -totalProfit;
     }
 }
-

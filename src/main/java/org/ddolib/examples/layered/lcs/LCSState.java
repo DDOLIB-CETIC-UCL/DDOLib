@@ -4,19 +4,17 @@ import java.util.Arrays;
 
 /**
  * Represents the state of a node in the Longest Common Subsequence (LCS) problem.
- * <p>
- * In this problem, the state is defined by the current position in each of the strings being compared.
- * Each position indicates how many characters of that string have been processed.
- * </p>
- * <p>
- * This state is used by search and optimization algorithms to track progress along the strings.
+ *
+ * <p>In this problem, the state is defined by the current position in each of the strings being
+ * compared. Each position indicates how many characters of that string have been processed.
+ *
+ * <p>This state is used by search and optimization algorithms to track progress along the strings.
  * It is immutable in the sense that new states are created rather than modifying existing ones.
- * </p>
  */
 public class LCSState {
     /**
-     * Current positions in each string.
-     * position[i] is the index of the next character to be considered in the i-th string.
+     * Current positions in each string. position[i] is the index of the next character to be
+     * considered in the i-th string.
      */
     int[] position;
 
@@ -40,8 +38,8 @@ public class LCSState {
     }
 
     /**
-     * Checks equality between this state and another object.
-     * Two states are equal if their position arrays are identical.
+     * Checks equality between this state and another object. Two states are equal if their position
+     * arrays are identical.
      *
      * @param obj the object to compare with
      * @return true if the other object is an LCSState with the same positions; false otherwise
@@ -57,13 +55,11 @@ public class LCSState {
 
     /**
      * Returns a string representation of the state.
-     * <p>
-     * The positions in each string are shown as an array.
-     * </p>
+     *
+     * <p>The positions in each string are shown as an array.
      *
      * @return String representation of the state
      */
-
     @Override
     public String toString() {
         return Arrays.toString(position);

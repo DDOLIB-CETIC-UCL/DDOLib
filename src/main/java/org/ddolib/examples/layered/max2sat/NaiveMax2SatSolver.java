@@ -6,9 +6,8 @@ package org.ddolib.examples.layered.max2sat;
 public class NaiveMax2SatSolver {
 
     private final Max2SatProblem problem;
-    private int _best = Integer.MIN_VALUE;
-    private int[] _bestSolution;
-
+    private int best = Integer.MIN_VALUE;
+    private int[] bestSolution;
 
     /**
      * Creates a new naive solver for the given Max2Sat instance.
@@ -17,7 +16,7 @@ public class NaiveMax2SatSolver {
      */
     public NaiveMax2SatSolver(Max2SatProblem problem) {
         this.problem = problem;
-        _bestSolution = new int[problem.nbVars()];
+        bestSolution = new int[problem.nbVars()];
     }
 
     /**
@@ -26,7 +25,7 @@ public class NaiveMax2SatSolver {
      * @return the best value found so far
      */
     public int best() {
-        return _best;
+        return best;
     }
 
     /**
@@ -35,19 +34,17 @@ public class NaiveMax2SatSolver {
      * @return the best solution found so far
      */
     public int[] bestSolution() {
-        return _bestSolution;
+        return bestSolution;
     }
 
-    /**
-     * Enumerates all possible assignments and keeps track of the best one.
-     */
+    /** Enumerates all possible assignments and keeps track of the best one. */
     public void maximize() {
         int[][] solutions = generatesBinaryValues(problem.nbVars());
         for (int[] sol : solutions) {
             int value = evaluateSolution(sol);
-            if (value > _best) {
-                _best = value;
-                _bestSolution = sol;
+            if (value > best) {
+                best = value;
+                bestSolution = sol;
             }
         }
     }
@@ -78,7 +75,6 @@ public class NaiveMax2SatSolver {
             int b = sol[Math.abs(bc.j()) - 1];
             int eval = bc.eval(a, b);
             toReturn += eval * problem.weights.get(bc);
-
         }
         return toReturn;
     }

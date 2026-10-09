@@ -5,25 +5,18 @@ import org.ddolib.layered.modeling.StateRanking;
 /**
  * Ranking class for states in the Traveling Salesman Problem with Time Windows (TSPTW).
  *
- * <p>
- * This class implements {@link StateRanking} for {@link TSPTWState} and is used to order
- * states within the same layer of a decision diagram. The ranking helps identify which
- * states are better candidates for merging in a relaxed decision diagram.
- * </p>
+ * <p>This class implements {@link StateRanking} for {@link TSPTWState} and is used to order states
+ * within the same layer of a decision diagram. The ranking helps identify which states are better
+ * candidates for merging in a relaxed decision diagram.
  *
- * <p>
- * The comparison is based on the number of nodes in the {@code possiblyVisit} set:
- * states with more nodes in {@code possiblyVisit} are considered better candidates for merging
- * and are ranked higher.
- * </p>
+ * <p>The comparison is based on the number of nodes in the {@code possiblyVisit} set: states with
+ * more nodes in {@code possiblyVisit} are considered better candidates for merging and are ranked
+ * higher.
  */
 public class TSPTWRanking implements StateRanking<TSPTWState> {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-    public TSPTWRanking() {
-    }
+    /** Creates a new instance of this ranking. */
+    public TSPTWRanking() {}
 
     /**
      * Compares two {@link TSPTWState} objects based on the size of their {@code possiblyVisit} set.
@@ -31,7 +24,7 @@ public class TSPTWRanking implements StateRanking<TSPTWState> {
      * @param o1 the first state to compare
      * @param o2 the second state to compare
      * @return a negative integer, zero, or a positive integer if the first state has more, equal,
-     * or fewer nodes in {@code possiblyVisit} than the second state, respectively.
+     *     or fewer nodes in {@code possiblyVisit} than the second state, respectively.
      */
     @Override
     public int compare(TSPTWState o1, TSPTWState o2) {

@@ -6,10 +6,9 @@ import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Base model for the Traveling Salesman Problem (TSP), using the no-layer modeling API.
- * <p>
- * Bundles a {@link TSPProblem} instance together with the {@link TSPFlb} fast lower bound
- * used to guide and prune the search.
- * </p>
+ *
+ * <p>Bundles a {@link TSPProblem} instance together with the {@link TSPFlb} fast lower bound used
+ * to guide and prune the search.
  */
 public class TSPModel implements Model<TSPState> {
 

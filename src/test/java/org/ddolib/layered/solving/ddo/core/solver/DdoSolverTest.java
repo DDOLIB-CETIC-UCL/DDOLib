@@ -1,5 +1,11 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.SearchStatistics;
@@ -8,77 +14,95 @@ import org.ddolib.examples.layered.gruler.GRProblem;
 import org.ddolib.examples.layered.gruler.GRRanking;
 import org.ddolib.examples.layered.gruler.GRRelax;
 import org.ddolib.examples.layered.gruler.GRState;
-import org.ddolib.examples.layered.knapsack.*;
-import org.ddolib.examples.layered.tsp.*;
-import org.ddolib.examples.layered.tsptw.*;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.examples.layered.knapsack.KSDominance;
+import org.ddolib.examples.layered.knapsack.KSFastLowerBound;
+import org.ddolib.examples.layered.knapsack.KSProblem;
+import org.ddolib.examples.layered.knapsack.KSRanking;
+import org.ddolib.examples.layered.knapsack.KSRelax;
+import org.ddolib.examples.layered.tsp.TSPFastLowerBound;
+import org.ddolib.examples.layered.tsp.TSPProblem;
+import org.ddolib.examples.layered.tsp.TSPRanking;
+import org.ddolib.examples.layered.tsp.TSPRelax;
+import org.ddolib.examples.layered.tsp.TSPState;
+import org.ddolib.examples.layered.tsptw.TSPTWDominance;
+import org.ddolib.examples.layered.tsptw.TSPTWFastLowerBound;
+import org.ddolib.examples.layered.tsptw.TSPTWProblem;
+import org.ddolib.examples.layered.tsptw.TSPTWRelax;
+import org.ddolib.examples.layered.tsptw.TSPTWState;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
 import org.junit.jupiter.api.Test;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DdoSolverTest {
     @Test
     void testKPGapNonConsistentHeuristic() throws IOException {
         // The knapsack problem is a maximization problem.
-        // To turn it into a minimization problem, we model it by minimizing the negative of the profit.
-        // Therefore, Ddo with a lower-bound (objective value used here) can improved solution over time
+        // To turn it into a minimization problem, we model it by minimizing the negative of the
+        // profit.
+        // Therefore, Ddo with a lower-bound (objective value used here) can improved solution over
+        // time
         // and prove that no better solution exists.
-        final String instance = Path.of("data", "Knapsack", "instance_n100_c500_10_5_10_5_2").toString();
+        final String instance =
+                Path.of("data", "Knapsack", "instance_n100_c500_10_5_10_5_2").toString();
         final KSProblem problem = new KSProblem(instance);
-        final DdoModel<Integer> model = new DdoModel<>() {
-            @Override
-            public Problem<Integer> problem() {
-                return problem;
-            }
+        final DdoModel<Integer> model =
+                new DdoModel<>() {
+                    @Override
+                    public Problem<Integer> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<Integer> lowerBound() {
-                return new KSFastLowerBound(problem);
-            }
+                    @Override
+                    public FastLowerBound<Integer> lowerBound() {
+                        return new KSFastLowerBound(problem);
+                    }
 
-            @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
+                    @Override
+                    public DominanceChecker<Integer> dominance() {
+                        return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+                    }
 
-            @Override
-            public Relaxation<Integer> relaxation() {
-                return new KSRelax();
-            }
+                    @Override
+                    public Relaxation<Integer> relaxation() {
+                        return new KSRelax();
+                    }
 
-            @Override
-            public KSRanking ranking() {
-                return new KSRanking();
-            }
+                    @Override
+                    public KSRanking ranking() {
+                        return new KSRanking();
+                    }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
-        };
+                    @Override
+                    public boolean useCache() {
+                        return true;
+                    }
+                };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeDdo(model, (sol, s) -> {
-            // verify that each found solution is valid and corresponds to its cost
-            int computedProfit = 0;
-            int computedWeight = 0;
-            for (int i = 0; i < problem.nbVars(); i++) {
-                if (sol[i] == 1) {
-                    computedProfit += problem.profit[i];
-                    computedWeight += problem.weight[i];
-                }
-            }
-            assertTrue(computedWeight <= problem.capa);
-            assertEquals(-computedProfit, s.incumbent());
-            assertEquals(SearchStatus.SAT, s.status());
-            statsList.add(s);
-        });
+        Solution finalSol =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            // verify that each found solution is valid and corresponds to its cost
+                            int computedProfit = 0;
+                            int computedWeight = 0;
+                            for (int i = 0; i < problem.nbVars(); i++) {
+                                if (sol[i] == 1) {
+                                    computedProfit += problem.profit[i];
+                                    computedWeight += problem.weight[i];
+                                }
+                            }
+                            assertTrue(computedWeight <= problem.capa);
+                            assertEquals(-computedProfit, s.incumbent());
+                            assertEquals(SearchStatus.SAT, s.status());
+                            statsList.add(s);
+                        });
 
         // verify that the solutions are improving and the gap is decreasing
         for (int i = 1; i < statsList.size(); i++) {
@@ -99,31 +123,35 @@ class DdoSolverTest {
         // and prove that no better solution exists.
         final int n = 7;
         final GRProblem problem = new GRProblem(n);
-        final DdoModel<GRState> model = new DdoModel<>() {
-            @Override
-            public Problem<GRState> problem() {
-                return problem;
-            }
+        final DdoModel<GRState> model =
+                new DdoModel<>() {
+                    @Override
+                    public Problem<GRState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public Relaxation<GRState> relaxation() {
-                return new GRRelax();
-            }
+                    @Override
+                    public Relaxation<GRState> relaxation() {
+                        return new GRRelax();
+                    }
 
-            @Override
-            public GRRanking ranking() {
-                return new GRRanking();
-            }
-        };
+                    @Override
+                    public GRRanking ranking() {
+                        return new GRRanking();
+                    }
+                };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeDdo(model, (sol, s) -> {
-            // verify that each found solution is valid
-            assertEquals(n - 1, sol.length);
-            assertEquals(sol[n - 2], s.incumbent());
-            assertEquals(SearchStatus.SAT, s.status());
-            statsList.add(s);
-        });
+        Solution finalSol =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            // verify that each found solution is valid
+                            assertEquals(n - 1, sol.length);
+                            assertEquals(sol[n - 2], s.incumbent());
+                            assertEquals(SearchStatus.SAT, s.status());
+                            statsList.add(s);
+                        });
 
         // verify that the solutions are improving and the gap is decreasing
         for (int i = 1; i < statsList.size(); i++) {
@@ -144,47 +172,52 @@ class DdoSolverTest {
         // and prove that no better solution exists.
         final String instance = Path.of("data", "TSP", "instance_18_0.xml").toString();
         final TSPProblem problem = new TSPProblem(instance);
-        DdoModel<TSPState> model = new DdoModel<TSPState>() {
-            @Override
-            public Problem<TSPState> problem() {
-                return problem;
-            }
+        DdoModel<TSPState> model =
+                new DdoModel<TSPState>() {
+                    @Override
+                    public Problem<TSPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public TSPFastLowerBound lowerBound() {
-                return new TSPFastLowerBound(problem);
-            }
+                    @Override
+                    public TSPFastLowerBound lowerBound() {
+                        return new TSPFastLowerBound(problem);
+                    }
 
-            @Override
-            public Relaxation<TSPState> relaxation() {
-                return new TSPRelax(problem);
-            }
+                    @Override
+                    public Relaxation<TSPState> relaxation() {
+                        return new TSPRelax(problem);
+                    }
 
-            @Override
-            public TSPRanking ranking() {
-                return new TSPRanking();
-            }
+                    @Override
+                    public TSPRanking ranking() {
+                        return new TSPRanking();
+                    }
 
-            @Override
-            public WidthHeuristic<TSPState> widthHeuristic() {
-                return new FixedWidth<>(500);
-            }
+                    @Override
+                    public WidthHeuristic<TSPState> widthHeuristic() {
+                        return new FixedWidth<>(500);
+                    }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
-        };
+                    @Override
+                    public boolean useCache() {
+                        return true;
+                    }
+                };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
-        Solution finalSol = Solvers.minimizeDdo(model, (sol, s) -> {
-            // verify that each found solution is valid and corresponds to its cost
-            double computedCost = problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
-            assertEquals(problem.nbVars(), sol.length);
-            assertEquals(computedCost, s.incumbent());
-            assertEquals(SearchStatus.SAT, s.status());
-            statsList.add(s);
-        });
+        Solution finalSol =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            // verify that each found solution is valid and corresponds to its cost
+                            double computedCost =
+                                    problem.eval(sol) + problem.distanceMatrix[0][sol[0]];
+                            assertEquals(problem.nbVars(), sol.length);
+                            assertEquals(computedCost, s.incumbent());
+                            assertEquals(SearchStatus.SAT, s.status());
+                            statsList.add(s);
+                        });
 
         // verify that the solutions are improving and the gap is decreasing
         for (int i = 1; i < statsList.size(); i++) {
@@ -198,32 +231,32 @@ class DdoSolverTest {
         assertEquals(SearchStatus.OPTIMAL, finalSol.statistics().status());
     }
 
-
     @Test
     void testUnsat() throws IOException {
         String instance = Path.of("data", "TSPTW", "impossible_to_finish.txt").toString();
         final TSPTWProblem problem = new TSPTWProblem(instance);
-        DdoModel<TSPTWState> model = new DdoModel<TSPTWState>() {
-            @Override
-            public Problem<TSPTWState> problem() {
-                return problem;
-            }
+        DdoModel<TSPTWState> model =
+                new DdoModel<TSPTWState>() {
+                    @Override
+                    public Problem<TSPTWState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public TSPTWFastLowerBound lowerBound() {
-                return new TSPTWFastLowerBound(problem);
-            }
+                    @Override
+                    public TSPTWFastLowerBound lowerBound() {
+                        return new TSPTWFastLowerBound(problem);
+                    }
 
-            @Override
-            public DominanceChecker<TSPTWState> dominance() {
-                return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
-            }
+                    @Override
+                    public DominanceChecker<TSPTWState> dominance() {
+                        return new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+                    }
 
-            @Override
-            public Relaxation<TSPTWState> relaxation() {
-                return new TSPTWRelax(problem);
-            }
-        };
+                    @Override
+                    public Relaxation<TSPTWState> relaxation() {
+                        return new TSPTWRelax(problem);
+                    }
+                };
 
         Solution bestSolution = Solvers.minimizeDdo(model);
         assertEquals(SearchStatus.UNSAT, bestSolution.statistics().status());

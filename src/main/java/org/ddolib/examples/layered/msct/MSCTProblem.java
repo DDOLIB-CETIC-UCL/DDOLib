@@ -1,26 +1,31 @@
 package org.ddolib.examples.layered.msct;
 
-
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an instance of the **Minimum Sum of Completion Times (MSCT)** problem.
- * <p>
- * The MSCT problem consists in scheduling a set of jobs on a single machine
- * to minimize the total completion time (or sum of finishing times).
- * Each job {@code j} has:
+ *
+ * <p>The MSCT problem consists in scheduling a set of jobs on a single machine to minimize the
+ * total completion time (or sum of finishing times). Each job {@code j} has:
+ *
  * <ul>
- *   <li>a <b>release date</b> {@code release[j]} — the earliest time the job can start,</li>
- *   <li>a <b>processing time</b> {@code processing[j]} — the duration required to complete the job.</li>
+ *   <li>a <b>release date</b> {@code release[j]} — the earliest time the job can start,
+ *   <li>a <b>processing time</b> {@code processing[j]} — the duration required to complete the job.
  * </ul>
- * The problem can be defined formally as:
+ *
+ * <p>The problem can be defined formally as:
+ *
  * <pre>
  *   minimize   ∑ C_j
  *   subject to start_j ≥ release_j
@@ -28,28 +33,26 @@ import java.util.*;
  *               machine processes only one job at a time
  * </pre>
  *
- * <p>
- * This class implements the {@link Problem} interface to be used by generic optimization
- * solvers (A*, ACS, DDO, etc.) from the decision diagram framework.
- * </p>
+ * <p>This class implements the {@link Problem} interface to be used by generic optimization solvers
+ * (A*, ACS, DDO, etc.) from the decision diagram framework.
  *
- * <p>
- * Multiple constructors are provided to:
- * </p>
+ * <p>Multiple constructors are provided to:
+ *
  * <ul>
- *   <li>Load a problem instance from a text file,</li>
- *   <li>Manually provide release and processing times,</li>
- *   <li>Randomly generate a synthetic instance for testing.</li>
+ *   <li>Load a problem instance from a text file,
+ *   <li>Manually provide release and processing times,
+ *   <li>Randomly generate a synthetic instance for testing.
  * </ul>
  *
+ * <p><b>Expected file format:</b>
  *
- * <p><b>Expected file format:</b></p>
  * <ul>
- *   <li>The first line contains the number of jobs, optionally followed by the known optimal value.</li>
- *   <li>Each of the next {@code n} lines contains two integers:
- *       the release time and processing time of each job.</li>
- *   <li>Example:</li>
+ *   <li>The first line contains the number of jobs, optionally followed by the known optimal value.
+ *   <li>Each of the next {@code n} lines contains two integers: the release time and processing
+ *       time of each job.
+ *   <li>Example:
  * </ul>
+ *
  * <pre>
  * 5 215.0
  * 0 3
@@ -67,32 +70,31 @@ import java.util.*;
 public class MSCTProblem implements Problem<MSCTState> {
 
     /**
-     * The release time of each job.
-     * {@code release[i]} gives the earliest time at which job {@code i} can start.
+     * The release time of each job. {@code release[i]} gives the earliest time at which job {@code
+     * i} can start.
      */
     final int[] release;
 
     /**
-     * The processing time of each job.
-     * {@code processing[i]} gives the duration required to complete job {@code i}.
+     * The processing time of each job. {@code processing[i]} gives the duration required to
+     * complete job {@code i}.
      */
     final int[] processing;
 
     /**
-     * The known optimal solution value, if available.
-     * Used for testing or benchmarking purposes.
+     * The known optimal solution value, if available. Used for testing or benchmarking purposes.
      */
     final Optional<Double> optimal;
 
     private Optional<String> name = Optional.empty();
 
     /**
-     * Constructs an MSCT problem from explicit arrays of release and processing times,
-     * with an optional known optimal value.
+     * Constructs an MSCT problem from explicit arrays of release and processing times, with an
+     * optional known optimal value.
      *
-     * @param release    an array of release times for each job
+     * @param release an array of release times for each job
      * @param processing an array of processing times for each job
-     * @param optimal    an {@link Optional} containing the known optimal solution value
+     * @param optimal an {@link Optional} containing the known optimal solution value
      */
     public MSCTProblem(final int[] release, final int[] processing, Optional<Double> optimal) {
         this.release = release;
@@ -102,10 +104,9 @@ public class MSCTProblem implements Problem<MSCTState> {
 
     /**
      * Constructs an MSCT problem by reading data from a text file.
-     * <p>
-     * The file must contain the number of jobs, optionally followed by the optimal value,
-     * and then one line per job with its release and processing times.
-     * </p>
+     *
+     * <p>The file must contain the number of jobs, optionally followed by the optimal value, and
+     * then one line per job with its release and processing times.
      *
      * @param fname the path to the file containing the problem instance
      * @throws IOException if an error occurs while reading the file
@@ -114,7 +115,7 @@ public class MSCTProblem implements Problem<MSCTState> {
         boolean isFirst = true;
         String line;
         int count = 0;
-        int nVar = 0;
+        int nbVariables = 0;
         int[] release = new int[0];
         int[] proces = new int[0];
         Optional<Double> optimal = Optional.empty();
@@ -123,14 +124,14 @@ public class MSCTProblem implements Problem<MSCTState> {
                 if (isFirst) {
                     isFirst = false;
                     String[] tokens = line.split("\\s+");
-                    nVar = Integer.parseInt(tokens[0]);
+                    nbVariables = Integer.parseInt(tokens[0]);
                     if (tokens.length == 2) {
                         optimal = Optional.of(Double.parseDouble(tokens[1]));
                     }
-                    release = new int[nVar];
-                    proces = new int[nVar];
+                    release = new int[nbVariables];
+                    proces = new int[nbVariables];
                 } else {
-                    if (count < nVar) {
+                    if (count < nbVariables) {
                         String[] tokens = line.split("\\s+");
                         release[count] = Integer.parseInt(tokens[0]);
                         proces[count] = Integer.parseInt(tokens[1]);
@@ -161,7 +162,6 @@ public class MSCTProblem implements Problem<MSCTState> {
         this.release = release;
         this.processing = processing;
         this.optimal = Optional.empty();
-
     }
 
     /**
@@ -200,12 +200,11 @@ public class MSCTProblem implements Problem<MSCTState> {
 
     /**
      * Returns the domain of possible decisions at the current state.
-     * <p>
-     * The domain corresponds to the indices of remaining jobs that can still be scheduled.
-     * </p>
+     *
+     * <p>The domain corresponds to the indices of remaining jobs that can still be scheduled.
      *
      * @param state the current state
-     * @param var   the variable index (not used here but required by the interface)
+     * @param var the variable index (not used here but required by the interface)
      * @return an iterator over the remaining job indices
      */
     @Override
@@ -216,7 +215,7 @@ public class MSCTProblem implements Problem<MSCTState> {
     /**
      * Computes the next state resulting from scheduling a given job.
      *
-     * @param state    the current scheduling state
+     * @param state the current scheduling state
      * @param decision the decision representing the next job to schedule
      * @return a new {@link MSCTState} reflecting the updated remaining jobs and current time
      */
@@ -224,23 +223,25 @@ public class MSCTProblem implements Problem<MSCTState> {
     public MSCTState transition(MSCTState state, Decision decision) {
         Set<Integer> remaining = new HashSet<>(state.remainingJobs());
         remaining.remove(decision.value());
-        int currentTime = Math.max(state.currentTime(), release[decision.value()]) + processing[decision.value()];
+        int currentTime =
+                Math.max(state.currentTime(), release[decision.value()])
+                        + processing[decision.value()];
         return new MSCTState(remaining, currentTime);
     }
 
     /**
      * Returns the cost of scheduling a given job from the current state.
-     * <p>
-     * The cost corresponds to the completion time of the scheduled job.
-     * </p>
      *
-     * @param state    the current scheduling state
+     * <p>The cost corresponds to the completion time of the scheduled job.
+     *
+     * @param state the current scheduling state
      * @param decision the decision representing the next job to schedule
      * @return the completion time of the selected job
      */
     @Override
     public double transitionCost(MSCTState state, Decision decision) {
-        return Math.max(state.currentTime(), release[decision.value()]) + processing[decision.value()];
+        return Math.max(state.currentTime(), release[decision.value()])
+                + processing[decision.value()];
     }
 
     /**
@@ -256,8 +257,10 @@ public class MSCTProblem implements Problem<MSCTState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not match " + "the number %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         int t = 0;
@@ -277,7 +280,9 @@ public class MSCTProblem implements Problem<MSCTState> {
      */
     @Override
     public String toString() {
-        return name.orElse(String.format("release: %s - processing: %s", Arrays.toString(release),
-                Arrays.toString(processing)));
+        return name.orElse(
+                String.format(
+                        "release: %s - processing: %s",
+                        Arrays.toString(release), Arrays.toString(processing)));
     }
 }

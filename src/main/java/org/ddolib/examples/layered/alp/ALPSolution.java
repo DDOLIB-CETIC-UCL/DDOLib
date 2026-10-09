@@ -1,24 +1,21 @@
 package org.ddolib.examples.layered.alp;
 
-import org.ddolib.layered.solving.ddo.core.Decision;
-
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.Collectors;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
-/**
- * Class that converts a solution from a solver to a readable and usable solution for the ALP.
- */
+/** Class that converts a solution from a solver to a readable and usable solution for the ALP. */
 class ALPSolution implements Iterable<ALPSchedule> {
 
     private final ALPSchedule[] solution;
 
     /**
-     * Instantiate a solution of the ALP
+     * Instantiate a solution of the ALP.
      *
-     * @param problem  the associated problem
-     * @param solution an array {@code t} such that {@code t[i]} is the assigned value of
-     *                 variable {@code i}.
+     * @param problem the associated problem
+     * @param solution an array {@code t} such that {@code t[i]} is the assigned value of variable
+     *     {@code i}.
      */
     public ALPSolution(ALPProblem problem, int[] solution) {
         this.solution = new ALPSchedule[problem.nbVars()];
@@ -28,40 +25,35 @@ class ALPSolution implements Iterable<ALPSchedule> {
             RunwayState[] runwayStates = curState.runwayStates;
             Decision d = new Decision(i, solution[i]);
             ALPDecision alpD = problem.fromDecision(d.value());
-            int aircraft = problem.latestToEarliestAircraftByClass
-                    .get(alpD.aircraftClass)
-                    .get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
+            int aircraft =
+                    problem.latestToEarliestAircraftByClass
+                            .get(alpD.aircraftClass)
+                            .get(curState.remainingAircraftOfClass[alpD.aircraftClass]);
             int landingTime = problem.getArrivalTime(runwayStates, aircraft, alpD.runway);
             curState = problem.transition(curState, d);
-            this.solution[i] = new ALPSchedule(aircraft, problem.aircraftClass[aircraft], landingTime, alpD.runway);
+            this.solution[i] =
+                    new ALPSchedule(
+                            aircraft, problem.aircraftClass[aircraft], landingTime, alpD.runway);
         }
-
     }
-
 
     @Override
     public String toString() {
-        return Arrays.stream(solution).map(s -> String.format(
-                "Aircraft: %3d - Class: %3d - Landing time: %5d - Runway: %3d",
-                s.aircraft(), s.aircraftClass(), s.landingTime(), s.runway())).collect(Collectors.joining("\n"));
+        return Arrays.stream(solution)
+                .map(
+                        s ->
+                                String.format(
+                                        "Aircraft: %3d - Class: %3d - Landing time: %5d - Runway:"
+                                                + " %3d",
+                                        s.aircraft(),
+                                        s.aircraftClass(),
+                                        s.landingTime(),
+                                        s.runway()))
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
     public Iterator<ALPSchedule> iterator() {
         return Arrays.stream(solution).iterator();
     }
-
-
 }
-
-/**
- * Contains schedule data for an aircraft.
- *
- * @param aircraft      the id of the aircraft
- * @param aircraftClass the class of the aircraft
- * @param landingTime   when the aircraft is landing
- * @param runway        the runway on which the aircraft is landing
- */
-record ALPSchedule(int aircraft, int aircraftClass, int landingTime, int runway) {
-}
-

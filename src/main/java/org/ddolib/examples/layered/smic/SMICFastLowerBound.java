@@ -1,51 +1,45 @@
 package org.ddolib.examples.layered.smic;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.util.BitSet;
 import java.util.PriorityQueue;
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
- * The {@code SMICFastLowerBound} class provides a fast and simple estimation
- * of the lower bound of the remaining cost (or completion time) in the
- * Single Machine with Inventory Constraint (SMIC) scheduling problem.
- * <p>
- * This lower bound is computed based on the processing times and release dates
- * of the remaining jobs to be scheduled in a given state of the search process.
- * It is intended to provide a quick and computationally inexpensive
- * approximation to guide search algorithms such as DDO (Decision Diagram Optimization)
- * or ACS (Anytime Column Search).
- * </p>
+ * The {@code SMICFastLowerBound} class provides a fast and simple estimation of the lower bound of
+ * the remaining cost (or completion time) in the Single Machine with Inventory Constraint (SMIC)
+ * scheduling problem.
  *
- * <p><b>Computation principle:</b></p>
+ * <p>This lower bound is computed based on the processing times and release dates of the remaining
+ * jobs to be scheduled in a given state of the search process. It is intended to provide a quick
+ * and computationally inexpensive approximation to guide search algorithms such as DDO (Decision
+ * Diagram Optimization) or ACS (Anytime Column Search).
+ *
+ * <p><b>Computation principle:</b>
+ *
  * <ul>
- *     <li>The method accumulates the total processing time of all remaining jobs.</li>
- *     <li>It also identifies the earliest release time among these jobs.</li>
- *     <li>The lower bound is then the sum of these processing times plus a correction
- *         based on the difference between the earliest release date and the current time.</li>
+ *   <li>The method accumulates the total processing time of all remaining jobs.
+ *   <li>It also identifies the earliest release time among these jobs.
+ *   <li>The lower bound is then the sum of these processing times plus a correction based on the
+ *       difference between the earliest release date and the current time.
  * </ul>
  *
- * <p>
- * The bound does not attempt to be exact but rather provides a quick estimation
- * to help pruning suboptimal branches in the search tree.
- * </p>
+ * <p>The bound does not attempt to be exact but rather provides a quick estimation to help pruning
+ * suboptimal branches in the search tree.
  *
  * @see SMICProblem
  * @see SMICState
  * @see FastLowerBound
  */
 public class SMICFastLowerBound implements FastLowerBound<SMICState> {
-    /**
-     * The SMIC problem instance for which the lower bound is computed.
-     */
+    /** The SMIC problem instance for which the lower bound is computed. */
     private final SMICProblem problem;
 
     /**
      * Constructs a fast lower bound estimator for the given SMIC problem.
      *
-     * @param problem the {@link SMICProblem} instance containing job data
-     *                such as processing times and release dates
+     * @param problem the {@link SMICProblem} instance containing job data such as processing times
+     *     and release dates
      */
     public SMICFastLowerBound(SMICProblem problem) {
         this.problem = problem;
@@ -53,20 +47,22 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
 
     /**
      * Computes a fast lower bound for the current search state.
-     * <p>
-     * The lower bound is estimated as:
-     * </p>
+     *
+     * <p>The lower bound is estimated as:
+     *
      * <pre>
      *     LB = (min(0, minRelease - currentTime)) + sum(processingTimes)
      * </pre>
-     * where:
+     *
+     * <p>where:
+     *
      * <ul>
-     *     <li>{@code minRelease} is the smallest release time among the remaining jobs,</li>
-     *     <li>{@code currentTime} is the current machine time in the state,</li>
-     *     <li>{@code sum(processingTimes)} is the total processing time of all remaining jobs.</li>
+     *   <li>{@code minRelease} is the smallest release time among the remaining jobs,
+     *   <li>{@code currentTime} is the current machine time in the state,
+     *   <li>{@code sum(processingTimes)} is the total processing time of all remaining jobs.
      * </ul>
      *
-     * @param state     the current {@link SMICState}, representing the partial schedule
+     * @param state the current {@link SMICState}, representing the partial schedule
      * @param variables the set of remaining decision variables (unused in this heuristic)
      * @return a lower bound estimate of the remaining cost or completion time
      */
@@ -79,8 +75,9 @@ public class SMICFastLowerBound implements FastLowerBound<SMICState> {
             queue.add(problem.processing[j]);
         }
         for (int i = 0; i < variables.size(); i++) {
-            if (!queue.isEmpty())
+            if (!queue.isEmpty()) {
                 lowerBound += queue.poll();
+            }
         }
         return lowerBound;
     }

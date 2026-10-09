@@ -1,29 +1,27 @@
 package org.ddolib.examples.nolayer.tsp;
 
+import java.util.Optional;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solving.astar.core.solver.AStarSolver;
 
-import java.util.Optional;
-
 /**
- * Main class to solve a Traveling Salesman Problem (TSP) instance using the no-layer
- * A* algorithm.
+ * Main class to solve a Traveling Salesman Problem (TSP) instance using the no-layer A* algorithm.
  */
 public class TSPAStarMain {
 
-    private TSPAStarMain() {
-    }
+    private TSPAStarMain() {}
 
     /**
-     * Entry point of the program. Generates a small random TSP instance and solves it using
-     * the A* algorithm.
+     * Entry point of the program. Generates a small random TSP instance and solves it using the A*
+     * algorithm.
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
         // Generate a small random TSP instance
-        TSPGenerator generator = new TSPGenerator(12, 42, 100); // Use a small size for fast execution
+        TSPGenerator generator =
+                new TSPGenerator(12, 42, 100); // Use a small size for fast execution
         double[][] distMatrix = generator.distanceMatrix;
 
         TSPProblem problem = new TSPProblem(distMatrix);
@@ -32,13 +30,13 @@ public class TSPAStarMain {
         AStarSolver<TSPState> solver = new AStarSolver<>(model);
 
         System.out.println("Starting A* Search on TSPNoLayer Problem...");
-        Solution solution = solver.minimize(
-                stats -> false,
-                (sol, stats) -> {
-                    System.out.println("Found a solution with value: " + stats.incumbent());
-                    System.out.println("Path: " + sol);
-                }
-        );
+        Solution solution =
+                solver.minimize(
+                        stats -> false,
+                        (sol, stats) -> {
+                            System.out.println("Found a solution with value: " + stats.incumbent());
+                            System.out.println("Path: " + sol);
+                        });
 
         Optional<Double> bestVal = solver.bestValue();
     }

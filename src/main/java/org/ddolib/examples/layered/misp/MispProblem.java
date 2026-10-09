@@ -1,63 +1,59 @@
 package org.ddolib.examples.layered.misp;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an instance of the Maximum Independent Set Problem (MISP) as a {@link Problem}.
- * <p>
- * The problem is defined on a weighted undirected graph. Each node can either be included
- * in the independent set or not, and selected nodes cannot be adjacent.
- * </p>
- * <p>
- * The state of the problem is represented by a {@link BitSet} indicating which nodes
- * can still be selected. The solver explores decisions for each node to build an
- * independent set of maximum weight.
- * </p>
+ *
+ * <p>The problem is defined on a weighted undirected graph. Each node can either be included in the
+ * independent set or not, and selected nodes cannot be adjacent.
+ *
+ * <p>The state of the problem is represented by a {@link BitSet} indicating which nodes can still
+ * be selected. The solver explores decisions for each node to build an independent set of maximum
+ * weight.
  */
 public class MispProblem implements Problem<BitSet> {
 
     /**
-     * The remaining nodes that can be selected in the current independent set.
-     * Considered as the state of the decision diagram.
+     * The remaining nodes that can be selected in the current independent set. Considered as the
+     * state of the decision diagram.
      */
     public final BitSet remainingNodes;
 
-    /**
-     * For each node {@code i}, {@code neighbors[i]} contains the adjacency list of {@code i}.
-     */
+    /** For each node {@code i}, {@code neighbors[i]} contains the adjacency list of {@code i}. */
     public final BitSet[] neighbors;
 
-    /**
-     * For each node {@code i}, {@code weight[i]} contains the weight associated with {@code i}.
-     */
+    /** For each node {@code i}, {@code weight[i]} contains the weight associated with {@code i}. */
     public final int[] weight;
 
-    /**
-     * Optional value of the optimal solution, if known.
-     */
+    /** Optional value of the optimal solution, if known. */
     private Optional<Double> optimal = Optional.empty();
 
-    /**
-     * Optional name for readability of tests and outputs.
-     */
+    /** Optional name for readability of tests and outputs. */
     private Optional<String> name = Optional.empty();
 
     /**
-     * Constructs a MISP problem with a given state, adjacency lists, weights, and known optimal value.
+     * Constructs a MISP problem with a given state, adjacency lists, weights, and known optimal
+     * value.
      *
      * @param remainingNodes the initial set of selectable nodes
-     * @param neighbors      adjacency lists for each node
-     * @param weight         weights of each node
-     * @param optimal        known optimal solution value
+     * @param neighbors adjacency lists for each node
+     * @param weight weights of each node
+     * @param optimal known optimal solution value
      */
-    public MispProblem(BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Double> optimal) {
+    public MispProblem(
+            BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional<Double> optimal) {
         this.remainingNodes = remainingNodes;
         this.neighbors = neighbors;
         this.weight = weight;
@@ -66,11 +62,10 @@ public class MispProblem implements Problem<BitSet> {
 
     /**
      * Loads a MISP problem from a DOT file.
-     * <p>
-     * The file must contain the list of nodes and edges. Node weights can be specified
-     * with {@code [weight=w]} (default weight is 1). If known, the optimal solution
-     * should be specified in the second line as {@code optimal=x}.
-     * </p>
+     *
+     * <p>The file must contain the list of nodes and edges. Node weights can be specified with
+     * {@code [weight=w]} (default weight is 1). If known, the optimal solution should be specified
+     * in the second line as {@code optimal=x}.
      *
      * @param fname path to the DOT file describing the graph
      * @throws IOException if an error occurs while reading the file
@@ -84,7 +79,9 @@ public class MispProblem implements Problem<BitSet> {
             br.readLine();
             String line;
             while ((line = br.readLine()) != null && !line.contains("--")) {
-                if (line.isEmpty()) continue;
+                if (line.isEmpty()) {
+                    continue;
+                }
 
                 if (line.contains("optimal")) {
                     String optiStr = line.replace(";", "");
@@ -139,8 +136,9 @@ public class MispProblem implements Problem<BitSet> {
                 neighStr.append(String.format("\t%d : %s%n", i, neighbors[i]));
             }
 
-            return String.format("Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n", remainingNodes.toString(),
-                    weighStr, neighStr);
+            return String.format(
+                    "Remaining nodes: %s%nWeight: %n%s%nNeighbors: %n%s%n",
+                    remainingNodes.toString(), weighStr, neighStr);
         }
     }
 
@@ -195,8 +193,10 @@ public class MispProblem implements Problem<BitSet> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         List<Integer> independentSet = new ArrayList<>();
@@ -213,8 +213,11 @@ public class MispProblem implements Problem<BitSet> {
                 int from = independentSet.get(i);
                 int to = independentSet.get(j);
                 if (neighbors[from].get(to)) {
-                    String msg = String.format("The solution %s is not an independent set. Nodes " +
-                            "%d and %d are adjacent", independentSet, from, to);
+                    String msg =
+                            String.format(
+                                    "The solution %s is not an independent set. Nodes "
+                                            + "%d and %d are adjacent",
+                                    independentSet, from, to);
                     throw new InvalidSolutionException(msg);
                 }
             }

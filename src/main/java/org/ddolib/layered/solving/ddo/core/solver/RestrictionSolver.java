@@ -1,5 +1,10 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
@@ -7,21 +12,20 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.common.util.verbosity.VerboseMode;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.common.util.verbosity.VerboseMode;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
-
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 /**
  * A solver that compile one relaxed MDD from the root node.
@@ -38,69 +42,55 @@ import java.util.function.Predicate;
  * @see DominanceChecker
  */
 public final class RestrictionSolver<T> {
-    /**
-     * The problem we want to minimize
-     */
+    /** The problem we want to minimize. */
     private final Problem<T> problem;
-    /**
-     * A heuristic to choose the maximum width of the DD you compile
-     */
+
+    /** A heuristic to choose the maximum width of the DD you compile. */
     private final WidthHeuristic<T> width;
 
-
     /**
-     * Set of nodes that must still be explored before
-     * the problem can be considered 'solved'.
-     * <p>
-     * # Note:
-     * This fringe orders the nodes by lower bound (so the lowest lower bound is going
-     * to pop first). So, it is guaranteed that the lower-bound of the first
-     * node being popped is a lower bound on the value reachable by exploring
-     * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an lb &#8804; current best
-     * lower bound is popped.
+     * Set of nodes that must still be explored before the problem can be considered 'solved'.
+     *
+     * <p># Note: This fringe orders the nodes by lower bound (so the lowest lower bound is going to
+     * pop first). So, it is guaranteed that the lower-bound of the first node being popped is a
+     * lower bound on the value reachable by exploring any of the nodes remaining on the fringe. As
+     * a consequence, the exploration can be stopped as soon as a node with an lb &#8804; current
+     * best lower bound is popped.
      */
     private final Frontier<T> frontier;
 
-    /**
-     * The dominance object that will be used to prune the search space.
-     */
+    /** The dominance object that will be used to prune the search space. */
     private final DominanceChecker<T> dominance;
 
-
     /**
+     * Verbosity level of the solver, i.e. what is printed during the search.
+     *
      * <ul>
-     *     <li>0: no verbosity</li>
-     *     <li>1: display newBest whenever there is a newBest</li>
-     *     <li>2: 1 + statistics about the front every half a second (or so)</li>
-     *     <li>3: 2 + every developed sub-problem</li>
-     *     <li>4: 3 + details about the developed state</li>
+     *   <li>0: no verbosity
+     *   <li>1: display newBest whenever there is a newBest
+     *   <li>2: 1 + statistics about the front every half a second (or so)
+     *   <li>3: 2 + every developed sub-problem
+     *   <li>4: 3 + details about the developed state
      * </ul>
-     * <p>
-     * <p>
-     * 3: 2 + every developed sub-problem
-     * 4: 3 + details about the developed state
      */
     private final VerbosityLevel verbosityLevel;
 
     private final VerboseMode verboseMode;
-    /**
-     * Whether we want to export the first explored restricted and relaxed mdd.
-     */
+
+    /** Whether we want to export the first explored restricted and relaxed mdd. */
     private final boolean exportAsDot;
+
     private final DdoModel<T> model;
-    /**
-     * Value of the best known upper bound.
-     */
+
+    /** Value of the best known upper bound. */
     private double bestUB;
-    /**
-     * If set, this keeps the info about the best solution so far.
-     */
+
+    /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
 
     /**
-     * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link DdoModel}
+     * Creates a fully qualified instance. The parameters of this solver are given via a {@link
+     * DdoModel}
      *
      * @param model all the parameters needed to configure the solver
      */
@@ -120,12 +110,14 @@ public final class RestrictionSolver<T> {
     /**
      * Solves the model by compiling a single restricted decision diagram.
      *
-     * @param limit      a predicate that can limit or stop the search based on current statistics
+     * @param limit a predicate that can limit or stop the search based on current statistics
      * @param onSolution a callback invoked once with the best solution found, if any
      * @return the statistics of the search after completion
      */
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        // declared first on purpose: it records the start time of the search
+        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();
@@ -162,14 +154,16 @@ public final class RestrictionSolver<T> {
     /**
      * Returns the set of decisions that lead to the best solution found by this solver, if any.
      *
-     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
-     * or empty if no solution exists
+     * @return an {@link Optional} containing the set of {@link Decision} objects representing the
+     *     best solution, or empty if no solution exists
      */
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
     }
 
     /**
+     * Returns the root subproblem.
+     *
      * @return the root subproblem
      */
     private SubProblem<T> root() {
@@ -181,9 +175,8 @@ public final class RestrictionSolver<T> {
     }
 
     /**
-     * Updates the best known node and upper bound in
-     * case the best value of the current `mdd` expansion improves the current
-     * bounds.
+     * Updates the best known node and upper bound in case the best value of the current `mdd`
+     * expansion improves the current bounds.
      */
     private void maybeUpdateBest(DecisionDiagram<T> currentMdd, boolean exportDot) {
         Optional<Double> ddval = currentMdd.bestValue();
@@ -208,13 +201,13 @@ public final class RestrictionSolver<T> {
     /**
      * Initialize the parameters of a compilation.
      *
-     * @param sub         the root of the current sub-problem
-     * @param maxWidth    the max width of the diagram
+     * @param sub the root of the current sub-problem
+     * @param maxWidth the max width of the diagram
      * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */
-    private CompilationConfig<T> configureCompilation(SubProblem<T> sub,
-                                                      int maxWidth, boolean exportAsDot) {
+    private CompilationConfig<T> configureCompilation(
+            SubProblem<T> sub, int maxWidth, boolean exportAsDot) {
         CompilationConfig<T> compilation = new CompilationConfig<>(model);
         compilation.compilationType = CompilationType.Restricted;
         compilation.problem = model.problem();

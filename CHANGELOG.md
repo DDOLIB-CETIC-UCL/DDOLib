@@ -27,6 +27,19 @@ This file documents the DDOLib changes.
 
 - LNS: `LnsModel.seed()` and `LnsModel.setSeed(long)`. The LNS search is now deterministic by
   default (`LnsModel.DEFAULT_SEED`), as in the original ddo solver.
+- Checkstyle configuration based on the Google Java Style (with a 4-space indentation and the
+  abbreviations allowed in names to keep the public API), run with `mvn checkstyle:check` and in a
+  blocking CI workflow (any warning fails the build).
+
+### Changed
+
+- The whole code base follows the Checkstyle configuration (0 warning). The sources are formatted
+  with google-java-format in AOSP mode (4-space indentation) with the Google import order. Braces
+  were added around all the `if`/`else`/`for`/`while` bodies, star imports were replaced by
+  explicit imports, missing Javadoc was written and non-public members were renamed. The public
+  API is unchanged.
+- The package-private classes `ALPSchedule`, `TSPNode`, `VirtualNodes` and the no-layer
+  `*DdoModel` example classes were moved to their own source files.
 
 ## [0.1.0] - 03/07/2026
 

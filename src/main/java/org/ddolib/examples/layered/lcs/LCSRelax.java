@@ -1,26 +1,22 @@
 package org.ddolib.examples.layered.lcs;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import org.ddolib.layered.modeling.Relaxation;
 import org.ddolib.layered.solving.ddo.core.Decision;
 
-import java.util.Arrays;
-import java.util.Iterator;
-
 /**
  * Relaxation strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
- * <p>
- * This class implements {@link Relaxation} and is used to merge multiple LCS states into
- * a single relaxed state, which is useful for search algorithms such as DDO (Decision Diagram Optimization).
- * </p>
- * <p>
- * The merged state preserves, for each string, the earliest position among all merged states.
+ *
+ * <p>This class implements {@link Relaxation} and is used to merge multiple LCS states into a
+ * single relaxed state, which is useful for search algorithms such as DDO (Decision Diagram
+ * Optimization).
+ *
+ * <p>The merged state preserves, for each string, the earliest position among all merged states.
  * This allows the algorithm to over-approximate the search space while maintaining feasibility.
- * </p>
  */
 public class LCSRelax implements Relaxation<LCSState> {
-    /**
-     * The LCS problem instance associated with this relaxation.
-     */
+    /** The LCS problem instance associated with this relaxation. */
     LCSProblem problem;
 
     /**
@@ -34,10 +30,9 @@ public class LCSRelax implements Relaxation<LCSState> {
 
     /**
      * Merges multiple LCS states into a single relaxed state.
-     * <p>
-     * For each string, the merged state takes the minimum position among all states,
-     * effectively keeping the "earliest progress" along each string.
-     * </p>
+     *
+     * <p>For each string, the merged state takes the minimum position among all states, effectively
+     * keeping the "earliest progress" along each string.
      *
      * @param states iterator over the states to be merged
      * @return a new {@link LCSState} representing the merged state
@@ -59,15 +54,14 @@ public class LCSRelax implements Relaxation<LCSState> {
 
     /**
      * Relaxes the cost of a transition between two LCS states.
-     * <p>
-     * This implementation returns the original cost unchanged.
-     * </p>
      *
-     * @param from   the state from which the transition originates
-     * @param to     the state to which the transition goes
+     * <p>This implementation returns the original cost unchanged.
+     *
+     * @param from the state from which the transition originates
+     * @param to the state to which the transition goes
      * @param merged the merged state that includes both 'from' and 'to'
-     * @param d      the decision taken
-     * @param cost   the original cost of the transition
+     * @param d the decision taken
+     * @param cost the original cost of the transition
      * @return the relaxed cost, which in this case is the same as {@code cost}
      */
     @Override

@@ -1,15 +1,28 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
-import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import java.nio.file.Path;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DefaultDominanceChecker;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 
-import java.nio.file.Path;
-
+/**
+ * Supplies the maximum coverage instances used by the non-regression tests, with a model relying on
+ * cluster-based reduction strategies.
+ */
 public class MaxCoverNonRegressionTestDataSupplier extends MaxCoverTestDataSupplier {
 
+    /**
+     * Creates a supplier reading the instances from the given directory.
+     *
+     * @param dir the directory containing the instance files
+     */
     public MaxCoverNonRegressionTestDataSupplier(Path dir) {
         super(dir);
     }

@@ -1,34 +1,28 @@
 package org.ddolib.examples.layered.lcs;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Implementation of a fast lower bound heuristic for the Longest Common Subsequence (LCS) problem.
- * <p>
- * This class provides a quick estimation of the best achievable LCS length from a given
- * {@link LCSState}. It is designed to be used within search algorithms to prune the
- * search space efficiently.
- * </p>
- * <p>
- * The heuristic works by:
- * </p>
+ *
+ * <p>This class provides a quick estimation of the best achievable LCS length from a given {@link
+ * LCSState}. It is designed to be used within search algorithms to prune the search space
+ * efficiently.
+ *
+ * <p>The heuristic works by:
+ *
  * <ul>
- *     <li>For each character, computing the minimum number of occurrences remaining
- *         in all strings from their current positions, contributing to a lower bound
- *         on the LCS length.</li>
- *     <li>For each string pair, using precomputed pairwise LCS tables to find the
- *         minimum LCS length achievable based on the current positions.</li>
- *     <li>Returning the negative of the smaller value between the total character-based
- *         bound and the minimum pairwise LCS bound. This aligns with the solver's
- *         convention of minimizing costs.</li>
+ *   <li>For each character, computing the minimum number of occurrences remaining in all strings
+ *       from their current positions, contributing to a lower bound on the LCS length.
+ *   <li>For each string pair, using precomputed pairwise LCS tables to find the minimum LCS length
+ *       achievable based on the current positions.
+ *   <li>Returning the negative of the smaller value between the total character-based bound and the
+ *       minimum pairwise LCS bound. This aligns with the solver's convention of minimizing costs.
  * </ul>
  */
 public class LCSFastLowerBound implements FastLowerBound<LCSState> {
-    /**
-     * The LCS problem instance associated with this heuristic.
-     */
+    /** The LCS problem instance associated with this heuristic. */
     LCSProblem problem;
 
     /**
@@ -43,7 +37,7 @@ public class LCSFastLowerBound implements FastLowerBound<LCSState> {
     /**
      * Computes a fast lower bound on the objective function for the given state.
      *
-     * @param state     the current LCS state representing positions in each string
+     * @param state the current LCS state representing positions in each string
      * @param variables the set of variables (unused in this heuristic but required by interface)
      * @return the negative of the estimated maximum LCS length achievable from this state
      */
@@ -59,10 +53,14 @@ public class LCSFastLowerBound implements FastLowerBound<LCSState> {
             total += inCommon;
         }
 
-        // For each string, gets the minimal pairwise LCS solution based on current string's position.
+        // For each string, gets the minimal pairwise LCS solution based on current string's
+        // position.
         int minPairwiseLCS = Integer.MAX_VALUE;
         for (int s = 0; s < problem.stringNb - 1; ++s) {
-            minPairwiseLCS = Math.min(minPairwiseLCS, problem.tables[s][state.position[s]][state.position[s + 1]]);
+            minPairwiseLCS =
+                    Math.min(
+                            minPairwiseLCS,
+                            problem.tables[s][state.position[s]][state.position[s + 1]]);
         }
 
         return -(Math.min(total, minPairwiseLCS));

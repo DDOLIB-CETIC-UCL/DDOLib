@@ -1,32 +1,26 @@
 package org.ddolib.examples.layered.mcp;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.AcsModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
- * Maximum Cut Problem (MCP) with Acs.
- * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using an Anytime Column Search (ACS) approach.
- * <p>
- * This class demonstrates how to set up an ACS model for the MCP, run the search, and print
- * the resulting solution and statistics.
- * </p>
+ * Maximum Cut Problem (MCP) with Acs. Main class for solving the <b>Maximum Cut Problem (MCP)</b>
+ * using an Anytime Column Search (ACS) approach.
  *
- * <p>
- * The problem instance can be provided as a command-line argument. If no argument is provided,
- * a default instance located at <code>data/MCP/mcp_5_2.txt</code> is used.
- * </p>
+ * <p>This class demonstrates how to set up an ACS model for the MCP, run the search, and print the
+ * resulting solution and statistics.
  *
- * <p>
- * The model uses {@link MCPFastLowerBound} to compute a fast lower bound of the solution quality,
- * and the {@link AcsModel} framework handles the search process.
- * </p>
+ * <p>The problem instance can be provided as a command-line argument. If no argument is provided, a
+ * default instance located at <code>data/MCP/mcp_5_2.txt</code> is used.
+ *
+ * <p>The model uses {@link MCPFastLowerBound} to compute a fast lower bound of the solution
+ * quality, and the {@link AcsModel} framework handles the search process.
  *
  * @see MCPProblem
  * @see MCPState
@@ -36,42 +30,44 @@ import java.nio.file.Path;
  */
 public final class MCPAcsMain {
 
-    private MCPAcsMain() {
-    }
+    private MCPAcsMain() {}
 
     /**
      * Entry point of the application.
-     * <p>
-     * Initializes the MCP problem, builds an ACS model, and runs the ACS search to find
-     * a maximum cut. The resulting solution is printed incrementally via
-     * {@link SolutionPrinter} and a final {@link SearchStatistics} summary is displayed.
-     * </p>
      *
-     * @param args optional command-line arguments; args[0] can specify the path to an MCP instance file
+     * <p>Initializes the MCP problem, builds an ACS model, and runs the ACS search to find a
+     * maximum cut. The resulting solution is printed incrementally via {@link SolutionPrinter} and
+     * a final {@link SearchStatistics} summary is displayed.
+     *
+     * @param args optional command-line arguments; args[0] can specify the path to an MCP instance
+     *     file
      * @throws IOException if the instance file cannot be read
      */
-
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];
+        final String instance =
+                args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];
         final MCPProblem problem = new MCPProblem(instance);
-        AcsModel<MCPState> model = new AcsModel<MCPState>() {
-            @Override
-            public Problem<MCPState> problem() {
-                return problem;
-            }
+        AcsModel<MCPState> model =
+                new AcsModel<MCPState>() {
+                    @Override
+                    public Problem<MCPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public MCPFastLowerBound lowerBound() {
-                return new MCPFastLowerBound(problem);
-            }
-        };
+                    @Override
+                    public MCPFastLowerBound lowerBound() {
+                        return new MCPFastLowerBound(problem);
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeAcs(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-
     }
 }

@@ -1,27 +1,36 @@
 package org.ddolib.nolayer.solving.astar.core.solver;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-import org.ddolib.nolayer.modeling.*;
+import org.ddolib.nolayer.modeling.DefaultFastLowerBound;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solver.Solver;
 import org.ddolib.nolayer.util.debug.DebugUtil;
 
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-
 /**
  * A* solver implementation for no-layer decision-diagram based optimization models.
- * <p>
- * The solver explores subproblems ordered by their {@code f = g + h} value, where
- * {@code g} is the accumulated cost and {@code h} is a fast lower bound on the residual
- * problem. It maintains open/closed sets and updates the incumbent whenever a better complete
- * assignment is discovered.
+ *
+ * <p>The solver explores subproblems ordered by their {@code f = g + h} value, where {@code g} is
+ * the accumulated cost and {@code h} is a fast lower bound on the residual problem. It maintains
+ * open/closed sets and updates the incumbent whenever a better complete assignment is discovered.
  *
  * @param <T> the type of states handled by the model
  */
@@ -32,8 +41,8 @@ public final class AStarSolver<T> implements Solver {
     private final HashMap<T, Double> closed;
     private final HashMap<T, Double> present;
     private final NoLayerDominanceChecker<T> dominance;
-    private final PriorityQueue<SubProblem<T>> open = new PriorityQueue<>(
-            Comparator.comparingDouble(SubProblem<T>::f));
+    private final PriorityQueue<SubProblem<T>> open =
+            new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f));
     private final SubProblem<T> root;
     private final VerboseMode verboseMode;
     private final DebugLevel debugLevel;
@@ -76,24 +85,28 @@ public final class AStarSolver<T> implements Solver {
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
-
     private SubProblem<T> constructRoot(T state, double value) {
         return new SubProblem<>(state, value, lb.fastLowerBound(state), new ArrayList<>());
     }
 
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
+    public Solution minimize(
+            Predicate<SearchStatistics> limit,
+            BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
-        if (dominance != null) dominance.clear();
+        if (dominance != null) {
+            dominance.clear();
+        }
         open.add(root);
         present.put(root.getState(), root.f());
 
         while (!open.isEmpty()) {
-            statistics = statistics.incrementNbIter()
-                    .updateFrontierMaxSize(open.size())
-                    .updateTime(System.currentTimeMillis())
-                    .updateGap(gap());
+            statistics =
+                    statistics
+                            .incrementNbIter()
+                            .updateFrontierMaxSize(open.size())
+                            .updateTime(System.currentTimeMillis())
+                            .updateGap(gap());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -108,11 +121,15 @@ public final class AStarSolver<T> implements Solver {
 
             present.remove(state);
 
-            if (closed.containsKey(state)) continue;
+            if (closed.containsKey(state)) {
+                continue;
+            }
 
             closed.put(state, sub.f());
 
-            if (sub.f() + 1e-10 > bestUB) continue;
+            if (sub.f() + 1e-10 > bestUB) {
+                continue;
+            }
 
             if (problem.isTarget(state)) {
                 // target reached
@@ -129,13 +146,17 @@ public final class AStarSolver<T> implements Solver {
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis());
-        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
-        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        if (bestSol.isPresent()) {
+            statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
+        } else {
+            statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        }
 
         return new Solution(bestSolution(), statistics);
     }
 
-    private void addChildren(SubProblem<T> subProblem, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
+    private void addChildren(
+            SubProblem<T> subProblem, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
         while (domain.hasNext()) {
@@ -154,7 +175,9 @@ public final class AStarSolver<T> implements Solver {
             double h = lb.fastLowerBound(newState);
             double f = g + h;
 
-            if (f + 1e-10 > bestUB) continue;
+            if (f + 1e-10 > bestUB) {
+                continue;
+            }
 
             SubProblem<T> newSub = new SubProblem<>(newState, g, h, newPath);
 
@@ -177,8 +200,8 @@ public final class AStarSolver<T> implements Solver {
             if (problem.isTarget(newState) && newSub.getValue() < bestUB) {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                statistics = statistics.updateIncumbent(bestUB, gap())
-                        .updateStatus(SearchStatus.SAT);
+                statistics =
+                        statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
                 onSolution.accept(newPath, statistics);
                 verboseMode.newBest(bestUB);
             }
@@ -198,7 +221,9 @@ public final class AStarSolver<T> implements Solver {
 
     @Override
     public Optional<Double> bestValue() {
-        if (bestSol.isPresent()) return Optional.of(bestUB);
+        if (bestSol.isPresent()) {
+            return Optional.of(bestUB);
+        }
         return Optional.empty();
     }
 
@@ -211,22 +236,23 @@ public final class AStarSolver<T> implements Solver {
         HashSet<T> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
 
-        Model<T> model = new Model<>() {
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+        Model<T> model =
+                new Model<>() {
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return lb;
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return lb;
+                    }
 
-            @Override
-            public NoLayerDominanceChecker<T> dominance() {
-                return dominance;
-            }
-        };
+                    @Override
+                    public NoLayerDominanceChecker<T> dominance() {
+                        return dominance;
+                    }
+                };
 
         DebugUtil.checkFlbAdmissibility(toCheck, model, state -> new AStarSolver<>(model, state));
     }

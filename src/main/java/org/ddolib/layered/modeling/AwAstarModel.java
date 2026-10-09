@@ -1,18 +1,17 @@
 package org.ddolib.layered.modeling;
 
-import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 
 /**
- * Defines the structure of an optimization model solved using the
- * <b>Anytime Weighted A*  (AWA*)</b> algorithm within the
- * Decision Diagram Optimization (DDO) framework.
+ * Defines the structure of an optimization model solved using the <b>Anytime Weighted A* (AWA*)</b>
+ * algorithm within the Decision Diagram Optimization (DDO) framework.
  *
- * <p>The Anytime Weighted A*  algorithm is derived from the A* algorithm. By adding a weight to
- * the heuristic function, it speeds up reaching feasible solution. It incrementally improves the
- * best found solution. The {@code AwAsatar} interface provides the problem definition
- * * and configuration elements required by the ACS solver.</p>
+ * <p>The Anytime Weighted A* algorithm is derived from the A* algorithm. By adding a weight to the
+ * heuristic function, it speeds up reaching feasible solution. It incrementally improves the best
+ * found solution. The {@code AwAsatar} interface provides the problem definition * and
+ * configuration elements required by the ACS solver.
  *
  * @param <T> the type of states in the problem
  */
@@ -71,5 +70,4 @@ public interface AwAstarModel<T> extends Model<T> {
             }
         };
     }
-
 }

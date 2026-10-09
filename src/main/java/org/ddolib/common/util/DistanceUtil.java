@@ -1,12 +1,12 @@
 package org.ddolib.common.util;
 
+import static java.lang.Math.max;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import java.util.BitSet;
 
-import static java.lang.Math.*;
-
-/**
- * Utility methods for common distance metrics used by clustering and heuristics.
- */
+/** Utility methods for common distance metrics used by clustering and heuristics. */
 public class DistanceUtil {
 
     private DistanceUtil() {
@@ -36,8 +36,8 @@ public class DistanceUtil {
     /**
      * Computes the weighted Jaccard Distance between the two given sets.
      *
-     * @param a       the first set
-     * @param b       the second set
+     * @param a the first set
+     * @param b the second set
      * @param weights the weight of each element in a and b
      * @return the weighted Jaccard Distance between a and b
      */
@@ -78,7 +78,7 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the Euclidean Distance between the two given arrays of coordinates
+     * Computes the Euclidean Distance between the two given arrays of coordinates.
      *
      * @param a the first array
      * @param b the second array
@@ -95,7 +95,7 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the size of the symmetric difference between a and b
+     * Computes the size of the symmetric difference between a and b.
      *
      * @param a the first set
      * @param b the second set
@@ -108,10 +108,10 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the weighted symmetric difference between a and b
+     * Computes the weighted symmetric difference between a and b.
      *
-     * @param a       the first set
-     * @param b       the second set
+     * @param a the first set
+     * @param b the second set
      * @param weights the weight of each element in a and b
      * @return the weighted symmetric difference between a and b
      */

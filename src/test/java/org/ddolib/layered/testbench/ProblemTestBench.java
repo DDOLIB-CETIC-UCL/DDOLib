@@ -1,94 +1,87 @@
 package org.ddolib.layered.testbench;
 
-import org.ddolib.common.heuristics.width.FixedWidth;
-import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.common.util.InvalidSolutionException;
-import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solver.Solution;
-import org.junit.jupiter.api.DynamicTest;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.layered.modeling.AcsModel;
+import org.ddolib.layered.modeling.AwAstarModel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.ExactModel;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.LnsModel;
+import org.ddolib.layered.modeling.Model;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.layered.solver.Solution;
+import org.junit.jupiter.api.DynamicTest;
 
 /**
- * Abstract class to generate tests on implementations of {@link Problem}. The user needs to implement an instance
- * generator and a {@link DdoModel} containing all the problem specific components.
+ * Abstract class to generate tests on implementations of {@link Problem}. The user needs to
+ * implement an instance generator and a {@link DdoModel} containing all the problem specific
+ * components.
  *
  * @param <T> The type of states.
  * @param <P> The type of problem to test.
  */
 public class ProblemTestBench<T, P extends Problem<T>> {
 
-    /**
-     * List of problems used for tests.
-     */
+    /** List of problems used for tests. */
     private final List<P> problems;
+
     private final Function<P, DdoModel<T>> model;
-    /**
-     * Whether the relaxation must be tested.
-     */
+
+    /** Whether the relaxation must be tested. */
     public boolean testRelaxation = false;
-    /**
-     * Whether the fast lower bound must be tested.
-     */
+
+    /** Whether the fast lower bound must be tested. */
     public boolean testFLB = false;
-    /**
-     * Whether the dominance must be tested.
-     */
+
+    /** Whether the dominance must be tested. */
     public boolean testDominance = false;
-    /**
-     * Whether the cache has to be tested.
-     */
+
+    /** Whether the cache has to be tested. */
     public boolean testCache = false;
 
-    /**
-     * Whether the LNS solver must be tested.
-     */
+    /** Whether the LNS solver must be tested. */
     public boolean testLns = true;
 
-    /**
-     * Maximum number of LNS iterations when the optimality cannot be proved.
-     */
+    /** Maximum number of LNS iterations when the optimality cannot be proved. */
     private static final int LNS_MAX_ITERATIONS = 500;
-    /**
-     * The minimum width of mdd to test with the relaxation.
-     */
+
+    /** The minimum width of mdd to test with the relaxation. */
     public int minWidth = 2;
-    /**
-     * The maximum width of mdd to test with the relaxation.
-     */
+
+    /** The maximum width of mdd to test with the relaxation. */
     public int maxWidth = 20;
 
-
-    /**
-     * Instantiate a test bench.
-     */
+    /** Instantiate a test bench. */
     public ProblemTestBench(TestDataSupplier<T, P> dataSupplier) {
         problems = dataSupplier.generateProblems();
         model = dataSupplier::model;
     }
 
-
     /**
      * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
      *
      * @param expected the expected {@code Optional<Double>}
-     * @param actual   the actual {@code Optional<Double>}
-     * @param delta    the tolerance for the comparison if both optionals contain a value
-     * @param width    the maximum width of mdd used for the tests. Used to display error message
+     * @param actual the actual {@code Optional<Double>}
+     * @param delta the tolerance for the comparison if both optionals contain a value
+     * @param width the maximum width of mdd used for the tests. Used to display error message
      */
-    public static void assertOptionalDoubleEqual(Optional<Double> expected,
-                                                 Optional<Double> actual,
-                                                 double delta,
-                                                 int width) {
+    public static void assertOptionalDoubleEqual(
+            Optional<Double> expected, Optional<Double> actual, double delta, int width) {
         String failureMsg = width > 0 ? String.format("Max width of the MDD: %d", width) : "";
         if (expected.isPresent() && actual.isPresent()) {
             assertEquals(expected.get(), actual.get(), delta, failureMsg);
@@ -101,12 +94,11 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      * Compares two {@code Optional<Double>} with a tolerance (delta) if both are present.
      *
      * @param expected the expected {@code Optional<Double>}
-     * @param actual   the actual {@code Optional<Double>}
-     * @param delta    the tolerance for the comparison if both optionals contain a value
+     * @param actual the actual {@code Optional<Double>}
+     * @param delta the tolerance for the comparison if both optionals contain a value
      */
-    public static void assertOptionalDoubleEqual(Optional<Double> expected,
-                                                 Optional<Double> actual,
-                                                 double delta) {
+    public static void assertOptionalDoubleEqual(
+            Optional<Double> expected, Optional<Double> actual, double delta) {
         assertOptionalDoubleEqual(expected, actual, delta, -1);
     }
 
@@ -129,11 +121,13 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
         Problem<T> problem = model.problem();
         double bestValue = bestSolution.value();
-        Optional<Double> optBestVal = Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
+        Optional<Double> optBestVal =
+                Double.isInfinite(bestValue) ? Optional.empty() : Optional.of(bestValue);
         assertOptionalDoubleEqual(problem.optimalValue(), optBestVal, 1e-10, width);
 
         if (problem.optimalValue().isPresent()) {
-            assertEquals(problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
+            assertEquals(
+                    problem.optimalValue().get(), problem.evaluate(bestSolution.solution()), 1e-10);
         }
     }
 
@@ -143,25 +137,25 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
     /**
      * Test if the exact mdd generated for the input problem lead to optimal solution.
-     * <p>
      *
      * @param problem the instance to test
      */
     private void testTransitionModel(P problem) throws InvalidSolutionException {
-        ExactModel<T> testModel = new ExactModel<>() {
+        ExactModel<T> testModel =
+                new ExactModel<>() {
 
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
-        };
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
+                };
 
         testSolverResult(testModel);
     }
 
     /**
-     * Test if the fast lower bound is a lower bound for the root node and if the compilation with only the fast lower
-     * bound enabled lead to the optimal solution.
+     * Test if the fast lower bound is a lower bound for the root node and if the compilation with
+     * only the fast lower bound enabled lead to the optimal solution.
      *
      * @param problem the instance to test
      */
@@ -169,26 +163,26 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
         DdoModel<T> globalModel = model.apply(problem);
 
-        ExactModel<T> testModel = new ExactModel<>() {
+        ExactModel<T> testModel =
+                new ExactModel<>() {
 
-            @Override
-            public Problem<T> problem() {
-                return globalModel.problem();
-            }
+                    @Override
+                    public Problem<T> problem() {
+                        return globalModel.problem();
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return globalModel.lowerBound();
+                    }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
+                    @Override
+                    public DebugLevel debugMode() {
+                        return DebugLevel.ON;
+                    }
+                };
 
         testSolverResult(testModel);
-
     }
 
     /**
@@ -199,27 +193,29 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     private void testRelaxation(P problem) {
 
         DdoModel<T> globalModel = model.apply(problem);
-        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return globalModel.relaxation();
-            }
+        Function<Integer, DdoModel<T>> getModel =
+                (w) ->
+                        new DdoModel<T>() {
+                            @Override
+                            public Relaxation<T> relaxation() {
+                                return globalModel.relaxation();
+                            }
 
-            @Override
-            public WidthHeuristic<T> widthHeuristic() {
-                return new FixedWidth<>(w);
-            }
+                            @Override
+                            public WidthHeuristic<T> widthHeuristic() {
+                                return new FixedWidth<>(w);
+                            }
 
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+                            @Override
+                            public Problem<T> problem() {
+                                return problem;
+                            }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
+                            @Override
+                            public DebugLevel debugMode() {
+                                return DebugLevel.ON;
+                            }
+                        };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
                 testSolverResult(getModel.apply(w), w);
@@ -237,47 +233,49 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      */
     private void testCache(P problem) {
         DdoModel<T> globalModel = model.apply(problem);
-        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return globalModel.relaxation();
-            }
+        Function<Integer, DdoModel<T>> getModel =
+                (w) ->
+                        new DdoModel<>() {
+                            @Override
+                            public Relaxation<T> relaxation() {
+                                return globalModel.relaxation();
+                            }
 
-            @Override
-            public StateRanking<T> ranking() {
-                return globalModel.ranking();
-            }
+                            @Override
+                            public StateRanking<T> ranking() {
+                                return globalModel.ranking();
+                            }
 
-            @Override
-            public WidthHeuristic<T> widthHeuristic() {
-                return new FixedWidth<>(w);
-            }
+                            @Override
+                            public WidthHeuristic<T> widthHeuristic() {
+                                return new FixedWidth<>(w);
+                            }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
+                            @Override
+                            public boolean useCache() {
+                                return true;
+                            }
 
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+                            @Override
+                            public Problem<T> problem() {
+                                return problem;
+                            }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
+                            @Override
+                            public FastLowerBound<T> lowerBound() {
+                                return globalModel.lowerBound();
+                            }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
-            }
+                            @Override
+                            public DominanceChecker<T> dominance() {
+                                return globalModel.dominance();
+                            }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
+                            @Override
+                            public DebugLevel debugMode() {
+                                return DebugLevel.ON;
+                            }
+                        };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
                 testSolverResult(getModel.apply(w), w);
@@ -297,27 +295,28 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
         DdoModel<T> globalModel = model.apply(problem);
 
-        Model<T> testModel = new Model<T>() {
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+        Model<T> testModel =
+                new Model<T>() {
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return globalModel.lowerBound();
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
-            }
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return globalModel.dominance();
+                    }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
+                    @Override
+                    public DebugLevel debugMode() {
+                        return DebugLevel.ON;
+                    }
+                };
 
         testSolverResult(testModel);
     }
@@ -331,56 +330,57 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
         Model<T> globalModel = model.apply(problem);
 
-        AcsModel<T> testModel = new AcsModel<>() {
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+        AcsModel<T> testModel =
+                new AcsModel<>() {
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return globalModel.lowerBound();
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
-            }
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return globalModel.dominance();
+                    }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
+                    @Override
+                    public DebugLevel debugMode() {
+                        return DebugLevel.ON;
+                    }
+                };
 
         testSolverResult(testModel);
     }
 
-
     private void testAwAstarSolver(P problem) throws InvalidSolutionException {
         Model<T> globalModel = model.apply(problem);
 
-        AwAstarModel<T> testModel = new AwAstarModel<>() {
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+        AwAstarModel<T> testModel =
+                new AwAstarModel<>() {
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return globalModel.lowerBound();
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
-            }
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return globalModel.dominance();
+                    }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
+                    @Override
+                    public DebugLevel debugMode() {
+                        return DebugLevel.ON;
+                    }
+                };
 
         testSolverResult(testModel);
     }
@@ -388,53 +388,57 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     private void testLnsSolver(P problem) throws InvalidSolutionException {
         DdoModel<T> globalModel = model.apply(problem);
 
-        LnsModel<T> testModel = new LnsModel<>() {
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+        LnsModel<T> testModel =
+                new LnsModel<>() {
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return globalModel.lowerBound();
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
-            }
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return globalModel.dominance();
+                    }
 
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
+                    @Override
+                    public DebugLevel debugMode() {
+                        return DebugLevel.ON;
+                    }
 
-            @Override
-            public StateRanking<T> ranking() {
-                return globalModel.ranking();
-            }
+                    @Override
+                    public StateRanking<T> ranking() {
+                        return globalModel.ranking();
+                    }
 
-            @Override
-            public WidthHeuristic<T> widthHeuristic() {
-                return new FixedWidth<>(50);
-            }
-        };
+                    @Override
+                    public WidthHeuristic<T> widthHeuristic() {
+                        return new FixedWidth<>(50);
+                    }
+                };
 
         // LNS is a heuristic: it can only prove optimality when the DD compiled from the root is
         // exact or when the incumbent reaches the lower bound. It is thus stopped after a
         // fixed number of iterations (the search is deterministic thanks to the fixed seed).
-        Solution bestSolution = Solvers.minimizeLns(testModel, s -> s.nbIterations() > LNS_MAX_ITERATIONS);
+        Solution bestSolution =
+                Solvers.minimizeLns(testModel, s -> s.nbIterations() > LNS_MAX_ITERATIONS);
         double bestValue = bestSolution.value();
         Optional<Double> optimal = problem.optimalValue();
 
         if (optimal.isEmpty()) {
-            assertTrue(Double.isInfinite(bestValue), "LNS found a solution to an infeasible problem");
+            assertTrue(
+                    Double.isInfinite(bestValue), "LNS found a solution to an infeasible problem");
             return;
         }
         if (bestSolution.statistics().status() == SearchStatus.OPTIMAL) {
             assertEquals(optimal.get(), bestValue, 1e-10);
         } else {
-            assertTrue(bestValue >= optimal.get() - 1e-10,
+            assertTrue(
+                    bestValue >= optimal.get() - 1e-10,
                     "LNS solution " + bestValue + " is better than the optimum " + optimal.get());
         }
         if (bestSolution.solution().length == problem.nbVars()) {
@@ -443,34 +447,37 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     }
 
     /**
-     * Test if the mode with the relaxation and the fast lower bound enabled lead to the optimal solution. As side
-     * effect, it tests if the fast lower bound on merged states does not cause errors.
+     * Test if the mode with the relaxation and the fast lower bound enabled lead to the optimal
+     * solution. As side effect, it tests if the fast lower bound on merged states does not cause
+     * errors.
      *
      * @param problem the instance to test
      */
     private void testFlbOnRelaxedNodes(P problem) {
         DdoModel<T> globalModel = model.apply(problem);
-        Function<Integer, DdoModel<T>> getModel = (w) -> new DdoModel<T>() {
-            @Override
-            public Relaxation<T> relaxation() {
-                return globalModel.relaxation();
-            }
+        Function<Integer, DdoModel<T>> getModel =
+                (w) ->
+                        new DdoModel<T>() {
+                            @Override
+                            public Relaxation<T> relaxation() {
+                                return globalModel.relaxation();
+                            }
 
-            @Override
-            public WidthHeuristic<T> widthHeuristic() {
-                return new FixedWidth<>(w);
-            }
+                            @Override
+                            public WidthHeuristic<T> widthHeuristic() {
+                                return new FixedWidth<>(w);
+                            }
 
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+                            @Override
+                            public Problem<T> problem() {
+                                return problem;
+                            }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return globalModel.lowerBound();
-            }
-        };
+                            @Override
+                            public FastLowerBound<T> lowerBound() {
+                                return globalModel.lowerBound();
+                            }
+                        };
         for (int w = minWidth; w <= maxWidth; w++) {
             try {
                 testSolverResult(getModel.apply(w), w);
@@ -489,22 +496,21 @@ public class ProblemTestBench<T, P extends Problem<T>> {
     private void testDominance(P problem) throws InvalidSolutionException {
         DdoModel<T> globalModel = model.apply(problem);
 
-        ExactModel<T> testModel = new ExactModel<>() {
+        ExactModel<T> testModel =
+                new ExactModel<>() {
 
-            @Override
-            public Problem<T> problem() {
-                return globalModel.problem();
-            }
+                    @Override
+                    public Problem<T> problem() {
+                        return globalModel.problem();
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return globalModel.dominance();
-            }
-        };
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return globalModel.dominance();
+                    }
+                };
 
         testSolverResult(testModel);
-
-
     }
 
     /**
@@ -516,63 +522,107 @@ public class ProblemTestBench<T, P extends Problem<T>> {
 
         Stream<DynamicTest> allTests = Stream.empty();
 
-        Stream<DynamicTest> modelTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("Model for %s", p.toString()), () -> testTransitionModel(p))
-        );
+        Stream<DynamicTest> modelTests =
+                problems.stream()
+                        .map(
+                                p ->
+                                        DynamicTest.dynamicTest(
+                                                String.format("Model for %s", p.toString()),
+                                                () -> testTransitionModel(p)));
 
         allTests = Stream.concat(allTests, modelTests);
 
         if (testRelaxation) {
-            Stream<DynamicTest> relaxTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Relaxation for %s", p.toString()), () -> testRelaxation(p))
-            );
+            Stream<DynamicTest> relaxTests =
+                    problems.stream()
+                            .map(
+                                    p ->
+                                            DynamicTest.dynamicTest(
+                                                    String.format(
+                                                            "Relaxation for %s", p.toString()),
+                                                    () -> testRelaxation(p)));
             allTests = Stream.concat(allTests, relaxTests);
         }
         if (testFLB) {
-            Stream<DynamicTest> flbTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("FLB for %s", p.toString()), () -> testFlb(p))
-            );
+            Stream<DynamicTest> flbTests =
+                    problems.stream()
+                            .map(
+                                    p ->
+                                            DynamicTest.dynamicTest(
+                                                    String.format("FLB for %s", p.toString()),
+                                                    () -> testFlb(p)));
             allTests = Stream.concat(allTests, flbTests);
         }
 
         if (testRelaxation && testFLB) {
-            Stream<DynamicTest> relaxAndFlbTest = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Relax and FLB for %s", p.toString()), () -> testFlbOnRelaxedNodes(p))
-            );
+            Stream<DynamicTest> relaxAndFlbTest =
+                    problems.stream()
+                            .map(
+                                    p ->
+                                            DynamicTest.dynamicTest(
+                                                    String.format(
+                                                            "Relax and FLB for %s", p.toString()),
+                                                    () -> testFlbOnRelaxedNodes(p)));
             allTests = Stream.concat(allTests, relaxAndFlbTest);
         }
 
         if (testDominance) {
-            Stream<DynamicTest> dominanceTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Dominance for %s", p.toString()), () -> testDominance(p))
-            );
+            Stream<DynamicTest> dominanceTests =
+                    problems.stream()
+                            .map(
+                                    p ->
+                                            DynamicTest.dynamicTest(
+                                                    String.format("Dominance for %s", p.toString()),
+                                                    () -> testDominance(p)));
             allTests = Stream.concat(allTests, dominanceTests);
         }
 
         if (testCache) {
-            Stream<DynamicTest> cacheTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest(String.format("Cache for %s", p.toString()), () -> testCache(p))
-            );
+            Stream<DynamicTest> cacheTests =
+                    problems.stream()
+                            .map(
+                                    p ->
+                                            DynamicTest.dynamicTest(
+                                                    String.format("Cache for %s", p.toString()),
+                                                    () -> testCache(p)));
             allTests = Stream.concat(allTests, cacheTests);
         }
 
-        Stream<DynamicTest> aStarTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("A* for %s", p.toString()), () -> testAStarSolver(p))
-        );
-        allTests = Stream.concat(allTests, aStarTests);
+        Stream<DynamicTest> astarTests =
+                problems.stream()
+                        .map(
+                                p ->
+                                        DynamicTest.dynamicTest(
+                                                String.format("A* for %s", p.toString()),
+                                                () -> testAStarSolver(p)));
+        allTests = Stream.concat(allTests, astarTests);
 
-        Stream<DynamicTest> acsTests = problems.stream().map(p ->
-                DynamicTest.dynamicTest(String.format("ACS for %s", p.toString()), () -> testACSSolver(p))
-        );
+        Stream<DynamicTest> acsTests =
+                problems.stream()
+                        .map(
+                                p ->
+                                        DynamicTest.dynamicTest(
+                                                String.format("ACS for %s", p.toString()),
+                                                () -> testACSSolver(p)));
         allTests = Stream.concat(allTests, acsTests);
 
-        Stream<DynamicTest> awastarTests = problems.stream().map(p -> DynamicTest.dynamicTest(
-                String.format("AWA* for %s", p.toString()), () -> testAwAstarSolver(p)));
+        Stream<DynamicTest> awastarTests =
+                problems.stream()
+                        .map(
+                                p ->
+                                        DynamicTest.dynamicTest(
+                                                String.format("AWA* for %s", p.toString()),
+                                                () -> testAwAstarSolver(p)));
         allTests = Stream.concat(allTests, awastarTests);
 
         if (testLns) {
-            Stream<DynamicTest> lsnTests = problems.stream().map(p ->
-                    DynamicTest.dynamicTest("LSN for %s".formatted(p.toString()), () -> testLnsSolver(p)));
+            Stream<DynamicTest> lsnTests =
+                    problems.stream()
+                            .map(
+                                    p ->
+                                            DynamicTest.dynamicTest(
+                                                    "LSN for %s".formatted(p.toString()),
+                                                    () -> testLnsSolver(p)));
             allTests = Stream.concat(allTests, lsnTests);
         }
 

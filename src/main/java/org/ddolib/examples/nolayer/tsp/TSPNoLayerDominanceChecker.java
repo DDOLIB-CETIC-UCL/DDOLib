@@ -1,22 +1,22 @@
 package org.ddolib.examples.nolayer.tsp;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 
-import java.util.*;
-
 /**
- * Dominance checker for the Travelling Salesperson Problem (TSP).
- * Correctly implements subset dominance relations across different cardinalities.
+ * Dominance checker for the Travelling Salesperson Problem (TSP). Correctly implements subset
+ * dominance relations across different cardinalities.
  */
 public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker<TSPState> {
 
     private final Map<Integer, List<DominanceEntry>> fronts = new HashMap<>();
 
-    /**
-     * Creates a new dominance checker with an empty dominance front.
-     */
-    public TSPNoLayerDominanceChecker() {
-    }
+    /** Creates a new dominance checker with an empty dominance front. */
+    public TSPNoLayerDominanceChecker() {}
 
     @Override
     public boolean updateDominance(TSPState state, double value) {
@@ -25,7 +25,8 @@ public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker<TSPSt
         int card = toVisit.cardinality();
 
         // 1. Check if the new 'state' is dominated by any existing entry
-        // An entry can dominate 'state' only if it has AT MOST as many cities left to visit (smaller or equal cardinality)
+        // An entry can dominate 'state' only if it has AT MOST as many cities left to visit
+        // (smaller or equal cardinality)
         for (Map.Entry<Integer, List<DominanceEntry>> mapEntry : fronts.entrySet()) {
             if (mapEntry.getKey() <= card) {
                 for (DominanceEntry entry : mapEntry.getValue()) {
@@ -39,14 +40,16 @@ public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker<TSPSt
         }
 
         // 2. Remove existing entries that are dominated by the new 'state'
-        // The new state can dominate an entry only if it has AT LEAST as many cities left to visit (larger or equal cardinality)
+        // The new state can dominate an entry only if it has AT LEAST as many cities left to visit
+        // (larger or equal cardinality)
         for (Map.Entry<Integer, List<DominanceEntry>> mapEntry : fronts.entrySet()) {
             if (mapEntry.getKey() >= card) {
-                mapEntry.getValue().removeIf(entry ->
-                        value <= entry.value
-                                && current.equals(entry.current)
-                                && isSubset(toVisit, entry.toVisit)
-                );
+                mapEntry.getValue()
+                        .removeIf(
+                                entry ->
+                                        value <= entry.value
+                                                && current.equals(entry.current)
+                                                && isSubset(toVisit, entry.toVisit));
             }
         }
 
@@ -63,8 +66,8 @@ public class TSPNoLayerDominanceChecker implements NoLayerDominanceChecker<TSPSt
     }
 
     /**
-     * Checks if the 'child' BitSet is a subset of the 'parent' BitSet.
-     * Performance optimized loop without object allocations.
+     * Checks if the 'child' BitSet is a subset of the 'parent' BitSet. Performance optimized loop
+     * without object allocations.
      */
     private boolean isSubset(BitSet child, BitSet parent) {
         for (int i = child.nextSetBit(0); i >= 0; i = child.nextSetBit(i + 1)) {

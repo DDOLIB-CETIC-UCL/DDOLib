@@ -1,29 +1,30 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.nolayer.modeling.Problem;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Knapsack Problem (KS), using the no-layer modeling API.
- * <p>
- * Models the classic 0/1 knapsack problem: given a capacity and a list of items each with a
- * weight and a profit, decide which items to take so as to maximize total profit without
- * exceeding the capacity. States are represented by {@link KSState} (current item index and
- * remaining capacity); since the library minimizes, transition costs are negated profits.
- * </p>
+ *
+ * <p>Models the classic 0/1 knapsack problem: given a capacity and a list of items each with a
+ * weight and a profit, decide which items to take so as to maximize total profit without exceeding
+ * the capacity. States are represented by {@link KSState} (current item index and remaining
+ * capacity); since the library minimizes, transition costs are negated profits.
  */
 public class KSProblem implements Problem<KSState> {
 
     /** Profit of each item, indexed by item number. */
     public final int[] profit;
+
     /** Weight of each item, indexed by item number. */
     public final int[] weight;
+
     /** Total capacity of the knapsack. */
     public final int capa;
+
     private final int nbItems;
     private final Optional<String> name;
 
@@ -32,8 +33,8 @@ public class KSProblem implements Problem<KSState> {
      *
      * @param profit profit of each item, indexed by item number
      * @param weight weight of each item, indexed by item number
-     * @param capa   total capacity of the knapsack
-     * @param name   name of the instance, used in {@link #toString()}
+     * @param capa total capacity of the knapsack
+     * @param name name of the instance, used in {@link #toString()}
      */
     public KSProblem(int[] profit, int[] weight, int capa, String name) {
         this.profit = profit;
@@ -48,7 +49,7 @@ public class KSProblem implements Problem<KSState> {
      *
      * @param profit profit of each item, indexed by item number
      * @param weight weight of each item, indexed by item number
-     * @param capa   total capacity of the knapsack
+     * @param capa total capacity of the knapsack
      */
     public KSProblem(int[] profit, int[] weight, int capa) {
         this.profit = profit;
@@ -59,8 +60,8 @@ public class KSProblem implements Problem<KSState> {
     }
 
     /**
-     * Reads a knapsack instance from a file and returns it with its items sorted by
-     * decreasing profit-to-weight ratio.
+     * Reads a knapsack instance from a file and returns it with its items sorted by decreasing
+     * profit-to-weight ratio.
      *
      * @param fname path to the instance file
      * @return the knapsack instance described by the file
@@ -73,7 +74,8 @@ public class KSProblem implements Problem<KSState> {
         int c = 0;
         int[] profit = new int[0];
         int[] weight = new int[0];
-        try (final java.io.BufferedReader bf = new java.io.BufferedReader(new java.io.FileReader(fname))) {
+        try (final java.io.BufferedReader bf =
+                new java.io.BufferedReader(new java.io.FileReader(fname))) {
             String line;
             while ((line = bf.readLine()) != null) {
                 if (isFirst) {
@@ -101,11 +103,13 @@ public class KSProblem implements Problem<KSState> {
         final int[] w = weight;
         final int[] p = profit;
 
-        java.util.Arrays.sort(items, (o1, o2) -> {
-            double ratio1 = (double) p[o1] / w[o1];
-            double ratio2 = (double) p[o2] / w[o2];
-            return Double.compare(ratio2, ratio1);
-        });
+        java.util.Arrays.sort(
+                items,
+                (o1, o2) -> {
+                    double ratio1 = (double) p[o1] / w[o1];
+                    double ratio2 = (double) p[o2] / w[o2];
+                    return Double.compare(ratio2, ratio1);
+                });
 
         int[] sortedProfit = new int[n];
         int[] sortedWeight = new int[n];
@@ -147,8 +151,7 @@ public class KSProblem implements Problem<KSState> {
     public KSState transition(KSState state, int label) {
         return new KSState(
                 state.currentItem() + 1,
-                state.remainingCapacity() - label * weight[state.currentItem()]
-        );
+                state.remainingCapacity() - label * weight[state.currentItem()]);
     }
 
     @Override
@@ -159,7 +162,8 @@ public class KSProblem implements Problem<KSState> {
     @Override
     public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         if (solution.size() != nbItems) {
-            throw new InvalidSolutionException("Expected " + nbItems + " values, got " + solution.size());
+            throw new InvalidSolutionException(
+                    "Expected " + nbItems + " values, got " + solution.size());
         }
         int totalWeight = 0;
         int totalProfit = 0;
@@ -168,7 +172,8 @@ public class KSProblem implements Problem<KSState> {
                 totalWeight += weight[i];
                 totalProfit += profit[i];
             } else if (solution.get(i) != 0) {
-                throw new InvalidSolutionException("Value must be 0 or 1, got " + solution.get(i) + " at index " + i);
+                throw new InvalidSolutionException(
+                        "Value must be 0 or 1, got " + solution.get(i) + " at index " + i);
             }
         }
         if (totalWeight > capa) {

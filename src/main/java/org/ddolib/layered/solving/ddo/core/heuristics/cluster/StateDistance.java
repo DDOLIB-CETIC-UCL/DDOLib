@@ -3,19 +3,18 @@ package org.ddolib.layered.solving.ddo.core.heuristics.cluster;
 import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 
 /**
- * Interface defining a distance function between states, used to form clusters
- * when deciding which nodes on a layer of a decision diagram should be merged.
+ * Interface defining a distance function between states, used to form clusters when deciding which
+ * nodes on a layer of a decision diagram should be merged.
  *
- * <p>
- * The distance function must satisfy the following properties:
+ * <p>The distance function must satisfy the following properties:
+ *
  * <ul>
- *   <li>Non-negative: distance(a, b) ≥ 0</li>
- *   <li>Symmetric: distance(a, b) = distance(b, a)</li>
- *   <li>Triangle inequality: distance(a, c) ≤ distance(a, b) + distance(b, c)</li>
+ *   <li>Non-negative: distance(a, b) ≥ 0
+ *   <li>Symmetric: distance(a, b) = distance(b, a)
+ *   <li>Triangle inequality: distance(a, c) ≤ distance(a, b) + distance(b, c)
  * </ul>
  *
- * <p>
- * Type parameter {@code T} denotes the type of the states being compared.
+ * <p>Type parameter {@code T} denotes the type of the states being compared.
  *
  * @param <T> the type of states
  */
@@ -33,8 +32,7 @@ public interface StateDistance<T> {
     /**
      * Computes the distance between two nodes of a subproblem.
      *
-     * <p>
-     * By default, returns 0. Can be overridden for more precise node-level distances.
+     * <p>By default, returns 0. Can be overridden for more precise node-level distances.
      *
      * @param a the first node
      * @param b the second node
@@ -47,8 +45,7 @@ public interface StateDistance<T> {
     /**
      * Computes the distance between a state and the root of the search/tree.
      *
-     * <p>
-     * By default, returns 0. Can be overridden for root-distance computations.
+     * <p>By default, returns 0. Can be overridden for root-distance computations.
      *
      * @param state the state to measure
      * @return the distance to the root
@@ -56,5 +53,4 @@ public interface StateDistance<T> {
     default double distanceWithRoot(T state) {
         return 0;
     }
-
 }

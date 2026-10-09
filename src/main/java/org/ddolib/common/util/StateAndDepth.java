@@ -5,8 +5,6 @@ package org.ddolib.common.util;
  *
  * @param state a state of the solved problem
  * @param depth the depth of the input state in the main search
- * @param <T>   the type of the state
+ * @param <T> the type of the state
  */
-public record StateAndDepth<T>(T state, int depth) {
-
-}
+public record StateAndDepth<T>(T state, int depth) {}

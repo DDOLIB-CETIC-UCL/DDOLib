@@ -1,23 +1,19 @@
 package org.ddolib.common.util;
 
-import org.ddolib.layered.solving.ddo.core.Decision;
-
 import java.util.HashSet;
 import java.util.Set;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
-/**
- * Contains method useful to implements solvers
- */
+/** Contains method useful to implements solvers. */
 public final class SolverUtil {
 
-    private SolverUtil() {
-    }
+    private SolverUtil() {}
 
     /**
      * Returns the set of variables not covered by the given set of decisions.
      *
      * @param nbVars the number of variables in the related problem
-     * @param path   a set of decision
+     * @param path a set of decision
      * @return the set of variables not covered by the given set of decisions
      */
     public static Set<Integer> unassignedVars(int nbVars, Set<Decision> path) {

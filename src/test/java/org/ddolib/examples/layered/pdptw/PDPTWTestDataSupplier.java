@@ -1,5 +1,10 @@
 package org.ddolib.examples.layered.pdptw;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.frontier.SimpleFrontier;
@@ -11,16 +16,19 @@ import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.testbench.TestDataSupplier;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.stream.Stream;
-
+/**
+ * Supplies the Pickup and Delivery Problem with Time Windows (PDPTW) instances (read from the files
+ * of a directory) and the layered model used to solve them in the tests.
+ */
 public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWProblem> {
 
     private final Path dir;
 
+    /**
+     * Creates a supplier reading the instances from the given directory.
+     *
+     * @param dir the directory containing the instance files
+     */
     public PDPTWTestDataSupplier(Path dir) {
         this.dir = dir;
     }
@@ -29,13 +37,14 @@ public class PDPTWTestDataSupplier extends TestDataSupplier<PDPTWState, PDPTWPro
     protected List<PDPTWProblem> generateProblems() {
         try (Stream<Path> stream = Files.walk(dir)) {
             return stream.filter(Files::isRegularFile) // get only files
-                    .map(filePath -> {
-                        try {
-                            return new PDPTWProblem(filePath.toString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
+                    .map(
+                            filePath -> {
+                                try {
+                                    return new PDPTWProblem(filePath.toString());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
                     .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);

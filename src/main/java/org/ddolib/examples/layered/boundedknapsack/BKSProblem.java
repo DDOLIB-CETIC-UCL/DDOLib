@@ -1,49 +1,41 @@
 package org.ddolib.examples.layered.boundedknapsack;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Random;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an instance of the <b>Bounded Knapsack Problem (BKP)</b>.
  *
- * <p>
- * This class implements the {@link Problem} interface and can be used by generic
- * optimization solvers such as Dynamic Decision Diagrams (DD), A*, or Anytime Column Search (ACS).
- * </p>
+ * <p>This class implements the {@link Problem} interface and can be used by generic optimization
+ * solvers such as Dynamic Decision Diagrams (DD), A*, or Anytime Column Search (ACS).
  *
  * @see BKSFastLowerBound
  * @see Decision
  */
 public class BKSProblem implements Problem<Integer> {
-    /**
-     * The total capacity of the knapsack.
-     */
+    /** The total capacity of the knapsack. */
     public final int capacity;
-    /**
-     * The profit (value) of each item.
-     */
+
+    /** The profit (value) of each item. */
     public final int[] values;
-    /**
-     * The weight of each item.
-     */
+
+    /** The weight of each item. */
     public final int[] weights;
-    /**
-     * The maximum available quantity of each item.
-     */
+
+    /** The maximum available quantity of each item. */
     public final int[] quantities;
 
     /**
      * Constructs a bounded knapsack problem from explicitly given parameters.
      *
-     * @param capacity   the total capacity of the knapsack
-     * @param values     an array containing the profit (value) of each item
-     * @param weights    an array containing the weight of each item
+     * @param capacity the total capacity of the knapsack
+     * @param values an array containing the profit (value) of each item
+     * @param weights an array containing the weight of each item
      * @param quantities an array containing the maximum available quantity of each item
      */
     public BKSProblem(int capacity, int[] values, int[] weights, int[] quantities) {
@@ -55,17 +47,15 @@ public class BKSProblem implements Problem<Integer> {
 
     /**
      * Randomly generates an instance of the bounded knapsack problem.
-     * <p>
-     * The generated instance is controlled by a type of correlation between
-     * item weights and values, as described in {@link InstanceType}.
-     * </p>
      *
-     * @param n     the number of items
+     * <p>The generated instance is controlled by a type of correlation between item weights and
+     * values, as described in {@link InstanceType}.
+     *
+     * @param n the number of items
      * @param range the upper bound for weights and profits
-     * @param type  the correlation type between weight and profit
-     * @param seed  the random seed used for reproducibility
+     * @param type the correlation type between weight and profit
+     * @param seed the random seed used for reproducibility
      */
-
     public BKSProblem(int n, int range, InstanceType type, long seed) {
         Random rand = new Random(seed);
 
@@ -118,8 +108,8 @@ public class BKSProblem implements Problem<Integer> {
     }
 
     /**
-     * Returns the initial state of the problem, which corresponds to the
-     * remaining capacity of the knapsack before adding any items.
+     * Returns the initial state of the problem, which corresponds to the remaining capacity of the
+     * knapsack before adding any items.
      *
      * @return the initial remaining capacity
      */
@@ -139,16 +129,14 @@ public class BKSProblem implements Problem<Integer> {
     }
 
     /**
-     * Returns the domain (set of possible values) for a given variable (item),
-     * given the current remaining capacity.
-     * <p>
-     * For each item, the decision variable represents the number of copies
-     * to include in the knapsack, constrained by both available quantity
-     * and remaining capacity.
-     * </p>
+     * Returns the domain (set of possible values) for a given variable (item), given the current
+     * remaining capacity.
+     *
+     * <p>For each item, the decision variable represents the number of copies to include in the
+     * knapsack, constrained by both available quantity and remaining capacity.
      *
      * @param state the current remaining capacity
-     * @param var   the index of the item
+     * @param var the index of the item
      * @return an iterator over possible quantities for the given item
      */
     @Override
@@ -166,24 +154,24 @@ public class BKSProblem implements Problem<Integer> {
     /**
      * Computes the next state after making a decision on an item.
      *
-     * @param state    the current remaining capacity
+     * @param state the current remaining capacity
      * @param decision the decision specifying which item and how many copies to include
      * @return the updated remaining capacity after including the chosen number of items
      */
     @Override
     public Integer transition(Integer state, Decision decision) {
-        // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it unchanged
+        // If the item is taken (1), we decrease the capacity of the knapsack, otherwise leave it
+        // unchanged
         return state - weights[decision.variable()] * decision.value();
     }
 
     /**
      * Computes the transition cost associated with a decision.
-     * <p>
-     * Since this problem is typically formulated as a maximization,
-     * this method returns the <b>negative profit</b> to fit a minimization framework.
-     * </p>
      *
-     * @param state    the current remaining capacity
+     * <p>Since this problem is typically formulated as a maximization, this method returns the
+     * <b>negative profit</b> to fit a minimization framework.
+     *
+     * @param state the current remaining capacity
      * @param decision the decision specifying which item and how many copies to include
      * @return the negative profit of the chosen items
      */
@@ -196,8 +184,10 @@ public class BKSProblem implements Problem<Integer> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not match " + "the number %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         int value = 0;
@@ -205,8 +195,11 @@ public class BKSProblem implements Problem<Integer> {
         for (int i = 0; i < nbVars(); i++) {
             int quantity = solution[i];
             if (quantity > quantities[i]) {
-                String msg = String.format("The object %d is selected %d times. Its maximum " +
-                        "quantity is %d", i, quantity, quantities[i]);
+                String msg =
+                        String.format(
+                                "The object %d is selected %d times. Its maximum "
+                                        + "quantity is %d",
+                                i, quantity, quantities[i]);
                 throw new InvalidSolutionException(msg);
             }
             value += quantity * values[i];
@@ -214,8 +207,10 @@ public class BKSProblem implements Problem<Integer> {
         }
 
         if (weight > capacity) {
-            String msg = String.format("The weight of %s (%d) exceeds the capatity of the " +
-                    "knapsack (%d)", Arrays.toString(solution), weight, capacity);
+            String msg =
+                    String.format(
+                            "The weight of %s (%d) exceeds the capatity of the " + "knapsack (%d)",
+                            Arrays.toString(solution), weight, capacity);
             throw new InvalidSolutionException(msg);
         }
         return -value;
@@ -236,25 +231,17 @@ public class BKSProblem implements Problem<Integer> {
     }
 
     /**
-     * Enumeration defining possible correlation types between item
-     * weights and profits when generating random instances.
+     * Enumeration defining possible correlation types between item weights and profits when
+     * generating random instances.
      */
     public enum InstanceType {
-        /**
-         * Profit and weight are independent.
-         */
+        /** Profit and weight are independent. */
         UNCORRELATED,
-        /**
-         * Profits roughly follow weights, but not exactly.
-         */
+        /** Profits roughly follow weights, but not exactly. */
         WEAKLY_CORRELATED,
-        /**
-         * Profit = weight + constant.
-         */
+        /** Profit = weight + constant. */
         STRONGLY_CORRELATED,
-        /**
-         * Profits exactly equal weights.
-         */
+        /** Profits exactly equal weights. */
         SUBSET_SUM
     }
 }

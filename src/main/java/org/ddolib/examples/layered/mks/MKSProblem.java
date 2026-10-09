@@ -1,9 +1,5 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,58 +8,53 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
- * Represents a Multi-dimensional Knapsack Problem (MKS) as a {@link Problem} for decision diagram optimization.
+ * Represents a Multi-dimensional Knapsack Problem (MKS) as a {@link Problem} for decision diagram
+ * optimization.
  *
- * <p>
- * Each instance defines a set of items, their profits, and weights along multiple dimensions,
- * along with the capacities of the knapsacks. This class supports evaluation of solutions,
- * state transitions, and generation of variable domains.
+ * <p>Each instance defines a set of items, their profits, and weights along multiple dimensions,
+ * along with the capacities of the knapsacks. This class supports evaluation of solutions, state
+ * transitions, and generation of variable domains.
  *
- * <p>
- * States in this problem are represented by {@link MKSState}, which tracks the remaining capacities
- * in each dimension.
+ * <p>States in this problem are represented by {@link MKSState}, which tracks the remaining
+ * capacities in each dimension.
  *
- * <p>
- * The problem can be constructed either programmatically or loaded from a file.
- * The class also provides an optional known optimal solution for testing purposes.
+ * <p>The problem can be constructed either programmatically or loaded from a file. The class also
+ * provides an optional known optimal solution for testing purposes.
  */
 public class MKSProblem implements Problem<MKSState> {
-    /**
-     * Optional known optimal solution value.
-     */
+    /** Optional known optimal solution value. */
     public final Optional<Double> optimal;
-    /**
-     * Capacities of each knapsack dimension.
-     */
+
+    /** Capacities of each knapsack dimension. */
     final double[] capa;
-    /**
-     * Profit of each item.
-     */
+
+    /** Profit of each item. */
     final int[] profit;
-    /**
-     * Weights of each item along each dimension.
-     */
+
+    /** Weights of each item along each dimension. */
     final int[][] weights;
-    /**
-     * Optional problem name or file name.
-     */
+
+    /** Optional problem name or file name. */
     final Optional<String> name;
-    /**
-     * Maximal Euclidean distance of the capacities, used for normalization or heuristics.
-     */
+
+    /** Maximal Euclidean distance of the capacities, used for normalization or heuristics. */
     final double maximalDistance;
 
     /**
      * Constructs an MKSProblem with the given capacities, profits, and weights.
      *
-     * @param capa    the capacities of each knapsack dimension
-     * @param profit  the profit of each item
-     * @param weight  the weight of each item along each dimension
+     * @param capa the capacities of each knapsack dimension
+     * @param profit the profit of each item
+     * @param weight the weight of each item along each dimension
      * @param optimal the known optimal solution value
      */
-    public MKSProblem(final double[] capa, final int[] profit, final int[][] weight, final double optimal) {
+    public MKSProblem(
+            final double[] capa, final int[] profit, final int[][] weight, final double optimal) {
         this.capa = capa;
         this.profit = profit;
         this.weights = weight;
@@ -80,12 +71,12 @@ public class MKSProblem implements Problem<MKSState> {
     /**
      * Loads an MKSProblem from a text file.
      *
-     * <p>
-     * The file format is expected to contain:
+     * <p>The file format is expected to contain:
+     *
      * <ul>
-     *   <li>First line: number of items, number of dimensions, optional optimal value</li>
-     *   <li>Second line: capacities of each dimension</li>
-     *   <li>Next lines: profit and weights of each item (profit first, then weights)</li>
+     *   <li>First line: number of items, number of dimensions, optional optimal value
+     *   <li>Second line: capacities of each dimension
+     *   <li>Next lines: profit and weights of each item (profit first, then weights)
      * </ul>
      *
      * @param fname the path to the file
@@ -95,40 +86,44 @@ public class MKSProblem implements Problem<MKSState> {
         final File f = new File(fname);
         try (final BufferedReader bf = new BufferedReader(new FileReader(f))) {
             final PinReadContext context = new PinReadContext();
-            bf.lines().forEachOrdered((String s) -> {
-                if (context.isFirst) {
-                    context.isFirst = false;
-                    context.isSecond = true;
-                    String[] tokens = s.split("\\s");
-                    context.n = Integer.parseInt(tokens[0]);
-                    context.dimensions = Integer.parseInt(tokens[1]);
+            bf.lines()
+                    .forEachOrdered(
+                            (String s) -> {
+                                if (context.isFirst) {
+                                    context.isFirst = false;
+                                    context.isSecond = true;
+                                    String[] tokens = s.split("\\s");
+                                    context.nbItems = Integer.parseInt(tokens[0]);
+                                    context.dimensions = Integer.parseInt(tokens[1]);
 
-                    if (tokens.length == 3) {
-                        context.optimal = Optional.of(Double.parseDouble(tokens[2]));
-                    }
+                                    if (tokens.length == 3) {
+                                        context.optimal =
+                                                Optional.of(Double.parseDouble(tokens[2]));
+                                    }
 
-                    context.profit = new int[context.n];
-                    context.weights = new int[context.n][context.dimensions];
-                    context.capa = new double[context.dimensions];
-                } else if (context.isSecond) {
-                    context.isSecond = false;
-                    String[] tokens = s.split("\\s");
-                    assert tokens.length == context.dimensions;
-                    for (int i = 0; i < context.dimensions; i++) {
-                        context.capa[i] = Integer.parseInt(tokens[i]);
-                    }
-                } else {
-                    if (context.count < context.n) {
-                        String[] tokens = s.split("\\s");
-                        assert tokens.length == context.dimensions + 1;
-                        context.profit[context.count] = Integer.parseInt(tokens[0]);
-                        for (int i = 0; i < context.dimensions; i++) {
-                            context.weights[context.count][i] = Integer.parseInt(tokens[i + 1]);
-                        }
-                        context.count++;
-                    }
-                }
-            });
+                                    context.profit = new int[context.nbItems];
+                                    context.weights = new int[context.nbItems][context.dimensions];
+                                    context.capa = new double[context.dimensions];
+                                } else if (context.isSecond) {
+                                    context.isSecond = false;
+                                    String[] tokens = s.split("\\s");
+                                    assert tokens.length == context.dimensions;
+                                    for (int i = 0; i < context.dimensions; i++) {
+                                        context.capa[i] = Integer.parseInt(tokens[i]);
+                                    }
+                                } else {
+                                    if (context.count < context.nbItems) {
+                                        String[] tokens = s.split("\\s");
+                                        assert tokens.length == context.dimensions + 1;
+                                        context.profit[context.count] = Integer.parseInt(tokens[0]);
+                                        for (int i = 0; i < context.dimensions; i++) {
+                                            context.weights[context.count][i] =
+                                                    Integer.parseInt(tokens[i + 1]);
+                                        }
+                                        context.count++;
+                                    }
+                                }
+                            });
             this.capa = context.capa;
             this.profit = context.profit;
             this.weights = context.weights;
@@ -176,11 +171,10 @@ public class MKSProblem implements Problem<MKSState> {
     /**
      * Returns an iterator over the domain of a variable (item) in a given state.
      *
-     * <p>
-     * An item can be either taken (1) or not taken (0), depending on remaining capacities.
+     * <p>An item can be either taken (1) or not taken (0), depending on remaining capacities.
      *
      * @param state the current MKS state
-     * @param var   the index of the variable (item)
+     * @param var the index of the variable (item)
      * @return iterator over possible decisions (0 or 1)
      */
     @Override
@@ -197,7 +191,7 @@ public class MKSProblem implements Problem<MKSState> {
     /**
      * Computes the state resulting from taking a decision in the current state.
      *
-     * @param state    the current MKS state
+     * @param state the current MKS state
      * @param decision the decision to apply
      * @return the resulting {@link MKSState} after the decision
      */
@@ -213,10 +207,9 @@ public class MKSProblem implements Problem<MKSState> {
     /**
      * Computes the cost of taking a decision in a given state.
      *
-     * <p>
-     * The cost is equal to the negative profit if the item is taken, or 0 otherwise.
+     * <p>The cost is equal to the negative profit if the item is taken, or 0 otherwise.
      *
-     * @param state    the current MKS state
+     * @param state the current MKS state
      * @param decision the decision applied
      * @return the transition cost
      */
@@ -239,9 +232,8 @@ public class MKSProblem implements Problem<MKSState> {
     /**
      * Evaluates the cost of a given solution.
      *
-     * <p>
-     * Checks that the solution respects knapsack capacities; if violated,
-     * an {@link InvalidSolutionException} is thrown.
+     * <p>Checks that the solution respects knapsack capacities; if violated, an {@link
+     * InvalidSolutionException} is thrown.
      *
      * @param solution the selection vector of items (1 = taken, 0 = not taken)
      * @return the negated total profit of the solution
@@ -250,8 +242,10 @@ public class MKSProblem implements Problem<MKSState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         int totalProfit = 0;
@@ -265,19 +259,21 @@ public class MKSProblem implements Problem<MKSState> {
 
         for (int dim = 0; dim < this.capa.length; dim++) {
             if (totalWeights[dim] > capa[dim]) {
-                String msg = String.format("The weight of %s (%d) exceeds the capacity of the " +
-                        "knapsack (%d)", Arrays.toString(solution), totalWeights[dim], capa);
+                String msg =
+                        String.format(
+                                "The weight of %s (%d) exceeds the capacity of the "
+                                        + "knapsack (%d)",
+                                Arrays.toString(solution), totalWeights[dim], capa);
                 throw new InvalidSolutionException(msg);
             }
         }
-
 
         return -totalProfit;
     }
 
     /**
-     * Returns a human-readable string representation of the problem,
-     * including capacities, items' profits, weights, and known optimal value.
+     * Returns a human-readable string representation of the problem, including capacities, items'
+     * profits, weights, and known optimal value.
      *
      * @return string representation of the problem
      */
@@ -287,16 +283,19 @@ public class MKSProblem implements Problem<MKSState> {
         builder.append("Capacities: ").append(Arrays.toString(capa)).append("\n");
         builder.append("Optimal: ").append(optimal).append("\n");
         for (int item = 0; item < profit.length; item++) {
-            builder.append("Item: ").append(profit[item]).append(", ").append(Arrays.toString(weights[item])).append("\n");
+            builder.append("Item: ")
+                    .append(profit[item])
+                    .append(", ")
+                    .append(Arrays.toString(weights[item]))
+                    .append("\n");
         }
         return builder.toString();
     }
 
-
     private static class PinReadContext {
         boolean isFirst = true;
         boolean isSecond = false;
-        int n = 0;
+        int nbItems = 0;
         int dimensions = 0;
         int count = 0;
         double[] capa = new double[0];
@@ -304,5 +303,4 @@ public class MKSProblem implements Problem<MKSState> {
         int[][] weights = new int[0][0];
         Optional<Double> optimal = Optional.empty();
     }
-
 }

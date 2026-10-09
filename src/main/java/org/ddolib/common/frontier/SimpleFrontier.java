@@ -1,39 +1,33 @@
 package org.ddolib.common.frontier;
 
-
+import java.util.Comparator;
+import java.util.PriorityQueue;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 
-import java.util.Comparator;
-import java.util.PriorityQueue;
-
 /**
  * A simple implementation of a {@link Frontier} for a solver, based on a plain priority queue.
- * <p>
- * The {@code SimpleFrontier} maintains a collection of {@link SubProblem} instances, which are pushed
- * and popped by the solver according to their priority determined by a {@link StateRanking}.
+ *
+ * <p>The {@code SimpleFrontier} maintains a collection of {@link SubProblem} instances, which are
+ * pushed and popped by the solver according to their priority determined by a {@link StateRanking}.
  * This frontier supports cutset-based compilation strategies.
- * </p>
  *
  * @param <T> the type of state in the subproblems
  */
 public final class SimpleFrontier<T> implements Frontier<T> {
-    /**
-     * The underlying priority queue storing the subproblems.
-     */
+    /** The underlying priority queue storing the subproblems. */
     private final PriorityQueue<SubProblem<T>> heap;
 
-    /**
-     * The type of cutset used in the decision diagram compilation.
-     */
+    /** The type of cutset used in the decision diagram compilation. */
     private final CutSetType cutSetType;
 
     /**
      * Constructs a new {@code SimpleFrontier}.
      *
-     * @param ranking    the ordering used to determine which subproblem is most promising
-     *                   and should be explored first
-     * @param cutSetType the type of cutset to use: {@link CutSetType#LastExactLayer} or {@link CutSetType#Frontier}
+     * @param ranking the ordering used to determine which subproblem is most promising and should
+     *     be explored first
+     * @param cutSetType the type of cutset to use: {@link CutSetType#LastExactLayer} or {@link
+     *     CutSetType#Frontier}
      */
     public SimpleFrontier(final StateRanking<T> ranking, final CutSetType cutSetType) {
         heap = new PriorityQueue<>(new SubProblemComparator<>(ranking));
@@ -60,9 +54,7 @@ public final class SimpleFrontier<T> implements Frontier<T> {
         return heap.poll();
     }
 
-    /**
-     * Clears all subproblems from the frontier.
-     */
+    /** Clears all subproblems from the frontier. */
     @Override
     public void clear() {
         heap.clear();
@@ -104,21 +96,20 @@ public final class SimpleFrontier<T> implements Frontier<T> {
     }
 
     /**
-     * A comparator for {@link SubProblem} that sorts subproblems first by their lower bound,
-     * and then by the state ranking if bounds are equal.
+     * A comparator for {@link SubProblem} that sorts subproblems first by their lower bound, and
+     * then by the state ranking if bounds are equal.
      *
-     * @param <T>      the type of state in the subproblems
+     * @param <T> the type of state in the subproblems
      * @param delegate the decorated state ranking used as a tiebreaker
      */
-    private record SubProblemComparator<T>(StateRanking<T> delegate) implements Comparator<SubProblem<T>> {
+    private record SubProblemComparator<T>(StateRanking<T> delegate)
+            implements Comparator<SubProblem<T>> {
         /**
          * Constructs a new comparator decorating the given ranking.
          *
          * @param delegate the ranking to use for tie-breaking
          */
-
-        private SubProblemComparator {
-        }
+        private SubProblemComparator {}
 
         @Override
         public int compare(SubProblem<T> o1, SubProblem<T> o2) {

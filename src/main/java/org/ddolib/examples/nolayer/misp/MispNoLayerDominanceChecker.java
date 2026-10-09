@@ -1,22 +1,22 @@
 package org.ddolib.examples.nolayer.misp;
 
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 
-import java.util.*;
-
 /**
- * Dominance checker for the Maximum Independent Set Problem (MISP).
- * Assumes a minimization framework where lower values (more negative weights) are better.
+ * Dominance checker for the Maximum Independent Set Problem (MISP). Assumes a minimization
+ * framework where lower values (more negative weights) are better.
  */
 public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker<MispState> {
 
     private final Map<Integer, List<DominanceEntry>> entriesByCardinality = new HashMap<>();
 
-    /**
-     * Creates a new instance of this dominance checker.
-     */
-    public MispNoLayerDominanceChecker() {
-    }
+    /** Creates a new instance of this dominance checker. */
+    public MispNoLayerDominanceChecker() {}
 
     @Override
     public boolean updateDominance(MispState state, double value) {
@@ -40,14 +40,18 @@ public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker<Misp
         // The new state can dominate an entry only if it has AT MOST as many remaining nodes
         for (Map.Entry<Integer, List<DominanceEntry>> mapEntry : entriesByCardinality.entrySet()) {
             if (mapEntry.getKey() <= card) {
-                mapEntry.getValue().removeIf(entry ->
-                        value <= entry.value && isSubset(entry.remainingNodes, currentNodes)
-                );
+                mapEntry.getValue()
+                        .removeIf(
+                                entry ->
+                                        value <= entry.value
+                                                && isSubset(entry.remainingNodes, currentNodes));
             }
         }
 
         // 3. Add the new state to entries (Safe from self-deletion)
-        entriesByCardinality.computeIfAbsent(card, k -> new ArrayList<>()).add(new DominanceEntry(currentNodes, value));
+        entriesByCardinality
+                .computeIfAbsent(card, k -> new ArrayList<>())
+                .add(new DominanceEntry(currentNodes, value));
 
         return false;
     }
@@ -57,9 +61,7 @@ public class MispNoLayerDominanceChecker implements NoLayerDominanceChecker<Misp
         entriesByCardinality.clear();
     }
 
-    /**
-     * Checks if the 'child' BitSet is a subset of the 'parent' BitSet.
-     */
+    /** Checks if the 'child' BitSet is a subset of the 'parent' BitSet. */
     private boolean isSubset(BitSet child, BitSet parent) {
         for (int i = child.nextSetBit(0); i >= 0; i = child.nextSetBit(i + 1)) {
             if (!parent.get(i)) {

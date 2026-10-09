@@ -7,58 +7,60 @@ import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
 
 /**
- * Main class to solve a Traveling Salesman Problem (TSP) instance using the no-layer
- * ACS (Anytime Column Search) algorithm.
+ * Main class to solve a Traveling Salesman Problem (TSP) instance using the no-layer ACS (Anytime
+ * Column Search) algorithm.
  */
 public class TSPAcsMain {
 
-    private TSPAcsMain() {
-    }
+    private TSPAcsMain() {}
 
     /**
-     * Entry point of the program. Generates a small random TSP instance and solves it using
-     * the ACS algorithm.
+     * Entry point of the program. Generates a small random TSP instance and solves it using the ACS
+     * algorithm.
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
         // Generate a small random TSP instance
-        TSPGenerator generator = new TSPGenerator(12, 42, 100); // Use a small size for fast execution
+        TSPGenerator generator =
+                new TSPGenerator(12, 42, 100); // Use a small size for fast execution
         double[][] distMatrix = generator.distanceMatrix;
 
         TSPProblem problem = new TSPProblem(distMatrix);
         TSPModel baseModel = new TSPModel(problem);
 
-        final AcsModel<TSPState> model = new AcsModel<>() {
-            @Override
-            public Problem<TSPState> problem() {
-                return problem;
-            }
+        final AcsModel<TSPState> model =
+                new AcsModel<>() {
+                    @Override
+                    public Problem<TSPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<TSPState> lowerBound() {
-                return baseModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<TSPState> lowerBound() {
+                        return baseModel.lowerBound();
+                    }
 
-            @Override
-            public NoLayerDominanceChecker<TSPState> dominance() {
-                return baseModel.dominance();
-            }
+                    @Override
+                    public NoLayerDominanceChecker<TSPState> dominance() {
+                        return baseModel.dominance();
+                    }
 
-            @Override
-            public int columnWidth() {
-                return 10;
-            }
-        };
+                    @Override
+                    public int columnWidth() {
+                        return 10;
+                    }
+                };
 
         System.out.println("Starting ACS Search on TSPNoLayer Problem...");
-        Solution solution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model,
-                stats -> false,
-                (sol, stats) -> {
-                    System.out.println("Found a solution with value: " + stats.incumbent());
-                    System.out.println("Path: " + sol);
-                }
-        );
+        Solution solution =
+                org.ddolib.nolayer.modeling.Solvers.minimizeAcs(
+                        model,
+                        stats -> false,
+                        (sol, stats) -> {
+                            System.out.println("Found a solution with value: " + stats.incumbent());
+                            System.out.println("Path: " + sol);
+                        });
 
         System.out.println("Optimal TSP value: " + solution.value());
     }

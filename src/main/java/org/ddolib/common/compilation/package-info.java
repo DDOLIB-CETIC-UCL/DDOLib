@@ -1,4 +1,2 @@
-/**
- * This package contains defining the compilation type and the compilation input
- */
+/** This package contains defining the compilation type and the compilation input. */
 package org.ddolib.common.compilation;

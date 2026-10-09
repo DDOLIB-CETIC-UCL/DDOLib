@@ -1,22 +1,18 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Provides a fast lower bound estimation for Multi-dimensional Knapsack (MKS) states.
  *
- * <p>
- * This class implements {@link FastLowerBound} and computes a simple, fast lower bound
- * on the negative total profit that can be achieved by a given set of variables (items).
- * The lower bound does not consider capacities or interactions between dimensions,
- * but only sums the profits of the candidate items.
+ * <p>This class implements {@link FastLowerBound} and computes a simple, fast lower bound on the
+ * negative total profit that can be achieved by a given set of variables (items). The lower bound
+ * does not consider capacities or interactions between dimensions, but only sums the profits of the
+ * candidate items.
  */
 public class MKSFastLowerBound implements FastLowerBound<MKSState> {
-    /**
-     * The MKS problem instance for which the lower bound is computed.
-     */
+    /** The MKS problem instance for which the lower bound is computed. */
     private final MKSProblem problem;
 
     /**
@@ -31,11 +27,10 @@ public class MKSFastLowerBound implements FastLowerBound<MKSState> {
     /**
      * Computes a fast lower bound for a given state and a set of variables (items).
      *
-     * <p>
-     * The bound is calculated as the negated sum of the profits of the variables,
-     * ignoring capacity constraints.
+     * <p>The bound is calculated as the negated sum of the profits of the variables, ignoring
+     * capacity constraints.
      *
-     * @param state     the current MKS state
+     * @param state the current MKS state
      * @param variables the set of variable indices (items) to consider
      * @return a lower bound on the cost (negative total profit) achievable
      */

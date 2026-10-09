@@ -1,61 +1,60 @@
 package org.ddolib.layered.solving.ddo.core.heuristics.cluster;
 
-import org.ddolib.layered.modeling.StateRanking;
-import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
+import static java.lang.Math.ceil;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static java.lang.Math.ceil;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 
 /**
- * Hybrid reduction strategy that combines cost-based and distance-based clustering
- * for decision diagram layers.
- * This strategy is a hybridation between cost based selection and GHP.
- * It preserves the w * alpha best nodes (alpha between 0 and 1) and merge the other nodes using clustering.
- * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost,
+ * Hybrid reduction strategy that combines cost-based and distance-based clustering for decision
+ * diagram layers. This strategy is a hybridation between cost based selection and GHP. It preserves
+ * the w * alpha best nodes (alpha between 0 and 1) and merge the other nodes using clustering. It
+ * requires a problem-specific StateRanking comparator to break the ties between nodes of same cost,
  * and a problem-specif StateDistance to quantify the dissimilarity between states.
- * <p>
- * This class implements {@link ReductionStrategy} and merges two strategies:
+ *
+ * <p>This class implements {@link ReductionStrategy} and merges two strategies:
+ *
  * <ul>
- *   <li>{@link CostBased}: preserves a fraction of nodes based on their ranking</li>
- *   <li>{@link GHP}: clusters the remaining nodes based on a distance metric</li>
+ *   <li>{@link CostBased}: preserves a fraction of nodes based on their ranking
+ *   <li>{@link GHP}: clusters the remaining nodes based on a distance metric
  * </ul>
  *
- * <p>
- * The combination is controlled by a weighting parameter {@code alpha}:
+ * <p>The combination is controlled by a weighting parameter {@code alpha}:
+ *
  * <ul>
- *   <li>{@code alpha} fraction of the clusters are preserved using cost-based ranking</li>
- *   <li>{@code 1-alpha} fraction of the clusters are formed using the GHP distance-based method</li>
+ *   <li>{@code alpha} fraction of the clusters are preserved using cost-based ranking
+ *   <li>{@code 1-alpha} fraction of the clusters are formed using the GHP distance-based method
  * </ul>
  *
  * @param <T> the type of states in the decision diagram
  */
 public class Hybrid<T> implements ReductionStrategy<T> {
-    /**
-     * Cost-based clustering component.
-     */
-    final private CostBased<T> costBased;
-    /**
-     * Distance-based clustering component (GHP).
-     */
-    final private GHP<T> ghp;
-    /**
-     * Fraction of clusters preserved using the cost-based method.
-     */
-    final private double alpha;
+    /** Cost-based clustering component. */
+    private final CostBased<T> costBased;
+
+    /** Distance-based clustering component (GHP). */
+    private final GHP<T> ghp;
+
+    /** Fraction of clusters preserved using the cost-based method. */
+    private final double alpha;
 
     /**
      * Constructs a Hybrid reduction strategy with specified ranking, distance, alpha, and seed.
      *
-     * @param ranking  state ranking used for cost-based preservation
+     * @param ranking state ranking used for cost-based preservation
      * @param distance state distance used for GHP clustering
-     * @param alpha    fraction of clusters preserved using cost-based strategy
-     * @param seed     random seed for distance-based clustering
+     * @param alpha fraction of clusters preserved using cost-based strategy
+     * @param seed random seed for distance-based clustering
      */
-    public Hybrid(final StateRanking<T> ranking, final StateDistance<T> distance, final double alpha, final long seed) {
+    public Hybrid(
+            final StateRanking<T> ranking,
+            final StateDistance<T> distance,
+            final double alpha,
+            final long seed) {
         this.costBased = new CostBased<>(ranking);
         this.ghp = new GHP<>(distance, seed);
         this.alpha = alpha;
@@ -64,7 +63,7 @@ public class Hybrid<T> implements ReductionStrategy<T> {
     /**
      * Constructs a Hybrid reduction strategy with default alpha (0.5) and seed.
      *
-     * @param ranking  state ranking used for cost-based preservation
+     * @param ranking state ranking used for cost-based preservation
      * @param distance state distance used for GHP clustering
      */
     public Hybrid(final StateRanking<T> ranking, final StateDistance<T> distance) {
@@ -83,11 +82,10 @@ public class Hybrid<T> implements ReductionStrategy<T> {
     /**
      * Defines clusters from a layer of nodes using a hybrid strategy.
      *
-     * <p>
-     * A fraction {@code alpha} of nodes are clustered using cost-based ranking,
-     * while the remaining nodes are clustered using the GHP distance-based method.
+     * <p>A fraction {@code alpha} of nodes are clustered using cost-based ranking, while the
+     * remaining nodes are clustered using the GHP distance-based method.
      *
-     * @param layer    the list of nodes at the current layer
+     * @param layer the list of nodes at the current layer
      * @param maxWidth the desired maximum width after clustering
      * @return an array of clusters, each cluster being a list of nodes
      */
@@ -104,5 +102,4 @@ public class Hybrid<T> implements ReductionStrategy<T> {
         Collections.addAll(clusters, ghpClusters);
         return clusters.toArray(new List[clusters.size()]);
     }
-
 }

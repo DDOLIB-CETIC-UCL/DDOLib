@@ -1,14 +1,19 @@
 package org.ddolib.examples.layered.gruler;
 
+import java.util.stream.Stream;
 import org.ddolib.layered.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.util.stream.Stream;
-
+/** Tests of the layered solvers on Golomb ruler instances, using the {@link ProblemTestBench}. */
 public class GRTest {
 
+    /**
+     * Generates the dynamic tests for each Golomb ruler instance.
+     *
+     * @return the stream of generated tests
+     */
     @DisplayName("Golomb ruler")
     @TestFactory
     public Stream<DynamicTest> testGR() {

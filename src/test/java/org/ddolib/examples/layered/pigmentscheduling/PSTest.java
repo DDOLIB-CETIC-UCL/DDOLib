@@ -1,15 +1,19 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
+import java.nio.file.Path;
+import java.util.stream.Stream;
 import org.ddolib.layered.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Path;
-import java.util.stream.Stream;
-
 class PSTest {
 
+    /**
+     * Generates the dynamic tests for each Pigment Sequencing Problem (PSP) instance.
+     *
+     * @return the stream of generated tests
+     */
     @DisplayName("PSP")
     @TestFactory
     public Stream<DynamicTest> testPSP() {

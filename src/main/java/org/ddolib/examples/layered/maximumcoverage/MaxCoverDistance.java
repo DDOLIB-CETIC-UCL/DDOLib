@@ -1,35 +1,30 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
-import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
-
-import java.util.BitSet;
-
 import static java.lang.Math.abs;
 import static org.ddolib.common.util.DistanceUtil.symmetricDifferenceDistance;
 import static org.ddolib.common.util.DistanceUtil.weightedJaccardDistance;
 
+import java.util.BitSet;
+import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
+import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
+
 /**
- * Distance function for {@link MaxCoverState} used to measure similarity
- * between states in the context of the Maximum Coverage problem.
+ * Distance function for {@link MaxCoverState} used to measure similarity between states in the
+ * context of the Maximum Coverage problem.
  *
- * <p>
- * This class implements {@link StateDistance} and provides several distance
- * computations:
+ * <p>This class implements {@link StateDistance} and provides several distance computations:
+ *
  * <ul>
- *   <li>a distance between two states based on the covered item sets</li>
- *   <li>a distance between two search nodes combining state similarity and cost difference</li>
- *   <li>a distance between a state and the root, used for diversification purposes</li>
+ *   <li>a distance between two states based on the covered item sets
+ *   <li>a distance between two search nodes combining state similarity and cost difference
+ *   <li>a distance between a state and the root, used for diversification purposes
  * </ul>
  *
- * <p>
- * Distances are normalized with respect to the number of items in the problem
- * instance and may rely on weighted or unweighted set-based metrics.
+ * <p>Distances are normalized with respect to the number of items in the problem instance and may
+ * rely on weighted or unweighted set-based metrics.
  */
 public class MaxCoverDistance implements StateDistance<MaxCoverState> {
-    /**
-     * Instance of the Maximum Coverage problem.
-     */
+    /** Instance of the Maximum Coverage problem. */
     MaxCoverProblem instance;
 
     /**
@@ -42,11 +37,9 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     }
 
     /**
-     * Computes a Roger-like distance based on the size of the intersection
-     * between two sets.
+     * Computes a Roger-like distance based on the size of the intersection between two sets.
      *
-     * <p>
-     * The distance decreases as the intersection between the two sets increases.
+     * <p>The distance decreases as the intersection between the two sets increases.
      *
      * @param a first set
      * @param b second set
@@ -62,10 +55,9 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     /**
      * Computes a convex combination of two distance components.
      *
-     * <p>
-     * The combination is controlled by a fixed coefficient {@code alpha}.
+     * <p>The combination is controlled by a fixed coefficient {@code alpha}.
      *
-     * @param distanceOnSet  distance component based on state similarity
+     * @param distanceOnSet distance component based on state similarity
      * @param distanceOnCost distance component based on objective value difference
      * @return the combined distance
      */
@@ -77,8 +69,7 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     /**
      * Computes the distance between a state and the root of the search tree.
      *
-     * <p>
-     * This distance is proportional to the fraction of items covered by the state.
+     * <p>This distance is proportional to the fraction of items covered by the state.
      *
      * @param state the state for which the distance to the root is computed
      * @return a normalized distance to the root
@@ -91,11 +82,11 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     /**
      * Computes the distance between two search nodes.
      *
-     * <p>
-     * The distance is a convex combination of:
+     * <p>The distance is a convex combination of:
+     *
      * <ul>
-     *   <li>a weighted Jaccard distance between the covered item sets</li>
-     *   <li>a normalized difference between the node objective values</li>
+     *   <li>a weighted Jaccard distance between the covered item sets
+     *   <li>a normalized difference between the node objective values
      * </ul>
      *
      * @param a first node
@@ -104,7 +95,9 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
      */
     @Override
     public double distance(NodeSubProblem<MaxCoverState> a, NodeSubProblem<MaxCoverState> b) {
-        double distanceOnSet = weightedJaccardDistance(a.state.coveredItems(), b.state.coveredItems(), instance.centralities);
+        double distanceOnSet =
+                weightedJaccardDistance(
+                        a.state.coveredItems(), b.state.coveredItems(), instance.centralities);
         double distanceOnCost = abs(a.getValue() - b.getValue()) / instance.nbItems;
         return convexCombination(distanceOnSet, distanceOnCost);
     }
@@ -112,9 +105,8 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     /**
      * Computes the distance between two MaxCover states.
      *
-     * <p>
-     * The distance is based on the size of the symmetric difference
-     * between the sets of covered items, normalized by the total number of items.
+     * <p>The distance is based on the size of the symmetric difference between the sets of covered
+     * items, normalized by the total number of items.
      *
      * @param a first state
      * @param b second state
@@ -124,6 +116,4 @@ public class MaxCoverDistance implements StateDistance<MaxCoverState> {
     public double distance(MaxCoverState a, MaxCoverState b) {
         return symmetricDifferenceDistance(a.coveredItems(), b.coveredItems()) / instance.nbItems;
     }
-
-
 }

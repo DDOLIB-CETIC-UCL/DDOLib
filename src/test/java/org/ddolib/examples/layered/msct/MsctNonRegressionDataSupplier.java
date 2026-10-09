@@ -18,13 +18,14 @@ class MsctNonRegressionDataSupplier extends MSCTTestDataSupplier {
     protected List<MSCTProblem> generateProblems() {
         try (Stream<Path> stream = Files.walk(Path.of(dir))) {
             return stream.filter(Files::isRegularFile) // get only files
-                    .map(filePath -> {
-                        try {
-                            return new MSCTProblem(filePath.toString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
+                    .map(
+                            filePath -> {
+                                try {
+                                    return new MSCTProblem(filePath.toString());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
                     .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);

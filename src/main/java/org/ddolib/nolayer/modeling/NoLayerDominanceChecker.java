@@ -17,9 +17,8 @@ public interface NoLayerDominanceChecker<T> {
     boolean updateDominance(T state, double value);
 
     /**
-     * Clears the internally cached states used for dominance checking.
-     * This is useful to reset the checker's state between solver iterations.
+     * Clears the internally cached states used for dominance checking. This is useful to reset the
+     * checker's state between solver iterations.
      */
-    default void clear() {
-    }
+    default void clear() {}
 }

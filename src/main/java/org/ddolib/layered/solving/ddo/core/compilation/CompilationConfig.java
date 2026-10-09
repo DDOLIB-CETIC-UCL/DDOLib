@@ -1,31 +1,33 @@
 package org.ddolib.layered.solving.ddo.core.compilation;
 
+import java.util.Optional;
+import java.util.Random;
 import org.ddolib.common.cache.SimpleCache;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.CutSetType;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.LnsModel;
+import org.ddolib.layered.modeling.Model;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.common.util.debug.DebugLevel;
-
-import java.util.Optional;
-import java.util.Random;
 
 /**
- * Represents the configuration parameters used during the compilation
- * of a Multi-valued Decision Diagram (MDD) or similar decision structure.
- * <p>
- * A {@code CompilationConfig} object centralizes all components, heuristics,
- * and algorithmic options required to guide the compilation process.
- * It defines how the search space is explored, bounded, reduced, and pruned.
- * </p>
+ * Represents the configuration parameters used during the compilation of a Multi-valued Decision
+ * Diagram (MDD) or similar decision structure.
  *
- * <p>
- * This configuration supports multiple compilation strategies such as exact,
- * relaxed, approximate, or hybrid approaches. It also integrates advanced
- * mechanisms like dominance checking, caching, and large neighborhood search (LNS).
- * </p>
+ * <p>A {@code CompilationConfig} object centralizes all components, heuristics, and algorithmic
+ * options required to guide the compilation process. It defines how the search space is explored,
+ * bounded, reduced, and pruned.
+ *
+ * <p>This configuration supports multiple compilation strategies such as exact, relaxed,
+ * approximate, or hybrid approaches. It also integrates advanced mechanisms like dominance
+ * checking, caching, and large neighborhood search (LNS).
  *
  * @param <T> the type representing the state of the problem
  * @see CompilationType
@@ -44,137 +46,108 @@ import java.util.Random;
 public class CompilationConfig<T> {
 
     /**
-     * The underlying model containing problem-specific components such as
-     * constraints, heuristics, and bounds.
+     * The underlying model containing problem-specific components such as constraints, heuristics,
+     * and bounds.
      */
     private final Model<T> model;
 
     /**
      * Specifies how the MDD is compiled.
-     * <p>
-     * Determines whether the compilation is exact, relaxed, approximate,
-     * or hybrid depending on the selected algorithm.
-     * </p>
+     *
+     * <p>Determines whether the compilation is exact, relaxed, approximate, or hybrid depending on
+     * the selected algorithm.
      */
     public CompilationType compilationType = null;
 
-    /**
-     * Reference to the optimization or constraint problem being solved.
-     */
+    /** Reference to the optimization or constraint problem being solved. */
     public Problem<T> problem = null;
 
-    /**
-     * Heuristic used to select the next variable to branch on during compilation.
-     */
+    /** Heuristic used to select the next variable to branch on during compilation. */
     public VariableHeuristic<T> variableHeuristic = null;
 
     /**
-     * Ranking heuristic used to prioritize states when pruning nodes
-     * in width-limited MDD layers.
+     * Ranking heuristic used to prioritize states when pruning nodes in width-limited MDD layers.
      */
     public StateRanking<T> stateRanking = null;
 
     /**
-     * The residual (sub)problem defining the remaining search space
-     * to explore during compilation.
+     * The residual (sub)problem defining the remaining search space to explore during compilation.
      */
     public SubProblem<T> residual = null;
 
     /**
      * Maximum allowed width (number of nodes) per layer in the MDD.
-     * <p>
-     * Smaller values improve performance but may reduce solution quality.
-     * </p>
+     *
+     * <p>Smaller values improve performance but may reduce solution quality.
      */
     public Integer maxWidth = null;
 
     /**
-     * Fast lower bound heuristic used to estimate the best achievable
-     * objective value from a given state.
+     * Fast lower bound heuristic used to estimate the best achievable objective value from a given
+     * state.
      */
     public FastLowerBound<T> flb = null;
 
-    /**
-     * Dominance checker used to prune dominated states and reduce
-     * the size of the search space.
-     */
+    /** Dominance checker used to prune dominated states and reduce the size of the search space. */
     public DominanceChecker<T> dominance = null;
 
-    /**
-     * Best known upper bound on the objective value at compilation time.
-     */
+    /** Best known upper bound on the objective value at compilation time. */
     public Double bestUB = null;
 
     /**
-     * Indicates whether the compiled MDD should be exported as a DOT file
-     * (Graphviz format) for visualization purposes.
+     * Indicates whether the compiled MDD should be exported as a DOT file (Graphviz format) for
+     * visualization purposes.
      */
     public Boolean exportAsDot = null;
 
     /**
      * Debugging level controlling logging and internal consistency checks.
-     * <p>
-     * Higher levels provide more detailed diagnostics but may impact performance.
-     * </p>
+     *
+     * <p>Higher levels provide more detailed diagnostics but may impact performance.
      */
     public DebugLevel debugLevel = null;
 
-    /**
-     * Strategy used to reduce the width of the MDD by merging or discarding nodes.
-     */
+    /** Strategy used to reduce the width of the MDD by merging or discarding nodes. */
     public ReductionStrategy<T> reductionStrategy = null;
 
-    /**
-     * Relaxation model used to approximate or merge states in relaxed MDD compilation.
-     */
+    /** Relaxation model used to approximate or merge states in relaxed MDD compilation. */
     public Relaxation<T> relaxation = null;
 
-    /**
-     * Optional cache to store previously computed states and avoid redundant work.
-     */
+    /** Optional cache to store previously computed states and avoid redundant work. */
     public Optional<SimpleCache<T>> cache = Optional.empty();
 
-    /**
-     * Defines the cut set strategy used to control node expansion and pruning.
-     */
+    /** Defines the cut set strategy used to control node expansion and pruning. */
     public CutSetType cutSetType = null;
 
-    /**
-     * Initial solution provided to guide the search (e.g., for heuristics or LNS).
-     */
+    /** Initial solution provided to guide the search (e.g., for heuristics or LNS). */
     public int[] initialSolution = null;
 
-    /**
-     * Stores the current or best solution found during compilation.
-     */
+    /** Stores the current or best solution found during compilation. */
     public int[] solution = null;
 
-    /**
-     * Probability parameter used in randomized strategies (e.g., LNS or heuristics).
-     */
+    /** Probability parameter used in randomized strategies (e.g., LNS or heuristics). */
     public double probability = 0;
 
     /**
-     * Indicates whether Large Neighborhood Search (LNS) should be used
-     * to improve solutions during compilation.
+     * Indicates whether Large Neighborhood Search (LNS) should be used to improve solutions during
+     * compilation.
      */
     public Boolean useLNS = null;
 
     /**
      * Random number generator used by the randomized LNS restriction.
-     * <p>
-     * It is shared by all the decision diagrams compiled during one LNS run so that a
-     * given seed always leads to the same search. When {@code null}, a generator seeded
-     * with {@link LnsModel#DEFAULT_SEED} is created by the decision diagram.
-     * </p>
+     *
+     * <p>It is shared by all the decision diagrams compiled during one LNS run so that a given seed
+     * always leads to the same search. When {@code null}, a generator seeded with {@link
+     * LnsModel#DEFAULT_SEED} is created by the decision diagram.
      */
     public Random random = null;
 
     /**
      * Constructs a new compilation configuration for the given model.
      *
-     * @param model the model containing problem-specific components
-     *              (heuristics, bounds, dominance, etc.)
+     * @param model the model containing problem-specific components (heuristics, bounds, dominance,
+     *     etc.)
      */
     public CompilationConfig(Model<T> model) {
         this.model = model;
@@ -183,25 +156,21 @@ public class CompilationConfig<T> {
     /**
      * Returns a human-readable string representation of this configuration.
      *
-     * @return a formatted string containing the compilation type,
-     * residual problem, and best known upper bound
+     * @return a formatted string containing the compilation type, residual problem, and best known
+     *     upper bound
      */
     @Override
     public String toString() {
         return String.format(
                 "Compilation: %s - Sub problem: %s - bestUB: %f",
-                compilationType,
-                residual,
-                bestUB
-        );
+                compilationType, residual, bestUB);
     }
 
     /**
      * Creates a shallow copy of this configuration.
-     * <p>
-     * Some components are re-fetched from the underlying model
-     * (e.g., heuristics, bounds, dominance), while others are directly copied.
-     * </p>
+     *
+     * <p>Some components are re-fetched from the underlying model (e.g., heuristics, bounds,
+     * dominance), while others are directly copied.
      *
      * @return a new {@code CompilationConfig} instance with the same parameters
      */

@@ -1,40 +1,36 @@
 package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Implementation of a fast lower bound for the Talent Scheduling Problem (TSP).
- * <p>
- * This class computes a heuristic lower bound on the total cost of a partially scheduled solution,
- * based on the method described in
- * <a href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378">Garcia et al.</a>.
- * It takes into account both the duration of scenes and the actor costs for scenes that are not yet scheduled.
- * </p>
  *
- * <p>
- * The bound is computed in two main steps:
- * </p>
+ * <p>This class computes a heuristic lower bound on the total cost of a partially scheduled
+ * solution, based on the method described in <a
+ * href="https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378">Garcia et al.</a>. It takes
+ * into account both the duration of scenes and the actor costs for scenes that are not yet
+ * scheduled.
+ *
+ * <p>The bound is computed in two main steps:
+ *
  * <ol>
- *     <li>Compute a contribution for each unscheduled scene based on actors present and their costs.</li>
- *     <li>Adjust for cumulative actor contributions using ratios and sort actors to estimate the remaining cost.</li>
+ *   <li>Compute a contribution for each unscheduled scene based on actors present and their costs.
+ *   <li>Adjust for cumulative actor contributions using ratios and sort actors to estimate the
+ *       remaining cost.
  * </ol>
- * The result is rounded up to handle floating-point errors.
  *
- * <p>
- * This lower bound is intended for use with search algorithms (e.g., ACS, A*, DDO)
- * to prune suboptimal branches efficiently.
- * </p>
+ * <p>The result is rounded up to handle floating-point errors.
+ *
+ * <p>This lower bound is intended for use with search algorithms (e.g., ACS, A*, DDO) to prune
+ * suboptimal branches efficiently.
  */
 public class TSFastLowerBound implements FastLowerBound<TSState> {
-    /**
-     * The TSP instance associated with this lower bound computation.
-     */
+    /** The TSP instance associated with this lower bound computation. */
     private final TSProblem problem;
 
     /**
@@ -42,7 +38,6 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
      *
      * @param problem the Talent Scheduling Problem instance
      */
-
     public TSFastLowerBound(TSProblem problem) {
         this.problem = problem;
     }
@@ -50,7 +45,7 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
     /**
      * Computes a fast lower bound on the total cost from the given partial state.
      *
-     * @param state     the current state of the scheduling problem
+     * @param state the current state of the scheduling problem
      * @param variables the set of variables (scenes) still to be scheduled
      * @return the computed lower bound on the total cost, rounded up
      */
@@ -64,21 +59,26 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
             ratios[i] = new RatioAndActor(0.0, i);
         }
 
-        for (int scene = state.remainingScenes().nextSetBit(0); scene >= 0; scene = state.remainingScenes().nextSetBit(scene + 1)) {
+        for (int scene = state.remainingScenes().nextSetBit(0);
+                scene >= 0;
+                scene = state.remainingScenes().nextSetBit(scene + 1)) {
             BitSet actorsOnLocation = (BitSet) problem.actors[scene].clone();
             actorsOnLocation.and(presentActors);
             if (actorsOnLocation.cardinality() != 0) {
                 double totalCost = 0.0;
                 double squaredCost = 0.0;
 
-
-                for (int actor = actorsOnLocation.nextSetBit(0); actor >= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {
+                for (int actor = actorsOnLocation.nextSetBit(0);
+                        actor >= 0;
+                        actor = actorsOnLocation.nextSetBit(actor + 1)) {
                     int cost = problem.costs[actor];
                     totalCost += cost;
                     squaredCost += cost * cost;
                 }
 
-                for (int actor = actorsOnLocation.nextSetBit(0); actor >= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {
+                for (int actor = actorsOnLocation.nextSetBit(0);
+                        actor >= 0;
+                        actor = actorsOnLocation.nextSetBit(actor + 1)) {
                     ratios[actor].ratio += problem.duration[scene] / totalCost;
                 }
 
@@ -97,23 +97,20 @@ public class TSFastLowerBound implements FastLowerBound<TSState> {
             }
         }
 
-        //To manage rounding errors
+        // To manage rounding errors
         BigDecimal bd = new BigDecimal(lb).setScale(10, RoundingMode.HALF_UP);
         return Math.ceil(bd.doubleValue());
     }
 
     /**
-     * Helper class that stores a ratio and the corresponding actor index.
-     * Used for sorting actors when computing the lower bound.
+     * Helper class that stores a ratio and the corresponding actor index. Used for sorting actors
+     * when computing the lower bound.
      */
     private static class RatioAndActor implements Comparable<RatioAndActor> {
-        /**
-         * The ratio associated with this actor.
-         */
+        /** The ratio associated with this actor. */
         public double ratio;
-        /**
-         * The index of the actor.
-         */
+
+        /** The index of the actor. */
         public int actor;
 
         public RatioAndActor(double ratio, int actor) {

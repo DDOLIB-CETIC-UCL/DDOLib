@@ -1,23 +1,20 @@
 package org.ddolib.layered.solving.ddo.core.mdd;
 
+import java.util.Comparator;
 import org.ddolib.layered.modeling.StateRanking;
 
-import java.util.Comparator;
-
 /**
- * Comparator for {@link NodeSubProblem} instances that sorts them first by their node value,
- * and then by the state using a provided {@link StateRanking} if the values are equal.
- * <p>
- * This class implements a decorator pattern, allowing a {@link StateRanking} to be used as a tie-breaker
- * when node values are identical. It is useful for prioritizing subproblems in search or decision diagram algorithms.
- * </p>
+ * Comparator for {@link NodeSubProblem} instances that sorts them first by their node value, and
+ * then by the state using a provided {@link StateRanking} if the values are equal.
+ *
+ * <p>This class implements a decorator pattern, allowing a {@link StateRanking} to be used as a
+ * tie-breaker when node values are identical. It is useful for prioritizing subproblems in search
+ * or decision diagram algorithms.
  *
  * @param <T> the type of state contained in the subproblems
  */
 public final class NodeSubProblemComparator<T> implements Comparator<NodeSubProblem<T>> {
-    /**
-     * The decorated ranking used to break ties when node values are equal.
-     */
+    /** The decorated ranking used to break ties when node values are equal. */
     private final StateRanking<T> delegate;
 
     /**
@@ -31,15 +28,14 @@ public final class NodeSubProblemComparator<T> implements Comparator<NodeSubProb
 
     /**
      * Compares two {@link NodeSubProblem} instances.
-     * <p>
-     * First, compares by the node value. If the values are equal, the comparison is delegated
-     * to the {@link StateRanking} in reversed order.
-     * </p>
+     *
+     * <p>First, compares by the node value. If the values are equal, the comparison is delegated to
+     * the {@link StateRanking} in reversed order.
      *
      * @param o1 the first subproblem to compare
      * @param o2 the second subproblem to compare
-     * @return a negative integer, zero, or a positive integer as the first subproblem
-     * is less than, equal to, or greater than the second
+     * @return a negative integer, zero, or a positive integer as the first subproblem is less than,
+     *     equal to, or greater than the second
      */
     @Override
     public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {

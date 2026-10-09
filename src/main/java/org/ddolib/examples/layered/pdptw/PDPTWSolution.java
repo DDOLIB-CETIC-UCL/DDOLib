@@ -2,27 +2,23 @@ package org.ddolib.examples.layered.pdptw;
 
 import org.ddolib.layered.solver.Solution;
 
-/**
- * Pretty-printer wrapper for PDPTW solutions.
- */
+/** Pretty-printer wrapper for PDPTW solutions. */
 public class PDPTWSolution {
-    /**
-     * The sequence of visited nodes composing the solution.
-     */
+    /** The sequence of visited nodes composing the solution. */
     public int[] solution;
-    /**
-     * The value (cost) associated to this solution.
-     */
+
+    /** The value (cost) associated to this solution. */
     public double value;
+
     PDPTWProblem problem;
 
     /**
-     * Wraps a raw solver {@link Solution} together with the problem it was found for,
-     * to enable pretty-printing.
+     * Wraps a raw solver {@link Solution} together with the problem it was found for, to enable
+     * pretty-printing.
      *
-     * @param problem  the PDPTW problem the solution was found for
+     * @param problem the PDPTW problem the solution was found for
      * @param solution the raw solution returned by the solver
-     * @param value    the value (cost) associated to this solution
+     * @param value the value (cost) associated to this solution
      */
     public PDPTWSolution(PDPTWProblem problem, Solution solution, double value) {
         this.problem = problem;
@@ -56,16 +52,50 @@ public class PDPTWSolution {
                 currentTime = earlyLine;
             }
             if (problem.deliveryToAssociatedPickup.containsKey(currentNode)) {
-                //it is a delivery
+                // it is a delivery
                 currentContent = currentContent - 1;
-                toReturn.append("\n" + currentNode + " \tcontentOut:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime + "\t(delivery from " + problem.deliveryToAssociatedPickup.get(currentNode) + " -" + 1 + ")");
+                toReturn.append(
+                        "\n"
+                                + currentNode
+                                + " \tcontentOut:"
+                                + currentContent
+                                + "\ttime:"
+                                + currentTime
+                                + "\twaitTime:"
+                                + waitTime
+                                + "\t(delivery from "
+                                + problem.deliveryToAssociatedPickup.get(currentNode)
+                                + " -"
+                                + 1
+                                + ")");
             } else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)) {
                 // it is a pickup
                 currentContent = currentContent + 1;
-                toReturn.append("\n" + currentNode + "\tcontentOut:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime + "\t(pickup to " + problem.pickupToAssociatedDelivery.get(currentNode) + " +" + 1 + ")");
+                toReturn.append(
+                        "\n"
+                                + currentNode
+                                + "\tcontentOut:"
+                                + currentContent
+                                + "\ttime:"
+                                + currentTime
+                                + "\twaitTime:"
+                                + waitTime
+                                + "\t(pickup to "
+                                + problem.pickupToAssociatedDelivery.get(currentNode)
+                                + " +"
+                                + 1
+                                + ")");
             } else {
-                //an unrelated node
-                toReturn.append("\n" + currentNode + "\tcontent:" + currentContent + "\ttime:" + currentTime + "\twaitTime:" + waitTime);
+                // an unrelated node
+                toReturn.append(
+                        "\n"
+                                + currentNode
+                                + "\tcontent:"
+                                + currentContent
+                                + "\ttime:"
+                                + currentTime
+                                + "\twaitTime:"
+                                + waitTime);
             }
         }
         return toReturn.toString();

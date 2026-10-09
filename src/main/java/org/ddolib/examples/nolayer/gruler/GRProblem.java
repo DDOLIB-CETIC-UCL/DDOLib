@@ -1,9 +1,13 @@
 package org.ddolib.examples.nolayer.gruler;
 
-import org.ddolib.nolayer.modeling.Problem;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import org.ddolib.common.util.InvalidSolutionException;
-
-import java.util.*;
+import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Nolayer formulation of the Golomb Ruler Problem (GRP): find a set of {@code order} marks on a
@@ -40,7 +44,9 @@ public record GRProblem(int order) implements Problem<GRState> {
 
         for (int label = nextMark; label < maxL; label++) {
             boolean legal = true;
-            for (int mark = state.getMarks().nextSetBit(0); mark >= 0; mark = state.getMarks().nextSetBit(mark + 1)) {
+            for (int mark = state.getMarks().nextSetBit(0);
+                    mark >= 0;
+                    mark = state.getMarks().nextSetBit(mark + 1)) {
                 if (state.getDistances().get(label - mark)) {
                     legal = false;
                     break;
@@ -58,7 +64,9 @@ public record GRProblem(int order) implements Problem<GRState> {
         BitSet nextMarks = (BitSet) state.getMarks().clone();
         BitSet nextDistances = (BitSet) state.getDistances().clone();
 
-        for (int mark = state.getMarks().nextSetBit(0); mark >= 0; mark = state.getMarks().nextSetBit(mark + 1)) {
+        for (int mark = state.getMarks().nextSetBit(0);
+                mark >= 0;
+                mark = state.getMarks().nextSetBit(mark + 1)) {
             nextDistances.set(label - mark);
         }
         nextMarks.set(label);
@@ -75,15 +83,19 @@ public record GRProblem(int order) implements Problem<GRState> {
     public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         int nbVars = order - 1;
         if (solution.size() != nbVars) {
-            throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", solution, nbVars));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not match " + "the number %d variables",
+                            solution, nbVars));
         }
-        if (nbVars == 0) return 0;
+        if (nbVars == 0) {
+            return 0;
+        }
 
         Map<Integer, Integer[]> distance = new HashMap<>();
 
         for (int j = 0; j < solution.size(); j++) {
-            distance.put(solution.get(j), new Integer[]{0, j + 1});
+            distance.put(solution.get(j), new Integer[] {0, j + 1});
         }
 
         for (int i = 1; i < order; i++) {
@@ -93,12 +105,15 @@ public record GRProblem(int order) implements Problem<GRState> {
                 int d = to - from;
                 if (distance.containsKey(d)) {
                     Integer[] pair = distance.get(d);
-                    String msg = String.format("The marks %d & %d have the same distance (%d) " +
-                            "than the marks %d & %d", i, j, d, pair[0], pair[1]);
+                    String msg =
+                            String.format(
+                                    "The marks %d & %d have the same distance (%d) "
+                                            + "than the marks %d & %d",
+                                    i, j, d, pair[0], pair[1]);
                     throw new InvalidSolutionException(msg);
                 }
 
-                distance.put(d, new Integer[]{i, j});
+                distance.put(d, new Integer[] {i, j});
             }
         }
         return solution.get(solution.size() - 1);

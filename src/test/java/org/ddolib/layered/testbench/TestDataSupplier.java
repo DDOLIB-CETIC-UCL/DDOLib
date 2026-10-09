@@ -1,25 +1,23 @@
 package org.ddolib.layered.testbench;
 
+import java.util.List;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.Problem;
 
-import java.util.List;
-
 /**
- * Defines how to generate problem and model for tests
+ * Defines how to generate problem and model for tests.
  *
  * @param <T> The type of states.
  * @param <P> The type of problem to test.
  */
-abstract public class TestDataSupplier<T, P extends Problem<T>> {
-
+public abstract class TestDataSupplier<T, P extends Problem<T>> {
 
     /**
      * Generates {@link Problem} instances to test.
      *
      * @return A list of problems used for tests.
      */
-    abstract protected List<P> generateProblems();
+    protected abstract List<P> generateProblems();
 
     /**
      * Given a problem instance returns the whole model used to solve this problem.
@@ -27,5 +25,5 @@ abstract public class TestDataSupplier<T, P extends Problem<T>> {
      * @param problem The problem to solve.
      * @return A model containing all the component to solve it.
      */
-    abstract protected DdoModel<T> model(P problem);
+    protected abstract DdoModel<T> model(P problem);
 }

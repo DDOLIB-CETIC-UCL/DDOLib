@@ -7,9 +7,7 @@ package org.ddolib.layered.modeling;
  */
 public abstract class DominanceChecker<T> {
 
-    /**
-     * The dominance relation used to compare states.
-     */
+    /** The dominance relation used to compare states. */
     protected final Dominance<T> dominance;
 
     /**
@@ -24,16 +22,16 @@ public abstract class DominanceChecker<T> {
     /**
      * Checks whether the input state is dominated and updates the front of non-dominated nodes.
      *
-     * @param state    the state on which test dominance
-     * @param depth    the depth of the state in the MDD
+     * @param state the state on which test dominance
+     * @param depth the depth of the state in the MDD
      * @param objValue the length of the longest path from the root to the input state
      * @return whether the input state is dominated
      */
     public abstract boolean updateDominance(T state, int depth, double objValue);
 
     /**
-     * Clears the dominance checker state.
-     * This is useful for search algorithms that restart and need to clear previously cached dominance relations.
+     * Clears the dominance checker state. This is useful for search algorithms that restart and
+     * need to clear previously cached dominance relations.
      */
     public void clear() {
         // Default implementation does nothing.

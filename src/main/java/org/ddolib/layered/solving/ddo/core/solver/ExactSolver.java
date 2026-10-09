@@ -1,22 +1,5 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
-import org.ddolib.common.compilation.CompilationType;
-import org.ddolib.common.frontier.CutSetType;
-import org.ddolib.common.mdd.DecisionDiagram;
-import org.ddolib.common.solver.stat.DdoStats;
-import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.modeling.DdoModel;
-import org.ddolib.layered.modeling.ExactModel;
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solver.Solution;
-import org.ddolib.layered.solver.Solver;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.layered.solving.ddo.core.SubProblem;
-import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
-import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -27,60 +10,67 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
+import org.ddolib.common.compilation.CompilationType;
+import org.ddolib.common.frontier.CutSetType;
+import org.ddolib.common.mdd.DecisionDiagram;
+import org.ddolib.common.solver.stat.DdoStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.ExactModel;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solver.Solver;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.layered.solving.ddo.core.SubProblem;
+import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
+import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
 
 /**
  * Solver that compiles a single exact decision diagram (MDD) to find the optimal solution.
- * <p>
- * <b>Warning:</b> Using only exact MDDs can consume a significant amount of memory.
- * It is recommended to use this solver for small instances or for testing your model.
- * For larger instances or more advanced strategies, consider using {@link SequentialSolver}.
- * </p>
  *
- * <p>
- * This solver constructs the MDD in a single pass:
- * </p>
+ * <p><b>Warning:</b> Using only exact MDDs can consume a significant amount of memory. It is
+ * recommended to use this solver for small instances or for testing your model. For larger
+ * instances or more advanced strategies, consider using {@link SequentialSolver}.
+ *
+ * <p>This solver constructs the MDD in a single pass:
+ *
  * <ul>
- *     <li>Initializes the root subproblem from the initial state.</li>
- *     <li>Compiles the MDD using exact node expansion without any width restriction.</li>
- *     <li>Optionally uses dominance rules and caching to prune redundant subproblems.</li>
- *     <li>Extracts the best solution and value from the compiled MDD.</li>
- *     <li>Can export the MDD in DOT format if enabled.</li>
+ *   <li>Initializes the root subproblem from the initial state.
+ *   <li>Compiles the MDD using exact node expansion without any width restriction.
+ *   <li>Optionally uses dominance rules and caching to prune redundant subproblems.
+ *   <li>Extracts the best solution and value from the compiled MDD.
+ *   <li>Can export the MDD in DOT format if enabled.
  * </ul>
  *
  * @param <T> the type of state used by the problem
  */
 public final class ExactSolver<T> implements Solver {
 
-    /**
-     * The problem instance to be minimized.
-     */
+    /** The problem instance to be minimized. */
     private final Problem<T> problem;
 
-    /**
-     * Verbosity level controlling output during the solving process.
-     */
+    /** Verbosity level controlling output during the solving process. */
     private final VerbosityLevel verbosityLevel;
-    /**
-     * Flag to indicate whether the compiled MDD should be exported as a DOT file.
-     */
-    private final boolean exportAsDot;
-    private final ExactModel<T> model;
-    /**
-     * Optional set containing the best solution found so far.
-     */
-    private Optional<Set<Decision>> bestSol;
-    /**
-     * Optional value of the best solution found so far.
-     */
-    private Optional<Double> bestValue = Optional.empty();
 
+    /** Flag to indicate whether the compiled MDD should be exported as a DOT file. */
+    private final boolean exportAsDot;
+
+    private final ExactModel<T> model;
+
+    /** Optional set containing the best solution found so far. */
+    private Optional<Set<Decision>> bestSol;
+
+    /** Optional value of the best solution found so far. */
+    private Optional<Double> bestValue = Optional.empty();
 
     /**
      * Creates a fully-configured ExactSolver instance.
      *
-     * @param model the {@link DdoModel} containing all necessary parameters and heuristics
-     *              to configure the solver, including the problem, relaxation, ranking,
-     *              variable heuristic, lower bound, dominance checker, caching, and verbosity settings.
+     * @param model the {@link DdoModel} containing all necessary parameters and heuristics to
+     *     configure the solver, including the problem, relaxation, ranking, variable heuristic,
+     *     lower bound, dominance checker, caching, and verbosity settings.
      */
     public ExactSolver(ExactModel<T> model) {
         this.problem = model.problem();
@@ -92,30 +82,34 @@ public final class ExactSolver<T> implements Solver {
 
     /**
      * Minimizes the problem by compiling an exact decision diagram (MDD).
-     * <p>
-     * The method performs the following steps:
+     *
+     * <p>The method performs the following steps:
+     *
      * <ul>
-     *     <li>Initializes the root subproblem with the initial state.</li>
-     *     <li>Configures the compilation parameters for an exact MDD.</li>
-     *     <li>Compiles the MDD and optionally prunes using dominance and caching.</li>
-     *     <li>Extracts the best solution and value.</li>
-     *     <li>Optionally exports the MDD in DOT format.</li>
+     *   <li>Initializes the root subproblem with the initial state.
+     *   <li>Configures the compilation parameters for an exact MDD.
+     *   <li>Compiles the MDD and optionally prunes using dominance and caching.
+     *   <li>Extracts the best solution and value.
+     *   <li>Optionally exports the MDD in DOT format.
      * </ul>
      *
-     * @param limit      a predicate that may be used to limit the search based on statistics
+     * @param limit a predicate that may be used to limit the search based on statistics
      * @param onSolution a callback invoked when a solution is found
      * @return statistics about the search process, including the best value found
      */
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        // declared first on purpose: it records the start time of the search
+        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
 
-        SubProblem<T> root = new SubProblem<>(
-                problem.initialState(),
-                problem.initialValue(),
-                Double.POSITIVE_INFINITY,
-                Collections.emptySet());
+        final SubProblem<T> root =
+                new SubProblem<>(
+                        problem.initialState(),
+                        problem.initialValue(),
+                        Double.POSITIVE_INFINITY,
+                        Collections.emptySet());
 
         CompilationConfig<T> compilation = new CompilationConfig<>(model);
         compilation.compilationType = CompilationType.Exact;
@@ -139,14 +133,17 @@ public final class ExactSolver<T> implements Solver {
         extractBest(mdd);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
-            exportDot(mdd.exportAsDot(),
-                    Paths.get("output", problemName + "_exact.dot").toString());
+            exportDot(
+                    mdd.exportAsDot(), Paths.get("output", problemName + "_exact.dot").toString());
         }
 
         statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();
 
         if (bestValue.isPresent()) {
-            statistics = statistics.updateIncumbent(bestValue.get(), 0.0).updateStatus(SearchStatus.OPTIMAL);
+            statistics =
+                    statistics
+                            .updateIncumbent(bestValue.get(), 0.0)
+                            .updateStatus(SearchStatus.OPTIMAL);
         } else {
             statistics = statistics.updateStatus(SearchStatus.UNSAT);
         }
@@ -188,15 +185,16 @@ public final class ExactSolver<T> implements Solver {
             bestSol = mdd.bestSolution();
             bestValue = ddval;
             DecimalFormat df = new DecimalFormat("#.##########");
-            if (verbosityLevel != VerbosityLevel.SILENT)
+            if (verbosityLevel != VerbosityLevel.SILENT) {
                 System.out.printf("best solution found: %s\n", df.format(ddval.get()));
+            }
         }
     }
 
     /**
      * Exports a DOT representation of the MDD to a file.
      *
-     * @param dot      the DOT string representing the MDD
+     * @param dot the DOT string representing the MDD
      * @param fileName the output file path
      */
     private void exportDot(String dot, String fileName) {

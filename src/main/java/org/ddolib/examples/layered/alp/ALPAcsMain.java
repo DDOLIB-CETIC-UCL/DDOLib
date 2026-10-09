@@ -1,25 +1,23 @@
 package org.ddolib.examples.layered.alp;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.AcsModel;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
- * Aircraft Landing Problem (ALP) with Acs.
- * Main class to solve the <b>Aircraft Landing Problem (ALP)</b> using
- * the Anytime Column Search (ACS) algorithm.
- * <p>
- * This class demonstrates how to:
- * </p>
+ * Aircraft Landing Problem (ALP) with Acs. Main class to solve the <b>Aircraft Landing Problem
+ * (ALP)</b> using the Anytime Column Search (ACS) algorithm.
+ *
+ * <p>This class demonstrates how to:
+ *
  * <ul>
- *   <li>Load an ALP instance from a file.</li>
- *   <li>Define an {@link AcsModel} for the problem, including the fast lower bound.</li>
- *   <li>Solve the problem using the {@link Solvers} with the ACS algorithm.</li>
- *   <li>Track and display intermediate incumbent solutions during the search.</li>
+ *   <li>Load an ALP instance from a file.
+ *   <li>Define an {@link AcsModel} for the problem, including the fast lower bound.
+ *   <li>Solve the problem using the {@link Solvers} with the ACS algorithm.
+ *   <li>Track and display intermediate incumbent solutions during the search.
  * </ul>
  *
  * @see ALPProblem
@@ -30,8 +28,7 @@ import java.nio.file.Path;
  */
 public final class ALPAcsMain {
 
-    private ALPAcsMain() {
-    }
+    private ALPAcsMain() {}
 
     /**
      * Loads an ALP instance, configures the ACS model, and runs the optimization procedure.
@@ -40,26 +37,31 @@ public final class ALPAcsMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ?
-                Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString() : args[0];
+        final String instance =
+                args.length == 0
+                        ? Path.of("data", "ALP", "alp_n50_r1_c2_std10_s0").toString()
+                        : args[0];
         final ALPProblem problem = new ALPProblem(instance);
-        AcsModel<ALPState> model = new AcsModel<>() {
-            @Override
-            public ALPProblem problem() {
-                return problem;
-            }
+        AcsModel<ALPState> model =
+                new AcsModel<>() {
+                    @Override
+                    public ALPProblem problem() {
+                        return problem;
+                    }
 
-            @Override
-            public ALPFastLowerBound lowerBound() {
-                return new ALPFastLowerBound(problem);
-            }
+                    @Override
+                    public ALPFastLowerBound lowerBound() {
+                        return new ALPFastLowerBound(problem);
+                    }
+                };
 
-        };
-
-        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-//            System.out.println(new ALPSolution(problem, sol));
-        });
+        Solution bestSolution =
+                Solvers.minimizeAcs(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                            //            System.out.println(new ALPSolution(problem, sol));
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

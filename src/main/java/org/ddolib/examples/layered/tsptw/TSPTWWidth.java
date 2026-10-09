@@ -3,22 +3,17 @@ package org.ddolib.examples.layered.tsptw;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 
 /**
- * Heuristic for computing the width of a layer in the dynamic programming model
- * for the Traveling Salesman Problem with Time Windows (TSPTW).
- * <p>
- * The width represents the maximum number of states to keep at a given layer.
- * It is computed based on the number of variables, the current depth, and a user-defined factor.
- * </p>
+ * Heuristic for computing the width of a layer in the dynamic programming model for the Traveling
+ * Salesman Problem with Time Windows (TSPTW).
+ *
+ * <p>The width represents the maximum number of states to keep at a given layer. It is computed
+ * based on the number of variables, the current depth, and a user-defined factor.
  */
 public class TSPTWWidth implements WidthHeuristic<TSPTWState> {
-    /**
-     * Number of variables/nodes in the TSPTW problem.
-     */
+    /** Number of variables/nodes in the TSPTW problem. */
     private final int nbVars;
 
-    /**
-     * Factor to scale the width.
-     */
+    /** Factor to scale the width. */
     private final int factor;
 
     /**
@@ -34,10 +29,9 @@ public class TSPTWWidth implements WidthHeuristic<TSPTWState> {
 
     /**
      * Computes the maximum width of a layer based on the current state.
-     * <p>
-     * The width is calculated as: (depth + 1) * nbVars * factor.
-     * This allows the width to grow with the depth of the state in the DP model.
-     * </p>
+     *
+     * <p>The width is calculated as: (depth + 1) * nbVars * factor. This allows the width to grow
+     * with the depth of the state in the DP model.
      *
      * @param state the state for which to compute the layer width
      * @return the maximum number of states to keep at this layer

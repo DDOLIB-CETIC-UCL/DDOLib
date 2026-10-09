@@ -1,33 +1,28 @@
 package org.ddolib.examples.layered.mcp;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Relaxation;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
- * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using a DDO (Decision Diagram Optimization) approach.
- * <p>
- * This class demonstrates how to set up a DDO model for the MCP, execute the search, and print
+ * Main class for solving the <b>Maximum Cut Problem (MCP)</b> using a DDO (Decision Diagram
+ * Optimization) approach.
+ *
+ * <p>This class demonstrates how to set up a DDO model for the MCP, execute the search, and print
  * the resulting solutions and statistics.
- * </p>
  *
- * <p>
- * The problem instance can be provided as a command-line argument. If no argument is provided,
- * a default instance located at <code>data/MCP/mcp_5_2.txt</code> is used.
- * </p>
+ * <p>The problem instance can be provided as a command-line argument. If no argument is provided, a
+ * default instance located at <code>data/MCP/mcp_5_2.txt</code> is used.
  *
- * <p>
- * The model uses {@link MCPRelax} for state relaxation, {@link MCPRanking} for state ranking,
+ * <p>The model uses {@link MCPRelax} for state relaxation, {@link MCPRanking} for state ranking,
  * and {@link MCPFastLowerBound} for computing fast lower bounds. The {@link DdoModel} framework
  * handles the search process using DDO.
- * </p>
  *
  * @see MCPProblem
  * @see MCPState
@@ -39,51 +34,53 @@ import java.nio.file.Path;
  */
 public final class MCPDdoMain {
 
-    private MCPDdoMain() {
-    }
+    private MCPDdoMain() {}
 
     /**
      * Entry point of the application.
-     * <p>
-     * Initializes the MCP problem, builds a DDO model, and runs the search to find
-     * a maximum cut. The resulting solutions are printed incrementally via
-     * {@link SolutionPrinter} and a final {@link SearchStatistics} summary is displayed.
-     * </p>
      *
-     * @param args optional command-line arguments; args[0] can specify the path to an MCP instance file
+     * <p>Initializes the MCP problem, builds a DDO model, and runs the search to find a maximum
+     * cut. The resulting solutions are printed incrementally via {@link SolutionPrinter} and a
+     * final {@link SearchStatistics} summary is displayed.
+     *
+     * @param args optional command-line arguments; args[0] can specify the path to an MCP instance
+     *     file
      * @throws IOException if the instance file cannot be read
      */
-
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];
+        final String instance =
+                args.length == 0 ? Path.of("data", "MCP", "mcp_5_2.txt").toString() : args[0];
         final MCPProblem problem = new MCPProblem(instance);
-        DdoModel<MCPState> model = new DdoModel<MCPState>() {
-            @Override
-            public Problem<MCPState> problem() {
-                return problem;
-            }
+        DdoModel<MCPState> model =
+                new DdoModel<MCPState>() {
+                    @Override
+                    public Problem<MCPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public MCPFastLowerBound lowerBound() {
-                return new MCPFastLowerBound(problem);
-            }
+                    @Override
+                    public MCPFastLowerBound lowerBound() {
+                        return new MCPFastLowerBound(problem);
+                    }
 
-            @Override
-            public Relaxation<MCPState> relaxation() {
-                return new MCPRelax(problem);
-            }
+                    @Override
+                    public Relaxation<MCPState> relaxation() {
+                        return new MCPRelax(problem);
+                    }
 
-            @Override
-            public MCPRanking ranking() {
-                return new MCPRanking();
-            }
-        };
+                    @Override
+                    public MCPRanking ranking() {
+                        return new MCPRanking();
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-
     }
 }

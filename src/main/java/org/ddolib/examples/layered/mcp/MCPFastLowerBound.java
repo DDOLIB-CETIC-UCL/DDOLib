@@ -1,12 +1,9 @@
 package org.ddolib.examples.layered.mcp;
 
+import java.util.Set;
 import org.ddolib.layered.modeling.FastLowerBound;
 
-import java.util.Set;
-
-/**
- * Implementation of fast lower bound heuristic for the MCP.
- */
+/** Implementation of fast lower bound heuristic for the MCP. */
 public class MCPFastLowerBound implements FastLowerBound<MCPState> {
 
     final MCPProblem problem;
@@ -29,8 +26,11 @@ public class MCPFastLowerBound implements FastLowerBound<MCPState> {
     @Override
     public double fastLowerBound(MCPState state, Set<Integer> variables) {
         int k = state.depth();
-        if (k == problem.nbVars()) return 0.0;
-        else return -(MCPRanking.rank(state) + estimation[k] + partialSum[k]) - initVal;
+        if (k == problem.nbVars()) {
+            return 0.0;
+        } else {
+            return -(MCPRanking.rank(state) + estimation[k] + partialSum[k]) - initVal;
+        }
     }
 
     /**
@@ -42,15 +42,15 @@ public class MCPFastLowerBound implements FastLowerBound<MCPState> {
         for (int from = depth; from < problem.nbVars(); from++) {
             for (int to = from + 1; to < problem.nbVars(); to++) {
                 int w = problem.graph.weightOf(from, to);
-                if (w > 0) toReturn += w;
+                if (w > 0) {
+                    toReturn += w;
+                }
             }
         }
         return toReturn;
     }
 
-    /**
-     * Returns the sum of positive weight for all the depth
-     */
+    /** Returns the sum of positive weight for all the depth. */
     private int[] precomputeAllEstimate() {
         int[] toReturn = new int[problem.nbVars()];
         for (int node = 0; node < problem.nbVars(); node++) {
@@ -60,22 +60,23 @@ public class MCPFastLowerBound implements FastLowerBound<MCPState> {
     }
 
     /**
-     * Returns the partial sum of negative weight of edges ending at nodes smaller than the given edges.
+     * Returns the partial sum of negative weight of edges ending at nodes smaller than the given
+     * edges.
      */
     private int precomputePartialSum(int depth) {
         int toReturn = 0;
         for (int j = 0; j < depth; j++) {
             for (int i = 0; i < j; i++) {
                 int w = problem.graph.weightOf(i, j);
-                if (w < 0) toReturn += w;
+                if (w < 0) {
+                    toReturn += w;
+                }
             }
         }
         return toReturn;
     }
 
-    /**
-     * Returns the partial sum for all depths
-     */
+    /** Returns the partial sum for all depths. */
     private int[] precomputeAllPartialSum() {
         int[] toReturn = new int[problem.nbVars()];
         for (int node = 0; node < problem.nbVars(); node++) {

@@ -1,68 +1,68 @@
 package org.ddolib.examples.layered.tsp;
 
+import java.io.IOException;
+import java.nio.file.Paths;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.AcsModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Paths;
 
 /**
- * The Traveling Salesman Problem (TSP) with Acs.
- * Main class to solve a Traveling Salesman Problem (TSP) instance using the ACS (Anytime Column Search) algorithm.
+ * The Traveling Salesman Problem (TSP) with Acs. Main class to solve a Traveling Salesman Problem
+ * (TSP) instance using the ACS (Anytime Column Search) algorithm.
  *
- * <p>
- * This class reads a problem instance from a file (XML format), initializes a {@link TSPProblem} and an
- * {@link AcsModel} with a fast lower bound ({@link TSPFastLowerBound}), and then solves the problem using
- * the ACS solver. The solution and search statistics are printed to the console.
- * </p>
+ * <p>This class reads a problem instance from a file (XML format), initializes a {@link TSPProblem}
+ * and an {@link AcsModel} with a fast lower bound ({@link TSPFastLowerBound}), and then solves the
+ * problem using the ACS solver. The solution and search statistics are printed to the console.
  *
- * <p>
- * Usage:
- * </p>
+ * <p>Usage:
+ *
  * <pre>
  * java TSPAcsMain [instanceFile]
  * </pre>
- * If no {@code instanceFile} argument is provided, a default instance
+ *
+ * <p>If no {@code instanceFile} argument is provided, a default instance
  * ("data/TSP/instance_18_0.xml") is used.
  */
 public class TSPAcsMain {
 
-    private TSPAcsMain() {
-    }
+    private TSPAcsMain() {}
 
     /**
      * Entry point of the program. Builds a TSP instance and solves it using the ACS algorithm.
      *
-     * @param args optional command-line argument: path to the TSP instance file
-     *             (default: {@code data/TSP/instance_18_0.xml})
+     * @param args optional command-line argument: path to the TSP instance file (default: {@code
+     *     data/TSP/instance_18_0.xml})
      * @throws IOException if there is an error reading the instance file
      */
     public static void main(final String[] args) throws IOException {
-        String instance = args.length == 0 ? Paths.get("data", "TSP", "instance_18_0.xml").toString() : args[0];
+        String instance =
+                args.length == 0
+                        ? Paths.get("data", "TSP", "instance_18_0.xml").toString()
+                        : args[0];
         final TSPProblem problem = new TSPProblem(instance);
-        AcsModel<TSPState> model = new AcsModel<TSPState>() {
-            @Override
-            public Problem<TSPState> problem() {
-                return problem;
-            }
+        AcsModel<TSPState> model =
+                new AcsModel<TSPState>() {
+                    @Override
+                    public Problem<TSPState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public TSPFastLowerBound lowerBound() {
-                return new TSPFastLowerBound(problem);
-            }
-        };
+                    @Override
+                    public TSPFastLowerBound lowerBound() {
+                        return new TSPFastLowerBound(problem);
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeAcs(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeAcs(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-
     }
-
-
 }

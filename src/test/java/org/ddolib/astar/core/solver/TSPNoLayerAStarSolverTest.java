@@ -1,5 +1,9 @@
 package org.ddolib.astar.core.solver;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Optional;
 import org.ddolib.examples.layered.tsp.TSPGenerator;
 import org.ddolib.examples.nolayer.tsp.TSPModel;
 import org.ddolib.examples.nolayer.tsp.TSPProblem;
@@ -8,11 +12,10 @@ import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.solver.Solution;
 import org.junit.jupiter.api.Test;
 
-import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+/**
+ * Checks that the no-layer A* solver finds, on a random TSP instance, the same optimal value as the
+ * layered A* solver.
+ */
 public class TSPNoLayerAStarSolverTest {
 
     @Test
@@ -22,38 +25,49 @@ public class TSPNoLayerAStarSolverTest {
         double[][] distMatrix = generator.distanceMatrix;
 
         // Solve with the layered API to get optimal
-        org.ddolib.examples.layered.tsp.TSPProblem layeredProblem = new org.ddolib.examples.layered.tsp.TSPProblem(distMatrix);
-        org.ddolib.layered.modeling.Model<org.ddolib.examples.layered.tsp.TSPState> layeredModel = new org.ddolib.layered.modeling.Model<>() {
-            @Override
-            public org.ddolib.layered.modeling.Problem<org.ddolib.examples.layered.tsp.TSPState> problem() {
-                return layeredProblem;
-            }
+        org.ddolib.examples.layered.tsp.TSPProblem layeredProblem =
+                new org.ddolib.examples.layered.tsp.TSPProblem(distMatrix);
+        org.ddolib.layered.modeling.Model<org.ddolib.examples.layered.tsp.TSPState> layeredModel =
+                new org.ddolib.layered.modeling.Model<>() {
+                    @Override
+                    public org.ddolib.layered.modeling.Problem<
+                                    org.ddolib.examples.layered.tsp.TSPState>
+                            problem() {
+                        return layeredProblem;
+                    }
 
-            @Override
-            public org.ddolib.layered.modeling.FastLowerBound<org.ddolib.examples.layered.tsp.TSPState> lowerBound() {
-                return new org.ddolib.examples.layered.tsp.TSPFastLowerBound(layeredProblem);
-            }
-        };
-        org.ddolib.layered.solving.astar.core.solver.AStarSolver<org.ddolib.examples.layered.tsp.TSPState> layeredSolver = new org.ddolib.layered.solving.astar.core.solver.AStarSolver<>(layeredModel);
-        layeredSolver.minimize(stats -> false, (sol, stats) -> {
-        });
+                    @Override
+                    public org.ddolib.layered.modeling.FastLowerBound<
+                                    org.ddolib.examples.layered.tsp.TSPState>
+                            lowerBound() {
+                        return new org.ddolib.examples.layered.tsp.TSPFastLowerBound(
+                                layeredProblem);
+                    }
+                };
+        org.ddolib.layered.solving.astar.core.solver.AStarSolver<
+                        org.ddolib.examples.layered.tsp.TSPState>
+                layeredSolver =
+                        new org.ddolib.layered.solving.astar.core.solver.AStarSolver<>(
+                                layeredModel);
+        layeredSolver.minimize(stats -> false, (sol, stats) -> {});
         double expectedOptimal = layeredSolver.bestValue().orElseThrow();
 
         // Solve with the new NoLayer API
         TSPProblem noLayerProblem = new TSPProblem(distMatrix);
         Model<TSPState> noLayerModel = new TSPModel(noLayerProblem);
 
-        org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<TSPState> noLayerSolver = new org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<>(noLayerModel);
+        org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<TSPState> noLayerSolver =
+                new org.ddolib.nolayer.solving.astar.core.solver.AStarSolver<>(noLayerModel);
 
-        Solution solution = noLayerSolver.minimize(
-                stats -> false,
-                (sol, stats) -> {
-                }
-        );
+        Solution solution = noLayerSolver.minimize(stats -> false, (sol, stats) -> {});
 
         Optional<Double> noLayerOptimal = noLayerSolver.bestValue();
 
         assertTrue(noLayerOptimal.isPresent(), "Solver should find a solution");
-        assertEquals(expectedOptimal, noLayerOptimal.get(), 1e-6, "NoLayer solver should find the same optimal value");
+        assertEquals(
+                expectedOptimal,
+                noLayerOptimal.get(),
+                1e-6,
+                "NoLayer solver should find the same optimal value");
     }
 }

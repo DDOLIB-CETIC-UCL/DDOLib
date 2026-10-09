@@ -1,34 +1,26 @@
 package org.ddolib.examples.layered.pdp;
 
+import java.util.BitSet;
+import java.util.Iterator;
 import org.ddolib.layered.modeling.Relaxation;
 import org.ddolib.layered.solving.ddo.core.Decision;
 
-import java.util.BitSet;
-import java.util.Iterator;
-
 /**
  * Implements a relaxation operator for the Pickup and Delivery Problem (PDP) states.
- * <p>
- * This class is used in decision diagram-based algorithms (e.g., DDO) to merge
- * multiple states into a single relaxed state, thereby reducing the search space
- * while maintaining a conservative approximation of the solution.
- * </p>
  *
- * <p>
- * The relaxation is performed by taking the union of the sets of nodes to visit
- * and the current nodes from the input states. The minimum and maximum vehicle
- * content are adjusted accordingly to cover all merged states.
- * </p>
+ * <p>This class is used in decision diagram-based algorithms (e.g., DDO) to merge multiple states
+ * into a single relaxed state, thereby reducing the search space while maintaining a conservative
+ * approximation of the solution.
  *
- * <p>
- * The {@link #relaxEdge(PDPState, PDPState, PDPState, Decision, double)} method
- * currently does not modify the edge cost and simply returns the original cost.
- * </p>
+ * <p>The relaxation is performed by taking the union of the sets of nodes to visit and the current
+ * nodes from the input states. The minimum and maximum vehicle content are adjusted accordingly to
+ * cover all merged states.
  *
- * <p>
- * This class implements the {@link Relaxation} interface and can be plugged into
- * any PDP-based model that requires state relaxation for approximate or exact search.
- * </p>
+ * <p>The {@link #relaxEdge(PDPState, PDPState, PDPState, Decision, double)} method currently does
+ * not modify the edge cost and simply returns the original cost.
+ *
+ * <p>This class implements the {@link Relaxation} interface and can be plugged into any PDP-based
+ * model that requires state relaxation for approximate or exact search.
  */
 class PDPRelax implements Relaxation<PDPState> {
     private final PDPProblem problem;
@@ -44,10 +36,9 @@ class PDPRelax implements Relaxation<PDPState> {
 
     /**
      * Merges multiple PDP states into a single relaxed state.
-     * <p>
-     * The merged state represents the union of the input states, allowing the
-     * algorithm to consider multiple possible states as a single relaxed node.
-     * </p>
+     *
+     * <p>The merged state represents the union of the input states, allowing the algorithm to
+     * consider multiple possible states as a single relaxed node.
      *
      * @param states an iterator over the PDP states to be merged
      * @return a new {@link PDPState} representing the merged relaxation
@@ -62,33 +53,32 @@ class PDPRelax implements Relaxation<PDPState> {
 
         while (states.hasNext()) {
             PDPState state = states.next();
-            //take the union; loose precision here
+            // take the union; loose precision here
             openToVisit.or(state.openToVisit);
             allToVisit.or(state.allToVisit);
             current.or(state.current);
             minContent = Math.min(minContent, state.minContent);
             maxContent = Math.max(maxContent, state.maxContent);
         }
-        //the heuristics is reset to the initial sorted edges and will be filtered again from scratch
+        // the heuristics is reset to the initial sorted edges and will be filtered again from
+        // scratch
         return new PDPState(current, openToVisit, allToVisit, minContent, maxContent);
     }
 
     /**
      * Relaxes the cost of an edge between two states.
-     * <p>
-     * Currently, this implementation returns the original edge cost without modification.
-     * </p>
      *
-     * @param from   the origin PDP state
-     * @param to     the destination PDP state
+     * <p>Currently, this implementation returns the original edge cost without modification.
+     *
+     * @param from the origin PDP state
+     * @param to the destination PDP state
      * @param merged the relaxed merged state
-     * @param d      the decision taken along the edge
-     * @param cost   the original cost of the edge
+     * @param d the decision taken along the edge
+     * @param cost the original cost of the edge
      * @return the relaxed cost of the edge (currently identical to {@code cost})
      */
     @Override
     public double relaxEdge(PDPState from, PDPState to, PDPState merged, Decision d, double cost) {
         return cost;
     }
-
 }

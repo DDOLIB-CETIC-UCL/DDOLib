@@ -3,7 +3,6 @@
  * Copyright (c)  2023 UCLouvain
  */
 
-
 package org.ddolib.common.util.io;
 
 import java.io.BufferedReader;
@@ -14,14 +13,13 @@ import java.util.StringTokenizer;
 
 /**
  * Utility class to read formatted input from a file.
- * <p>
- * This class provides convenient methods to read integers, doubles, lines of integers,
- * matrices of numbers, and individual strings from a text file. It uses a
- * {@link BufferedReader} for efficient line-by-line reading and a {@link StringTokenizer}
- * to parse tokens from each line.
- * <p>
- * The methods throw a {@link RuntimeException} when an I/O error occurs or when
- * attempting to read beyond the end of the file.
+ *
+ * <p>This class provides convenient methods to read integers, doubles, lines of integers, matrices
+ * of numbers, and individual strings from a text file. It uses a {@link BufferedReader} for
+ * efficient line-by-line reading and a {@link StringTokenizer} to parse tokens from each line.
+ *
+ * <p>The methods throw a {@link RuntimeException} when an I/O error occurs or when attempting to
+ * read beyond the end of the file.
  */
 public class InputReader {
 
@@ -58,7 +56,7 @@ public class InputReader {
                 do {
                     line = in.readLine();
                     if (line == null) {
-                        //System.out.println("No more line to read");
+                        // System.out.println("No more line to read");
                         throw new RuntimeException("End of file");
                     }
                     tokenizer = new StringTokenizer(line);
@@ -84,7 +82,7 @@ public class InputReader {
                 do {
                     line = in.readLine();
                     if (line == null) {
-                        //System.out.println("No more line to read");
+                        // System.out.println("No more line to read");
                         throw new RuntimeException("End of file");
                     }
                     tokenizer = new StringTokenizer(line);
@@ -146,7 +144,7 @@ public class InputReader {
                 do {
                     line = in.readLine();
                     if (line == null) {
-                        //System.out.println("No more line to read");
+                        // System.out.println("No more line to read");
                         throw new RuntimeException("End of file");
                     }
                     tokenizer = new StringTokenizer(line);
@@ -174,7 +172,7 @@ public class InputReader {
             do {
                 line = in.readLine();
                 if (line == null) {
-                    //System.out.println("No more line to read");
+                    // System.out.println("No more line to read");
                     throw new RuntimeException("End of file");
                 }
                 tokenizer = new StringTokenizer(line);
@@ -198,7 +196,7 @@ public class InputReader {
                 do {
                     line = in.readLine();
                     if (line == null) {
-                        //System.out.println("No more line to read");
+                        // System.out.println("No more line to read");
                         throw new RuntimeException("End of file");
                     }
                     tokenizer = new StringTokenizer(line);
@@ -210,5 +208,4 @@ public class InputReader {
         }
         return tokenizer.nextToken();
     }
-
 }

@@ -4,27 +4,24 @@ import org.ddolib.layered.modeling.Dominance;
 
 /**
  * Dominance relation for the Knapsack Problem (KS).
- * <p>
- * This dominance checker is used to prune the search space in a decision diagram or
- * other solver by identifying states that are dominated and can therefore be discarded.
- * </p>
- * <p>
- * In this implementation:
- * </p>
+ *
+ * <p>This dominance checker is used to prune the search space in a decision diagram or other solver
+ * by identifying states that are dominated and can therefore be discarded.
+ *
+ * <p>In this implementation:
+ *
  * <ul>
- *     <li>{@link #getKey(Integer)} always returns 0, indicating a single dominance key for all states.</li>
- *     <li>{@link #isDominatedOrEqual(Integer, Integer)} considers a state {@code capa1} dominated
- *     by {@code capa2} if {@code capa1 <= capa2}, i.e., a knapsack state with less or equal remaining capacity
- *     is dominated by one with more remaining capacity.</li>
+ *   <li>{@link #getKey(Integer)} always returns 0, indicating a single dominance key for all
+ *       states.
+ *   <li>{@link #isDominatedOrEqual(Integer, Integer)} considers a state {@code capa1} dominated by
+ *       {@code capa2} if {@code capa1 <= capa2}, i.e., a knapsack state with less or equal
+ *       remaining capacity is dominated by one with more remaining capacity.
  * </ul>
  */
 public class KSDominance implements Dominance<Integer> {
 
-    /**
-     * Creates a new instance of this dominance rule.
-     */
-    public KSDominance() {
-    }
+    /** Creates a new instance of this dominance rule. */
+    public KSDominance() {}
 
     /**
      * Returns the key used for grouping states in the dominance checker.

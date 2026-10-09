@@ -1,21 +1,20 @@
 package org.ddolib.layered.modeling;
 
+import java.util.Iterator;
+import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.solver.ExactSolver;
 import org.ddolib.layered.solving.ddo.core.solver.SequentialSolver;
-import org.ddolib.common.util.InvalidSolutionException;
-
-import java.util.Iterator;
-import java.util.Optional;
 
 /**
- * Represents an optimization problem formulated as a labeled transition
- * system, following the semantics of dynamic programming.
- * <p>
- * A {@code Problem} defines the state space, the transitions between states
- * induced by decisions, and the objective values associated with those transitions.
- * Implementations provide the essential operations required by solvers such as
- * {@link SequentialSolver} or {@link ExactSolver}.
+ * Represents an optimization problem formulated as a labeled transition system, following the
+ * semantics of dynamic programming.
+ *
+ * <p>A {@code Problem} defines the state space, the transitions between states induced by
+ * decisions, and the objective values associated with those transitions. Implementations provide
+ * the essential operations required by solvers such as {@link SequentialSolver} or {@link
+ * ExactSolver}.
  *
  * @param <T> the type representing a state in the problem
  */
@@ -42,30 +41,28 @@ public interface Problem<T> {
     double initialValue();
 
     /**
-     * Returns the domain of possible values for a given variable
-     * when applied to a specific state.
+     * Returns the domain of possible values for a given variable when applied to a specific state.
      *
      * @param state the current state
-     * @param var   the variable index whose domain is queried
+     * @param var the variable index whose domain is queried
      * @return an iterator over all feasible values for the variable in this state
      */
     Iterator<Integer> domain(final T state, final int var);
 
     /**
-     * Applies a decision to a state, computing the next state according
-     * to the problem's transition function.
+     * Applies a decision to a state, computing the next state according to the problem's transition
+     * function.
      *
-     * @param state    the state from which the transition originates
+     * @param state the state from which the transition originates
      * @param decision the decision to apply
      * @return the resulting state after applying the decision
      */
     T transition(final T state, final Decision decision);
 
     /**
-     * Computes the change in objective value resulting from applying
-     * a decision to a given state.
+     * Computes the change in objective value resulting from applying a decision to a given state.
      *
-     * @param state    the state from which the transition originates
+     * @param state the state from which the transition originates
      * @param decision the decision to apply
      * @return the incremental objective cost/value associated with this decision
      */
@@ -73,9 +70,9 @@ public interface Problem<T> {
 
     /**
      * Returns the known optimal value of the problem, if available.
-     * <p>
-     * <b>Note:</b> This value should correspond to the expected output
-     * of the solver. For maximization problems, be careful with negative values.
+     *
+     * <p><b>Note:</b> This value should correspond to the expected output of the solver. For
+     * maximization problems, be careful with negative values.
      *
      * @return an {@code Optional} containing the known optimal value, or empty if unknown
      */
@@ -87,13 +84,12 @@ public interface Problem<T> {
      * Given a solution such that {@code solution[i]} is the value of the variable {@code x_i},
      * returns the value of this solution and checks if the solution respects the problem's
      * constraints.
-     * <p>
-     * <b>Note:</b> For maximization problems, the returned value is minus the computed value.
+     *
+     * <p><b>Note:</b> For maximization problems, the returned value is minus the computed value.
      *
      * @param solution a solution of the problem
      * @return the value of the input solution
      * @throws InvalidSolutionException if the solution does not respect the problem's constraints
      */
     double evaluate(final int[] solution) throws InvalidSolutionException;
-
 }

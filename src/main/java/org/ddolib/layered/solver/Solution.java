@@ -1,34 +1,31 @@
 package org.ddolib.layered.solver;
 
-import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.PrettyPrint;
-
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.util.PrettyPrint;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
-/**
- * Wrapper defining a solution from a set of decisions
- *
- */
+/** Wrapper defining a solution from a set of decisions. */
 public class Solution {
 
     private final int[] solution;
     private final SearchStatistics statistics;
 
-
     /**
      * Constructs a solution given a set of decision and {@link SearchStatistics} on this set.
      *
-     * @param decisions  the set of decision leading to this solution
+     * @param decisions the set of decision leading to this solution
      * @param statistics the statistics related to this solution
      */
     public Solution(Optional<Set<Decision>> decisions, SearchStatistics statistics) {
         if (decisions.isPresent()) {
             int maxVar = -1;
             for (Decision d : decisions.get()) {
-                if (d.variable() > maxVar) maxVar = d.variable();
+                if (d.variable() > maxVar) {
+                    maxVar = d.variable();
+                }
             }
             if (maxVar == -1) {
                 solution = new int[0];
@@ -59,7 +56,7 @@ public class Solution {
      * variable {@code x_i}.
      *
      * @return an array {@code t} such that {@code t[i]} is the assigned value to the decision
-     * variable {@code x_i}.
+     *     variable {@code x_i}.
      */
     public int[] solution() {
         return solution;

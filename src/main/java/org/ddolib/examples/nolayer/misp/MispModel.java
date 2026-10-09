@@ -6,9 +6,9 @@ import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Base model for the Maximum Independent Set Problem (MISP), in the no-layer modeling API.
- * <p>
- * Bundles the {@link MispProblem} together with a {@link MispFlb} fast lower bound, so that
- * the various MISP solver entry points can build on top of it.
+ *
+ * <p>Bundles the {@link MispProblem} together with a {@link MispFlb} fast lower bound, so that the
+ * various MISP solver entry points can build on top of it.
  */
 public class MispModel implements Model<MispState> {
 

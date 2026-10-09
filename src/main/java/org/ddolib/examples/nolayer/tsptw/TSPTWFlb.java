@@ -3,13 +3,12 @@ package org.ddolib.examples.nolayer.tsptw;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 
 /**
- * Fast lower bound for the Traveling Salesman Problem with Time Windows (TSPTW), using
- * the no-layer modeling API.
- * <p>
- * The bound sums, for each city that still must be visited (plus the return to the origin),
- * the least-cost edge incident to that city. It ignores time windows and is therefore a
- * relaxation of the true remaining cost.
- * </p>
+ * Fast lower bound for the Traveling Salesman Problem with Time Windows (TSPTW), using the no-layer
+ * modeling API.
+ *
+ * <p>The bound sums, for each city that still must be visited (plus the return to the origin), the
+ * least-cost edge incident to that city. It ignores time windows and is therefore a relaxation of
+ * the true remaining cost.
  */
 public class TSPTWFlb implements FastLowerBound<TSPTWState> {
 

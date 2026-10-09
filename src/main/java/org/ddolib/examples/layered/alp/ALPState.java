@@ -5,38 +5,34 @@ import java.util.Objects;
 
 /**
  * Represents the state of the Aircraft Landing Problem (ALP) at a given moment.
- * <p>
- * An {@code ALPState} encapsulates:
- * </p>
- * <ul>
- *     <li>The number of remaining aircraft to land for each aircraft class.</li>
- *     <li>The current state of each runway, including the class of the last landed aircraft
- *         and its landing time.</li>
- * </ul>
- * This state is used by decision diagram solvers to track the progress of the landing
- * schedule and compute feasible transitions.
  *
- * <p>
- * Instances of this class are immutable through the copy constructor and can be
- * compared using {@link #equals(Object)} and {@link #hashCode()}.
- * </p>
+ * <p>An {@code ALPState} encapsulates:
+ *
+ * <ul>
+ *   <li>The number of remaining aircraft to land for each aircraft class.
+ *   <li>The current state of each runway, including the class of the last landed aircraft and its
+ *       landing time.
+ * </ul>
+ *
+ * <p>This state is used by decision diagram solvers to track the progress of the landing schedule
+ * and compute feasible transitions.
+ *
+ * <p>Instances of this class are immutable through the copy constructor and can be compared using
+ * {@link #equals(Object)} and {@link #hashCode()}.
  */
 public class ALPState {
 
-    /**
-     * Number of remaining aircraft for each class.
-     */
+    /** Number of remaining aircraft for each class. */
     public int[] remainingAircraftOfClass;
-    /**
-     * State of each runway, including last landed aircraft class and landing time.
-     */
+
+    /** State of each runway, including last landed aircraft class and landing time. */
     public RunwayState[] runwayStates;
 
     /**
      * Constructs a new ALP state with the given remaining aircraft and runway states.
      *
      * @param remainingAircraft the array representing remaining aircraft per class
-     * @param runwayStates      the array representing the state of each runway
+     * @param runwayStates the array representing the state of each runway
      */
     public ALPState(int[] remainingAircraft, RunwayState[] runwayStates) {
         this.remainingAircraftOfClass = remainingAircraft;
@@ -54,26 +50,29 @@ public class ALPState {
         remainingAircraftOfClass = new int[remLength];
         System.arraycopy(other.remainingAircraftOfClass, 0, remainingAircraftOfClass, 0, remLength);
         runwayStates = new RunwayState[runwayStatesLength];
-        for (int i = 0; i < runwayStatesLength; i++)
+        for (int i = 0; i < runwayStatesLength; i++) {
             runwayStates[i] = new RunwayState(other.runwayStates[i]);
+        }
     }
 
     /**
      * Checks if two ALP states are equal.
-     * <p>
-     * Two states are considered equal if they have the same remaining aircraft per class
-     * and identical runway states.
-     * </p>
+     *
+     * <p>Two states are considered equal if they have the same remaining aircraft per class and
+     * identical runway states.
      *
      * @param o the object to compare with
      * @return {@code true} if the states are equal, {@code false} otherwise
      */
     @Override
     public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         ALPState alpState = (ALPState) o;
 
-        return Arrays.equals(alpState.runwayStates, this.runwayStates) && Arrays.equals(alpState.remainingAircraftOfClass, this.remainingAircraftOfClass);
+        return Arrays.equals(alpState.runwayStates, this.runwayStates)
+                && Arrays.equals(alpState.remainingAircraftOfClass, this.remainingAircraftOfClass);
     }
 
     /**
@@ -83,7 +82,8 @@ public class ALPState {
      */
     @Override
     public int hashCode() {
-        return Objects.hash(Arrays.hashCode(remainingAircraftOfClass), Arrays.hashCode(runwayStates));
+        return Objects.hash(
+                Arrays.hashCode(remainingAircraftOfClass), Arrays.hashCode(runwayStates));
     }
 
     /**
@@ -93,6 +93,9 @@ public class ALPState {
      */
     @Override
     public String toString() {
-        return "Runway states : " + Arrays.toString(runwayStates) + "\nRemaining air crafts : " + Arrays.toString(remainingAircraftOfClass);
+        return "Runway states : "
+                + Arrays.toString(runwayStates)
+                + "\nRemaining air crafts : "
+                + Arrays.toString(remainingAircraftOfClass);
     }
 }

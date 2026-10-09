@@ -1,4 +1,2 @@
-/**
- * This package contains heuristics on the maximum width of a MDD
- */
+/** This package contains heuristics on the maximum width of a MDD. */
 package org.ddolib.common.heuristics.width;

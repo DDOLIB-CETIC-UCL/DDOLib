@@ -1,5 +1,10 @@
 package org.ddolib.examples.nolayer.gruler;
 
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.IntStream;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.util.debug.DebugLevel;
@@ -12,12 +17,10 @@ import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.nolayer.testbench.NoLayerTestDataSupplier;
 
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.IntStream;
-
+/**
+ * Supplies the Golomb ruler instances (generated programmatically) and the no-layer model used to
+ * solve them in the tests.
+ */
 public class GRTestDataSupplier extends NoLayerTestDataSupplier<GRState, GRProblem> {
 
     @Override
@@ -54,7 +57,9 @@ public class GRTestDataSupplier extends NoLayerTestDataSupplier<GRState, GRProbl
             public StateRanking<GRState> ranking() {
                 return (s1, s2) -> {
                     int c = Integer.compare(s2.getNumberOfMarks(), s1.getNumberOfMarks());
-                    if (c != 0) return c;
+                    if (c != 0) {
+                        return c;
+                    }
                     return Integer.compare(s1.getLastMark(), s2.getLastMark());
                 };
             }

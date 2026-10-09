@@ -1,38 +1,35 @@
 package org.ddolib.examples.layered.gruler;
 
+import java.io.IOException;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
 
 /**
- * Golomb Rule Problem (GRP) with AsTar.
- * Main class for solving the Golomb Ruler Problem (GRP) using the A* search algorithm.
- * <p>
- * This class demonstrates how to create a Golomb Ruler problem instance, define an A* search model,
- * and solve the problem using {@link Solvers#minimizeAstar(Model, java.util.function.BiConsumer)}.
- * The solution and search statistics are printed to the console.
- * </p>
+ * Golomb Rule Problem (GRP) with AsTar. Main class for solving the Golomb Ruler Problem (GRP) using
+ * the A* search algorithm.
+ *
+ * <p>This class demonstrates how to create a Golomb Ruler problem instance, define an A* search
+ * model, and solve the problem using {@link Solvers#minimizeAstar(Model,
+ * java.util.function.BiConsumer)}. The solution and search statistics are printed to the console.
  */
 public class GRAstarMain {
 
-    private GRAstarMain() {
-    }
+    private GRAstarMain() {}
 
     /**
      * Entry point of the application.
-     * <p>
-     * The method performs the following steps:
-     * </p>
+     *
+     * <p>The method performs the following steps:
+     *
      * <ol>
-     *     <li>Creates a Golomb Ruler problem instance with 8 marks.</li>
-     *     <li>Defines an A* model for the problem.</li>
-     *     <li>Solves the problem using the A* search algorithm.</li>
-     *     <li>Prints the solution and search statistics to the console.</li>
+     *   <li>Creates a Golomb Ruler problem instance with 8 marks.
+     *   <li>Defines an A* model for the problem.
+     *   <li>Solves the problem using the A* search algorithm.
+     *   <li>Prints the solution and search statistics to the console.
      * </ol>
      *
      * @param args command-line arguments (not used)
@@ -40,21 +37,25 @@ public class GRAstarMain {
      */
     public static void main(final String[] args) throws IOException {
         GRProblem problem = new GRProblem(10);
-        final Model<GRState> model = new Model<>() {
-            @Override
-            public Problem<GRState> problem() {
-                return problem;
-            }
+        final Model<GRState> model =
+                new Model<>() {
+                    @Override
+                    public Problem<GRState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<GRState> lowerBound() {
-                return new GRFastLowerBound();
-            }
-        };
+                    @Override
+                    public FastLowerBound<GRState> lowerBound() {
+                        return new GRFastLowerBound();
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeAstar(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeAstar(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

@@ -4,7 +4,7 @@ package org.ddolib.examples.layered.pdptw;
  * Time window with an opening and closing time.
  *
  * @param start earliest admissible service time
- * @param end   latest admissible service time
+ * @param end latest admissible service time
  */
 public record TimeWindow(double start, double end) {
     /**

@@ -1,32 +1,29 @@
 package org.ddolib.examples.layered.tsptw;
 
-import org.ddolib.layered.modeling.FastLowerBound;
+import static java.lang.Integer.max;
+import static java.lang.Integer.min;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Set;
-
-import static java.lang.Integer.max;
-import static java.lang.Integer.min;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
- * Implementation of a fast lower bound for the Traveling Salesman Problem with Time Windows (TSPTW).
+ * Implementation of a fast lower bound for the Traveling Salesman Problem with Time Windows
+ * (TSPTW).
  *
- * <p>
- * This class provides a heuristic lower bound on the total tour cost starting from a given {@link TSPTWState}.
- * The lower bound is computed by summing the shortest available edges from the current position,
- * including all mandatory nodes that must be visited and a selection of optional nodes if needed
- * to complete the tour. The bound also considers returning to the depot and respects time window constraints.
- * </p>
+ * <p>This class provides a heuristic lower bound on the total tour cost starting from a given
+ * {@link TSPTWState}. The lower bound is computed by summing the shortest available edges from the
+ * current position, including all mandatory nodes that must be visited and a selection of optional
+ * nodes if needed to complete the tour. The bound also considers returning to the depot and
+ * respects time window constraints.
  *
- * <p>
- * If any mandatory node is unreachable from the current state, or if completing the tour is impossible
- * within the time windows, the bound returns {@link Integer#MAX_VALUE} to indicate infeasibility.
- * </p>
+ * <p>If any mandatory node is unreachable from the current state, or if completing the tour is
+ * impossible within the time windows, the bound returns {@link Integer#MAX_VALUE} to indicate
+ * infeasibility.
  *
- * <p>
- * Precomputes the cheapest outgoing edge for each node to speed up repeated lower bound calculations.
- * </p>
+ * <p>Precomputes the cheapest outgoing edge for each node to speed up repeated lower bound
+ * calculations.
  */
 public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
 
@@ -50,47 +47,50 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
     /**
      * Computes a fast lower bound on the remaining tour cost from the given state.
      *
-     * <p>
-     * The bound includes:
-     * </p>
-     * <ul>
-     *     <li>Distance to the closest next node from the current position</li>
-     *     <li>Distance covering all mandatory nodes to be visited</li>
-     *     <li>Distance covering optional nodes if necessary to complete the tour</li>
-     *     <li>Distance returning to the depot</li>
-     * </ul>
-     * The calculation respects the time window constraints; if a tour is infeasible, {@code INFINITY} is returned.
+     * <p>The bound includes:
      *
-     * @param state     the current state in the TSPTW problem
+     * <ul>
+     *   <li>Distance to the closest next node from the current position
+     *   <li>Distance covering all mandatory nodes to be visited
+     *   <li>Distance covering optional nodes if necessary to complete the tour
+     *   <li>Distance returning to the depot
+     * </ul>
+     *
+     * <p>The calculation respects the time window constraints; if a tour is infeasible, {@code
+     * INFINITY} is returned.
+     *
+     * @param state the current state in the TSPTW problem
      * @param variables the set of unassigned variables (nodes) to consider for the lower bound
-     * @return a fast lower bound on the tour cost from the current state, or {@link Integer#MAX_VALUE} if infeasible
+     * @return a fast lower bound on the tour cost from the current state, or {@link
+     *     Integer#MAX_VALUE} if infeasible
      */
     @Override
     public double fastLowerBound(TSPTWState state, Set<Integer> variables) {
         // This lower bound assumes that we will always select the cheapest edges from each node
 
+        // The sum of shortest edges, starting from the current position
         int travelCost = switch (state.position()) {
             case TSPNode(int pos) -> cheapestEdges[pos];
             case VirtualNodes(Set<Integer> nodes) ->
                     nodes.stream().mapToInt(pos -> cheapestEdges[pos]).min().getAsInt();
-
-        }; // The sum of shortest edges, starting from the current position
+        };
         int backToDepot = Integer.MAX_VALUE; // The shortest edges to the depot
         int maxEdge = travelCost;
-
 
         var mustIt = state.mustVisit().stream().iterator();
         while (mustIt.hasNext()) {
             int i = mustIt.nextInt();
-            if (!problem.reachable(state, i)) return INFINITY;
+            if (!problem.reachable(state, i)) {
+                return INFINITY;
+            }
             travelCost += cheapestEdges[i];
             maxEdge = max(maxEdge, cheapestEdges[i]);
             backToDepot = min(backToDepot, problem.distance[i][0]);
         }
 
-
         int numToCompleteTour = numVar - state.depth() - 1 - state.mustVisit().cardinality();
-        if (numToCompleteTour > 0) { // There are not enough mustVisit nodes. We complete the tour with the
+        if (numToCompleteTour
+                > 0) { // There are not enough mustVisit nodes. We complete the tour with the
             // possiblyVisit nodes
             ArrayList<Integer> candidatesToCompleteTour = new ArrayList<>();
             int violation = 0;
@@ -100,9 +100,13 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
                 int i = possiblyIt.nextInt();
                 candidatesToCompleteTour.add(cheapestEdges[i]);
                 backToDepot = min(backToDepot, problem.distance[i][0]);
-                if (!problem.reachable(state, i)) violation++;
+                if (!problem.reachable(state, i)) {
+                    violation++;
+                }
             }
-            if (candidatesToCompleteTour.size() - violation < numToCompleteTour) return INFINITY;
+            if (candidatesToCompleteTour.size() - violation < numToCompleteTour) {
+                return INFINITY;
+            }
 
             Collections.sort(candidatesToCompleteTour);
 
@@ -118,14 +122,18 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
         travelCost -= maxEdge;
 
         int total = travelCost == 0 ? problem.minDuration(state, 0) : travelCost + backToDepot;
-        if (state.time() + total > problem.timeWindows[0].end()) return INFINITY;
-        else return total;
+        if (state.time() + total > problem.timeWindows[0].end()) {
+            return INFINITY;
+        } else {
+            return total;
+        }
     }
 
     /**
      * Precomputes the cheapest outgoing edge for each node in the problem.
      *
-     * @return an array where {@code cheapestEdges[i]} is the minimum distance from node {@code i} to any other node
+     * @return an array where {@code cheapestEdges[i]} is the minimum distance from node {@code i}
+     *     to any other node
      */
     private int[] precomputeCheapestEdges() {
         int[] toReturn = new int[numVar];

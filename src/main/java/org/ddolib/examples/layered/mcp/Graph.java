@@ -3,57 +3,52 @@ package org.ddolib.examples.layered.mcp;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/**
- * Represents a Graph with adjacency matrix. Used for MCP problem
- */
+/** Represents a Graph with adjacency matrix. Used for MCP problem */
 public class Graph {
 
-    /**
-     * The number of nodes in the graph.
-     */
+    /** The number of nodes in the graph. */
     public final int numNodes;
-    /**
-     * The number of edges in the graph.
-     */
+
+    /** The number of edges in the graph. */
     public final int numEdges;
+
     private final int[][] adjacencyMatrix;
 
     /**
-     * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we suppose that 2 nodes
-     * are not connected if the edge has weight {@code 0}
+     * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we
+     * suppose that 2 nodes are not connected if the edge has weight {@code 0}
      *
      * @param adjacencyMatrix the adjacency matrix to initialize the graph
      */
     public Graph(int[][] adjacencyMatrix) {
         this.adjacencyMatrix = adjacencyMatrix;
         this.numNodes = adjacencyMatrix.length;
-        this.numEdges = Arrays.stream(adjacencyMatrix)
-                .map(row -> (int) Arrays.stream(row)
-                        .filter(x -> x != 0)
-                        .count()
-                )
-                .reduce(0, Integer::sum) / 2;
+        this.numEdges =
+                Arrays.stream(adjacencyMatrix)
+                                .map(row -> (int) Arrays.stream(row).filter(x -> x != 0).count())
+                                .reduce(0, Integer::sum)
+                        / 2;
     }
-
 
     /**
      * Given two nodes, returns the weight of their edges.
      *
      * @param from the start node of the edge
-     * @param to   the end node of the edges
+     * @param to the end node of the edges
      * @return the weight of the edge
      */
     public int weightOf(int from, int to) {
         return adjacencyMatrix[from][to];
     }
 
-
     @Override
     public String toString() {
         return Arrays.stream(adjacencyMatrix)
-                .map(row -> Arrays.stream(row)
-                        .mapToObj(x -> String.format("%2s", x))
-                        .collect(Collectors.joining(" ")))
+                .map(
+                        row ->
+                                Arrays.stream(row)
+                                        .mapToObj(x -> String.format("%2s", x))
+                                        .collect(Collectors.joining(" ")))
                 .collect(Collectors.joining("\n"));
     }
 }

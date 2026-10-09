@@ -5,25 +5,23 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Random;
 
-/**
- * Contains methods to generate instances of the MISP.
- */
+/** Contains methods to generate instances of the MISP. */
 public class MispGenerator {
 
-    private MispGenerator() {
-    }
+    private MispGenerator() {}
 
     /**
      * Generates a random instance of the MISP.
      *
-     * @param nbVars         how many nodes in the graph
-     * @param fileName       the file to save the instance
-     * @param connectedProba each pair of nodes has a probability of {@code 1 / connectedProba}
-     *                       to <i>not</i> be connected.
-     * @param seed           the seed of the random number generator
+     * @param nbVars how many nodes in the graph
+     * @param fileName the file to save the instance
+     * @param connectedProba each pair of nodes has a probability of {@code 1 / connectedProba} to
+     *     <i>not</i> be connected.
+     * @param seed the seed of the random number generator
      * @throws IOException if something goes wrong while writing the file
      */
-    public static void generateRandom(int nbVars, String fileName, int connectedProba, long seed) throws IOException {
+    public static void generateRandom(int nbVars, String fileName, int connectedProba, long seed)
+            throws IOException {
         Random rng = new Random(seed);
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {
@@ -39,7 +37,6 @@ public class MispGenerator {
                     if (connected != 0) {
                         bw.write(String.format("%d -- %d;\n", i, j));
                     }
-
                 }
             }
             bw.write("}");
@@ -49,21 +46,22 @@ public class MispGenerator {
     /**
      * Generates a random instance of the MISP.
      *
-     * @param nbVars         how many nodes in the graph
-     * @param fileName       the file to save the instance
-     * @param connectedProba each pair of nodes has a probability of {@code 1 / connectedProba}
-     *                       to <i>not</i> be connected.
+     * @param nbVars how many nodes in the graph
+     * @param fileName the file to save the instance
+     * @param connectedProba each pair of nodes has a probability of {@code 1 / connectedProba} to
+     *     <i>not</i> be connected.
      * @throws IOException if something goes wrong while writing the file
      */
-    public static void generateRandom(int nbVars, String fileName, int connectedProba) throws IOException {
+    public static void generateRandom(int nbVars, String fileName, int connectedProba)
+            throws IOException {
         long seed = new Random().nextLong();
         System.out.printf("Used seed: %d\n", seed);
         generateRandom(nbVars, fileName, connectedProba, seed);
     }
 
     /**
-     * Program entry point. Generates a single random MISP instance of 500 nodes and saves
-     * it to {@code data/MISP/500_nodes_3.dot}.
+     * Program entry point. Generates a single random MISP instance of 500 nodes and saves it to
+     * {@code data/MISP/500_nodes_3.dot}.
      *
      * @param args command-line arguments (not used)
      * @throws IOException if something goes wrong while writing the file

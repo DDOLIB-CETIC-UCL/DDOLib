@@ -1,22 +1,17 @@
 package org.ddolib.examples.layered.gruler;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Lower bound for the Golomb Ruler.
  *
- * <p> It assumes that the next marks will add the smallest missing distances.</p>
- *
+ * <p>It assumes that the next marks will add the smallest missing distances.
  */
 public class GRFastLowerBound implements FastLowerBound<GRState> {
 
-    /**
-     * Creates a new instance of this fast lower bound.
-     */
-    public GRFastLowerBound() {
-    }
+    /** Creates a new instance of this fast lower bound. */
+    public GRFastLowerBound() {}
 
     @Override
     public double fastLowerBound(GRState state, Set<Integer> variables) {

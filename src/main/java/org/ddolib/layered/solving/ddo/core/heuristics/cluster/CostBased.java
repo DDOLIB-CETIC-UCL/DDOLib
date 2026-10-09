@@ -1,21 +1,20 @@
 package org.ddolib.layered.solving.ddo.core.heuristics.cluster;
 
-import org.ddolib.layered.modeling.StateRanking;
-import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 
 /**
- * This strategy select the nodes based on the objective value of the best path leading to them.
- * It requires a problem-specific StateRanking comparator to break the ties between nodes of same cost.
+ * This strategy select the nodes based on the objective value of the best path leading to them. It
+ * requires a problem-specific StateRanking comparator to break the ties between nodes of same cost.
  *
  * @param <T> the type of state
  */
 public class CostBased<T> implements ReductionStrategy<T> {
 
-    final private NodeSubroblemComparator<T> ranking;
+    private final NodeSubroblemComparator<T> ranking;
 
     /**
      * Creates a new instance breaking ties between nodes of same cost with the given ranking.
@@ -27,10 +26,10 @@ public class CostBased<T> implements ReductionStrategy<T> {
     }
 
     /**
-     * Select the layer.size() - maxWidth - 1 nodes with the worst cost on the layer.
-     * Add the end the maxWidth - 1 unselected nodes are still in the layer
+     * Select the layer.size() - maxWidth - 1 nodes with the worst cost on the layer. Add the end
+     * the maxWidth - 1 unselected nodes are still in the layer
      *
-     * @param layer    the layer
+     * @param layer the layer
      * @param maxWidth the desired maximal width after the restriction and relaxation
      * @return the resulting clusters, the last one gathering all the unselected nodes
      */
@@ -52,18 +51,19 @@ public class CostBased<T> implements ReductionStrategy<T> {
     }
 
     /**
-     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then state
+     * This utility class implements a decorator pattern to sort NodeSubProblems by their value then
+     * state.
      *
      * @param delegate this is the decorated ranking
      */
-    private record NodeSubroblemComparator<T>(StateRanking<T> delegate) implements Comparator<NodeSubProblem<T>> {
+    private record NodeSubroblemComparator<T>(StateRanking<T> delegate)
+            implements Comparator<NodeSubProblem<T>> {
         /**
-         * Creates a new instance
+         * Creates a new instance.
          *
          * @param delegate the decorated ranking
          */
-        private NodeSubroblemComparator {
-        }
+        private NodeSubroblemComparator {}
 
         @Override
         public int compare(NodeSubProblem<T> o1, NodeSubProblem<T> o2) {

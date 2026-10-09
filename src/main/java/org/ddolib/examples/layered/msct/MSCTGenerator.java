@@ -6,13 +6,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Random;
 
-/**
- * Contains methods to generates instance of the MSCT
- */
+/** Contains methods to generates instance of the MSCT. */
 public class MSCTGenerator {
 
-    private MSCTGenerator() {
-    }
+    private MSCTGenerator() {}
 
     private static MSCTData randomMSCTData(int n, long seed) {
         Random rng = new Random(seed);
@@ -32,11 +29,11 @@ public class MSCTGenerator {
     }
 
     /**
-     * Generates and writes instances for the MSCT
+     * Generates and writes instances for the MSCT.
      *
      * @param fname the file to save the instance
-     * @param n     the number of task in the problem
-     * @param seed  the seed of the random number generator
+     * @param n the number of task in the problem
+     * @param seed the seed of the random number generator
      * @throws IOException if something goes wrong while writing the file
      */
     public static void writeInstance(String fname, int n, long seed) throws IOException {
@@ -50,8 +47,8 @@ public class MSCTGenerator {
     }
 
     /**
-     * Entry point of the program. Generates a random MSCT instance with 12 tasks and writes it
-     * to {@code data/MSCT/12_tasks.txt}.
+     * Entry point of the program. Generates a random MSCT instance with 12 tasks and writes it to
+     * {@code data/MSCT/12_tasks.txt}.
      *
      * @param args command-line arguments (not used)
      * @throws IOException if something goes wrong while writing the file
@@ -62,6 +59,5 @@ public class MSCTGenerator {
         writeInstance(fname, n, new Random().nextLong());
     }
 
-    private record MSCTData(int[] release, int[] processing) {
-    }
+    private record MSCTData(int[] release, int[] processing) {}
 }

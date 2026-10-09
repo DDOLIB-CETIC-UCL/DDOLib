@@ -1,5 +1,6 @@
 package org.ddolib.layered.modeling;
 
+import java.util.Iterator;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.layered.solving.ddo.core.Decision;
@@ -7,26 +8,19 @@ import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 
-import java.util.Iterator;
-
 /**
- * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model, used by the
- * {@link org.ddolib.layered.solving.ddo.core.solver.ExactSolver}
- * <p>
- * It specifies the
- * {@link Problem} instance to solve and optionally provides custom heuristics,
+ * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model, used by the {@link
+ * org.ddolib.layered.solving.ddo.core.solver.ExactSolver}
+ *
+ * <p>It specifies the {@link Problem} instance to solve and optionally provides custom heuristics,
  * dominance relations, and debugging or verbosity configurations.
- * </p>
  *
  * @param <T> the type representing the state space of the problem
  */
 public abstract class ExactModel<T> implements DdoModel<T> {
 
-    /**
-     * Creates a new exact model.
-     */
-    protected ExactModel() {
-    }
+    /** Creates a new exact model. */
+    protected ExactModel() {}
 
     @Override
     public final Relaxation<T> relaxation() {
@@ -73,9 +67,7 @@ public abstract class ExactModel<T> implements DdoModel<T> {
         return DdoModel.super.variableHeuristic();
     }
 
-    /**
-     * Relaxation that does nothing
-     */
+    /** Relaxation that does nothing. */
     private static class DummyRelaxation<T> implements Relaxation<T> {
 
         @Override
@@ -89,5 +81,3 @@ public abstract class ExactModel<T> implements DdoModel<T> {
         }
     }
 }
-
-

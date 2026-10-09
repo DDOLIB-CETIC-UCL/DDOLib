@@ -3,21 +3,21 @@ package org.ddolib.examples.layered.max2sat;
 import java.util.ArrayList;
 
 /**
- * Class to contain data for the Max2Sat sate. The state contains its depth in the associated MDD and a list of net
- * benefits.<br>
- * <p>
- * This list contains:
+ * Class to contain data for the Max2Sat sate. The state contains its depth in the associated MDD
+ * and a list of net benefits.<br>
+ *
+ * <p>This list contains:
+ *
  * <ul>
- *     <li> for each {@code k >= depth}, the net benefits by setting the variable {@code K} to
- *     {@code true} knowing the assignment of the previous variables (a negative value is the net
- *     benefit to assign the variable to <code>false</code>);
- *     </li>
- *     <li>for each {@code k < depth}, {@code 0}, modeling that these variables have been
- *     assigned in previous layer and cannot influence the objective anymore.</li>
+ *   <li>for each {@code k >= depth}, the net benefits by setting the variable {@code K} to {@code
+ *       true} knowing the assignment of the previous variables (a negative value is the net benefit
+ *       to assign the variable to <code>false</code>);
+ *   <li>for each {@code k < depth}, {@code 0}, modeling that these variables have been assigned in
+ *       previous layer and cannot influence the objective anymore.
  * </ul>
  *
  * @param netBenefit the net benefits by setting the variable
- * @param depth      the depth of the DD
+ * @param depth the depth of the DD
  */
 public record Max2SatState(ArrayList<Integer> netBenefit, int depth) {
 

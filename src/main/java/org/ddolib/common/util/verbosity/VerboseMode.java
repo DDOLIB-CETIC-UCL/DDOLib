@@ -1,35 +1,39 @@
 package org.ddolib.common.util.verbosity;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.FilterWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 
-import java.io.*;
-
 /**
- * Utility class for printing detailed information about the search process
- * based on a specified {@link VerbosityLevel}.
- * <p>
- * Depending on the verbosity level, this class can print:
+ * Utility class for printing detailed information about the search process based on a specified
+ * {@link VerbosityLevel}.
+ *
+ * <p>Depending on the verbosity level, this class can print:
+ *
  * <ul>
- *     <li>No output (SILENT)</li>
- *     <li>New best solution values (NORMAL)</li>
- *     <li>New best solution values, frontier statistics, and details about
- *     each explored subproblem (LARGE)</li>
+ *   <li>No output (SILENT)
+ *   <li>New best solution values (NORMAL)
+ *   <li>New best solution values, frontier statistics, and details about each explored subproblem
+ *       (LARGE)
  * </ul>
  */
 public class VerboseMode {
-
 
     private final VerbosityLevel verbosityLevel;
     private final long printInterval;
     private long nextPrint;
 
     /**
-     * Creates a {@code VerboseMode} instance with a given verbosity level
-     * and interval for printing frontier statistics.
+     * Creates a {@code VerboseMode} instance with a given verbosity level and interval for printing
+     * frontier statistics.
      *
      * @param verbosityLevel the level of details to print
-     * @param printInterval  the minimum delay (in milliseconds) between
-     *                       consecutive prints of frontier statistics.
+     * @param printInterval the minimum delay (in milliseconds) between consecutive prints of
+     *     frontier statistics.
      */
     public VerboseMode(VerbosityLevel verbosityLevel, long printInterval) {
         this.verbosityLevel = verbosityLevel;
@@ -57,8 +61,8 @@ public class VerboseMode {
      * Prints message describing the current explored sub problem.
      *
      * @param nbIter the current iteration number
-     * @param sub    the current sub problem to explore
-     * @param <T>    the type of the state
+     * @param sub the current sub problem to explore
+     * @param <T> the type of the state
      */
     public <T> void currentSubProblem(int nbIter, SubProblem<T> sub) {
         if (verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) {
@@ -68,28 +72,30 @@ public class VerboseMode {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-
         }
     }
 
     /**
      * Prints statistics about the frontier after every half second.
      *
-     * @param nbIter         the current iteration number
-     * @param frontierSize   the current size of the frontier
-     * @param bestObj        the current best objective value
+     * @param nbIter the current iteration number
+     * @param frontierSize the current size of the frontier
+     * @param bestObj the current best objective value
      * @param bestInFrontier the best value in the frontier
-     * @param gap            the current gap0
+     * @param gap the current gap0
      */
-    public void detailedSearchState(int nbIter, int frontierSize, double bestObj,
-                                    double bestInFrontier, double gap) {
+    public void detailedSearchState(
+            int nbIter, int frontierSize, double bestObj, double bestInFrontier, double gap) {
         long now = System.currentTimeMillis();
-        if ((verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT) && now >= nextPrint) {
+        if ((verbosityLevel == VerbosityLevel.LARGE || verbosityLevel == VerbosityLevel.EXPORT)
+                && now >= nextPrint) {
 
             try (Writer writer = getWriter()) {
-                String msg = String.format("\tit: %d - frontier size: %d - best obj: %g - " +
-                                "best in frontier: %g - gap: %g\n", nbIter, frontierSize,
-                        bestObj, bestInFrontier, gap);
+                String msg =
+                        String.format(
+                                "\tit: %d - frontier size: %d - best obj: %g - "
+                                        + "best in frontier: %g - gap: %g\n",
+                                nbIter, frontierSize, bestObj, bestInFrontier, gap);
 
                 writer.append(msg);
                 writer.flush();
@@ -104,9 +110,9 @@ public class VerboseMode {
     /**
      * Returns a writer depending on the verbosity level.
      *
-     * @return if the verbosity level is {@code EXPORT}, return of {@link BufferedWriter}
-     * saving logs into {@code logs.txt}. Otherwise, returns a {@link PrintWriter} to print logs
-     * in the console.
+     * @return if the verbosity level is {@code EXPORT}, return of {@link BufferedWriter} saving
+     *     logs into {@code logs.txt}. Otherwise, returns a {@link PrintWriter} to print logs in the
+     *     console.
      */
     public Writer getWriter() {
         if (verbosityLevel == VerbosityLevel.EXPORT) {
@@ -120,7 +126,6 @@ public class VerboseMode {
         }
     }
 
-
     /**
      * Class encapsulating a {@link PrintWriter} ensuring that {@code System.out} will not be
      * closed.
@@ -132,8 +137,6 @@ public class VerboseMode {
         }
 
         @Override
-        public void close() throws IOException {
-        }
-
+        public void close() throws IOException {}
     }
 }

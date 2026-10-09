@@ -5,29 +5,22 @@ import org.ddolib.layered.modeling.Dominance;
 /**
  * Dominance relation for the Traveling Salesman Problem with Time Windows (TSPTW).
  *
- * <p>
- * This class defines a dominance rule between two {@link TSPTWState} instances.
- * Two states are comparable if they share the same current position and the same
- * set of remaining locations to visit ({@code mustVisit}). Among such comparable states,
- * the state with the lower current time dominates the other.
- * </p>
+ * <p>This class defines a dominance rule between two {@link TSPTWState} instances. Two states are
+ * comparable if they share the same current position and the same set of remaining locations to
+ * visit ({@code mustVisit}). Among such comparable states, the state with the lower current time
+ * dominates the other.
  *
- * <p>
- * Dominance is used to prune the search space: if a state is dominated by another,
- * it can be safely discarded without losing optimality.
- * </p>
+ * <p>Dominance is used to prune the search space: if a state is dominated by another, it can be
+ * safely discarded without losing optimality.
  */
 public class TSPTWDominance implements Dominance<TSPTWState> {
 
-    /**
-     * Creates a new instance of this dominance rule.
-     */
-    public TSPTWDominance() {
-    }
+    /** Creates a new instance of this dominance rule. */
+    public TSPTWDominance() {}
 
     /**
-     * Returns the dominance key for a given state, based on its current position
-     * and the set of locations that still must be visited.
+     * Returns the dominance key for a given state, based on its current position and the set of
+     * locations that still must be visited.
      *
      * @param state the state for which to compute the dominance key
      * @return the {@link TSPTWDominanceKey} representing the key of this state
@@ -40,19 +33,17 @@ public class TSPTWDominance implements Dominance<TSPTWState> {
     /**
      * Checks whether {@code state1} is dominated by or equal to {@code state2}.
      *
-     * <p>
-     * {@code state1} is considered dominated or equal to {@code state2} if
-     * it has the same position and mustVisit set, and its current time is
-     * greater than or equal to that of {@code state2}.
-     * </p>
+     * <p>{@code state1} is considered dominated or equal to {@code state2} if it has the same
+     * position and mustVisit set, and its current time is greater than or equal to that of {@code
+     * state2}.
      *
      * @param state1 the state being tested for dominance
      * @param state2 the state to compare against
-     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code false} otherwise
+     * @return {@code true} if {@code state1} is dominated by or equal to {@code state2}, {@code
+     *     false} otherwise
      */
     @Override
     public boolean isDominatedOrEqual(TSPTWState state1, TSPTWState state2) {
         return state1.time() >= state2.time();
     }
 }
-

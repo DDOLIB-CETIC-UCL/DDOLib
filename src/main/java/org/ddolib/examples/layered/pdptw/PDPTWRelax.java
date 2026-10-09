@@ -1,10 +1,9 @@
 package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.solving.ddo.core.Decision;
-
 import java.util.BitSet;
 import java.util.Iterator;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 class PDPTWRelax implements Relaxation<PDPTWState> {
     private final PDPTWProblem problem;
@@ -24,7 +23,7 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
         double maxCurrentTime = Double.MIN_VALUE;
         while (states.hasNext()) {
             PDPTWState state = states.next();
-            //take the union; loose precision here
+            // take the union; loose precision here
             openToVisit.or(state.openToVisit);
             allToVisit.or(state.allToVisit);
             current.or(state.current);
@@ -34,12 +33,19 @@ class PDPTWRelax implements Relaxation<PDPTWState> {
             maxCurrentTime = Math.max(maxCurrentTime, state.maxCurrentTime);
         }
 
-        return new PDPTWState(current, openToVisit, allToVisit, minContent, maxContent, minCurrentTime, maxCurrentTime);
+        return new PDPTWState(
+                current,
+                openToVisit,
+                allToVisit,
+                minContent,
+                maxContent,
+                minCurrentTime,
+                maxCurrentTime);
     }
 
     @Override
-    public double relaxEdge(PDPTWState from, PDPTWState to, PDPTWState merged, Decision d, double cost) {
+    public double relaxEdge(
+            PDPTWState from, PDPTWState to, PDPTWState merged, Decision d, double cost) {
         return cost;
     }
-
 }

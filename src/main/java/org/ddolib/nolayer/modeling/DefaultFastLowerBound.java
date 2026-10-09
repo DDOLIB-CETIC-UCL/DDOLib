@@ -7,11 +7,8 @@ package org.ddolib.nolayer.modeling;
  */
 public class DefaultFastLowerBound<T> implements FastLowerBound<T> {
 
-    /**
-     * Creates a new instance of this default fast lower bound.
-     */
-    public DefaultFastLowerBound() {
-    }
+    /** Creates a new instance of this default fast lower bound. */
+    public DefaultFastLowerBound() {}
 
     @Override
     public double fastLowerBound(T state) {

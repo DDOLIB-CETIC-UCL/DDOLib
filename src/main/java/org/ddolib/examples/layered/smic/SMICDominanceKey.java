@@ -3,17 +3,15 @@ package org.ddolib.examples.layered.smic;
 import java.util.BitSet;
 
 /**
- * A record that represents a dominance key for grouping states in the
- * <b>Single Machine with Inventory Constraint (SMIC)</b> problem.
- * <p>
- * This key is used to group comparable states that share the same set of
- * remaining jobs. States with the same dominance key can be compared to
- * determine dominance relations, which allows efficient pruning of
- * suboptimal search nodes.
- * </p>
+ * A record that represents a dominance key for grouping states in the <b>Single Machine with
+ * Inventory Constraint (SMIC)</b> problem.
  *
- * @param remainingJobs a {@link BitSet} representing the set of jobs
- *                      that still need to be processed
+ * <p>This key is used to group comparable states that share the same set of remaining jobs. States
+ * with the same dominance key can be compared to determine dominance relations, which allows
+ * efficient pruning of suboptimal search nodes.
+ *
+ * @param remainingJobs a {@link BitSet} representing the set of jobs that still need to be
+ *     processed
  * @see SMICDominance
  * @see SMICState
  */

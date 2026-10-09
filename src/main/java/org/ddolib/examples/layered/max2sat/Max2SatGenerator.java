@@ -3,29 +3,28 @@ package org.ddolib.examples.layered.max2sat;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Random;
 
-/**
- * Methods to generate random instance of the Max2Sat problem.
- */
+/** Methods to generate random instance of the Max2Sat problem. */
 public class Max2SatGenerator {
 
-    private Max2SatGenerator() {
-    }
+    private Max2SatGenerator() {}
 
     /**
      * Generates and writes a random instance of the Max2Sat.
      *
-     * @param fileName  the file to save the instance
-     * @param numVar    the number of variables in the problem
+     * @param fileName the file to save the instance
+     * @param numVar the number of variables in the problem
      * @param nbClauses the number of disjunctive clauses in the problem
-     * @param seed      the seed of the random number generator
+     * @param seed the seed of the random number generator
      * @throws IOException if something goes wrong while writing the file
      */
-    public static void generateRandomInstance(String fileName,
-                                              int numVar,
-                                              int nbClauses,
-                                              long seed) throws IOException {
+    public static void generateRandomInstance(String fileName, int numVar, int nbClauses, long seed)
+            throws IOException {
 
         List<Integer> literal = new ArrayList<>();
         for (int i = 1; i <= numVar; i++) {
@@ -64,12 +63,13 @@ public class Max2SatGenerator {
     /**
      * Generates and writes a random instance of the Max2Sat.
      *
-     * @param fileName  the file to save the instance
-     * @param numVar    the number of variables in the problem
+     * @param fileName the file to save the instance
+     * @param numVar the number of variables in the problem
      * @param nbClauses the number of disjunctive clauses in the problem
      * @throws IOException if something goes wrong while writing the file
      */
-    public static void generateRandomInstance(String fileName, int numVar, int nbClauses) throws IOException {
+    public static void generateRandomInstance(String fileName, int numVar, int nbClauses)
+            throws IOException {
         Random random = new Random();
         long seed = random.nextLong();
         random.setSeed(seed);
@@ -88,5 +88,4 @@ public class Max2SatGenerator {
     public static void main(String[] args) throws IOException {
         generateRandomInstance("data/Max2Sat/wcnf_var_42.txt", 42, 500, 42);
     }
-
 }

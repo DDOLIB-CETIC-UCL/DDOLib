@@ -1,79 +1,79 @@
 package org.ddolib.examples.layered.maximumcoverage;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Random;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an instance of the Maximum Coverage (MaxCover) problem.
  *
- * <p>
- * This class implements the {@link Problem} interface and provides:
+ * <p>This class implements the {@link Problem} interface and provides:
+ *
  * <ul>
- *   <li>Creation of random or file-based problem instances</li>
- *   <li>Evaluation of solutions and state transitions for Decision Diagram Optimization (DDO)</li>
- *   <li>Computation of centralities for each item, used in heuristics</li>
- *   <li>Support for reading/writing instances in a standard text format</li>
+ *   <li>Creation of random or file-based problem instances
+ *   <li>Evaluation of solutions and state transitions for Decision Diagram Optimization (DDO)
+ *   <li>Computation of centralities for each item, used in heuristics
+ *   <li>Support for reading/writing instances in a standard text format
  * </ul>
  *
- * <p>
- * The problem is defined by:
+ * <p>The problem is defined by:
+ *
  * <ul>
- *   <li>{@code nbItems}: the total number of items to cover</li>
- *   <li>{@code nbSubSets}: the total number of available subsets</li>
- *   <li>{@code nbSubSetsToChoose}: the number of subsets allowed to select</li>
- *   <li>{@code subSets}: the array of BitSets representing the items covered by each subset</li>
- *   <li>{@code centralities}: the relative frequency of each item appearing in subsets</li>
- *   <li>{@code optimal}: optionally, the optimal solution value (for benchmarking)</li>
+ *   <li>{@code nbItems}: the total number of items to cover
+ *   <li>{@code nbSubSets}: the total number of available subsets
+ *   <li>{@code nbSubSetsToChoose}: the number of subsets allowed to select
+ *   <li>{@code subSets}: the array of BitSets representing the items covered by each subset
+ *   <li>{@code centralities}: the relative frequency of each item appearing in subsets
+ *   <li>{@code optimal}: optionally, the optimal solution value (for benchmarking)
  * </ul>
  */
-
 public class MaxCoverProblem implements Problem<MaxCoverState> {
-    /**
-     * Number of items in the instance.
-     */
+    /** Number of items in the instance. */
     public final int nbItems;
-    /**
-     * Number of subsets in the instance.
-     */
+
+    /** Number of subsets in the instance. */
     public final int nbSubSets;
-    /**
-     * Number of subsets that can be selected.
-     */
+
+    /** Number of subsets that can be selected. */
     public final int nbSubSetsToChoose;
-    /**
-     * Array of subsets represented as BitSets, where each BitSet indicates the items it covers.
-     */
+
+    /** Array of subsets represented as BitSets, where each BitSet indicates the items it covers. */
     public final BitSet[] subSets;
-    /**
-     * Relative frequency (centrality) of each item in all subsets.
-     */
+
+    /** Relative frequency (centrality) of each item in all subsets. */
     public final double[] centralities;
-    /**
-     * Optional instance name.
-     */
+
+    /** Optional instance name. */
     public Optional<String> name;
-    /**
-     * Optional optimal solution value.
-     */
+
+    /** Optional optimal solution value. */
     public Optional<Double> optimal;
 
     /**
      * Constructs a MaxCover instance without a name.
      *
-     * @param nbItems           number of items
-     * @param nbSubSets         number of subsets
+     * @param nbItems number of items
+     * @param nbSubSets number of subsets
      * @param nbSubSetsToChoose number of subsets allowed to select
-     * @param subSets           array of subsets represented as BitSets
-     * @param optimal           optional optimal solution value
+     * @param subSets array of subsets represented as BitSets
+     * @param optimal optional optimal solution value
      */
-    public MaxCoverProblem(int nbItems, int nbSubSets, int nbSubSetsToChoose, BitSet[] subSets, Optional<Double> optimal) {
+    public MaxCoverProblem(
+            int nbItems,
+            int nbSubSets,
+            int nbSubSetsToChoose,
+            BitSet[] subSets,
+            Optional<Double> optimal) {
         this.name = Optional.empty();
         this.nbItems = nbItems;
         this.nbSubSets = nbSubSets;
@@ -87,9 +87,9 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     /**
      * Generates a random MaxCover instance using coordinates and a distance threshold.
      *
-     * @param n    number of items
-     * @param m    number of subsets
-     * @param k    number of subsets to select
+     * @param n number of items
+     * @param m number of subsets
+     * @param k number of subsets to select
      * @param maxR maximum coverage radius
      * @param seed random seed
      */
@@ -131,9 +131,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     /**
      * Loads a MaxCover instance from a file.
      *
-     * <p>
-     * The file should contain the number of items, number of subsets, budget,
-     * optional optimal value, and the item indices for each subset.
+     * <p>The file should contain the number of items, number of subsets, budget, optional optimal
+     * value, and the item indices for each subset.
      *
      * @param fname path to the instance file
      * @throws IOException if the file cannot be read
@@ -141,8 +140,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public MaxCoverProblem(final String fname) throws IOException {
         final File f = new File(fname);
         int context = 0;
-        int nElem = 0;
-        int nSet = 0;
+        int nbElements = 0;
+        int nbSets = 0;
         int budget = 0;
         Optional<Double> optimal = Optional.empty();
         BitSet[] sets = null;
@@ -154,14 +153,14 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                     context++;
 
                     String[] tokens = s.split("\\s");
-                    nElem = Integer.parseInt(tokens[0]);
+                    nbElements = Integer.parseInt(tokens[0]);
 
                 } else if (context == 1) {
                     context++;
 
                     String[] tokens = s.split("\\s");
-                    nSet = Integer.parseInt(tokens[0]);
-                    sets = new BitSet[nSet];
+                    nbSets = Integer.parseInt(tokens[0]);
+                    sets = new BitSet[nbSets];
 
                 } else if (context == 2) {
                     context++;
@@ -174,11 +173,11 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                         optimal = Optional.of(Double.parseDouble(tokens[0]));
                     }
                 } else {
-                    if (setCount < nSet) {
+                    if (setCount < nbSets) {
                         if (!s.isBlank()) {
                             String[] tokens = s.split("\\s");
 
-                            sets[setCount] = new BitSet(nElem);
+                            sets[setCount] = new BitSet(nbElements);
                             for (String token : tokens) {
                                 sets[setCount].set(Integer.parseInt(token));
                             }
@@ -189,8 +188,8 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
             }
         }
         this.name = Optional.of(fname);
-        this.nbItems = nElem;
-        this.nbSubSets = nSet;
+        this.nbItems = nbElements;
+        this.nbSubSets = nbSets;
         this.nbSubSetsToChoose = budget;
         this.subSets = sets;
         this.optimal = optimal;
@@ -206,7 +205,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public String instanceFormat() {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("%d%n%d%n%d%n", nbItems, nbSubSets, nbSubSetsToChoose));
-        optimal.ifPresent(aDouble -> sb.append(String.format("%d%n", (int) Math.ceil(aDouble))));
+        optimal.ifPresent(optimum -> sb.append(String.format("%d%n", (int) Math.ceil(optimum))));
         sb.append("\n");
         for (int i = 0; i < nbSubSets; i++) {
             for (int j = subSets[i].nextSetBit(0); j >= 0; j = subSets[i].nextSetBit(j + 1)) {
@@ -252,7 +251,7 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
      * Returns an iterator over the domain of values for a given variable in a state.
      *
      * @param state the current state
-     * @param var   the variable index
+     * @param var the variable index
      * @return an iterator over feasible subset indices (or -1 if no options)
      */
     @Override
@@ -264,15 +263,16 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
                 domain.add(i);
             }
         }
-        if (domain.isEmpty())
+        if (domain.isEmpty()) {
             domain.add(-1);
+        }
         return domain.iterator();
     }
 
     /**
      * Applies a decision to a state to produce a new state.
      *
-     * @param state    the current state
+     * @param state the current state
      * @param decision the decision to apply
      * @return a new state reflecting the added subset
      */
@@ -280,26 +280,27 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     public MaxCoverState transition(MaxCoverState state, Decision decision) {
         int val = decision.value();
         BitSet coveredItems = (BitSet) state.coveredItems().clone();
-        if (val != -1)
+        if (val != -1) {
             coveredItems.or(subSets[val]);
+        }
         return new MaxCoverState(coveredItems);
     }
 
     /**
      * Returns the cost of applying a decision to a state.
      *
-     * <p>
-     * Cost is defined as the negative number of newly covered items.
+     * <p>Cost is defined as the negative number of newly covered items.
      *
-     * @param state    the current state
+     * @param state the current state
      * @param decision the decision to apply
      * @return the transition cost
      */
     @Override
     public double transitionCost(MaxCoverState state, Decision decision) {
         int val = decision.value();
-        if (val == -1)
+        if (val == -1) {
             return 0;
+        }
         BitSet coveredItems = (BitSet) state.coveredItems().clone();
         coveredItems.or(subSets[val]);
         coveredItems.andNot(state.coveredItems());
@@ -326,8 +327,10 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
         BitSet coveredItems = new BitSet(nbItems);
         for (int selected : solution) {
@@ -337,9 +340,9 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         return -coveredItems.cardinality();
     }
 
-    private boolean isInclude(BitSet A, BitSet B) {
-        BitSet temp = (BitSet) A.clone();
-        temp.andNot(B);
+    private boolean isInclude(BitSet setA, BitSet setB) {
+        BitSet temp = (BitSet) setA.clone();
+        temp.andNot(setB);
         return temp.isEmpty();
     }
 
@@ -371,7 +374,6 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         return min;
     }
 
-
     /**
      * Returns a string representation of the instance.
      *
@@ -379,14 +381,20 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
      */
     @Override
     public String toString() {
-        String str = name + " " + nbItems + " " + nbSubSets + " " + nbSubSetsToChoose + " " + Arrays.toString(subSets);
+        String str =
+                name
+                        + " "
+                        + nbItems
+                        + " "
+                        + nbSubSets
+                        + " "
+                        + nbSubSetsToChoose
+                        + " "
+                        + Arrays.toString(subSets);
         return name.orElse(str);
     }
 
-
-    /**
-     * Computes centralities of all items, i.e., the fraction of subsets that cover each item.
-     */
+    /** Computes centralities of all items, i.e., the fraction of subsets that cover each item. */
     private void computeCentralities() {
         for (int i = 0; i < nbItems; i++) {
             double centrality = 0;
@@ -399,8 +407,3 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         }
     }
 }
-
-
-
-
-

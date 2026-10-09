@@ -1,30 +1,25 @@
 package org.ddolib.layered.solving.ddo.core.heuristics.cluster;
 
-import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 
 /**
  * A simple random-based reduction strategy for decision diagram layers.
  *
- * <p>
- * This class implements {@link ReductionStrategy} and generates clusters
- * by randomly selecting nodes from a layer. Each selected node forms its own cluster.
+ * <p>This class implements {@link ReductionStrategy} and generates clusters by randomly selecting
+ * nodes from a layer. Each selected node forms its own cluster.
  *
- * <p>
- * The strategy is controlled by a {@link Random} object, which can be seeded
- * to ensure reproducible behavior.
+ * <p>The strategy is controlled by a {@link Random} object, which can be seeded to ensure
+ * reproducible behavior.
  *
  * @param <T> the type of states in the decision diagram
  */
 public class RandomBased<T> implements ReductionStrategy<T> {
-    /**
-     * Random number generator used for shuffling nodes.
-     */
-    final private Random rnd;
+    /** Random number generator used for shuffling nodes. */
+    private final Random rnd;
 
     /**
      * Constructs a random-based reduction strategy with a given seed.
@@ -36,13 +31,12 @@ public class RandomBased<T> implements ReductionStrategy<T> {
     }
 
     /**
-     * Defines clusters by randomly selecting up to {@code maxWidth} nodes
-     * from the layer. Each selected node forms a separate cluster.
+     * Defines clusters by randomly selecting up to {@code maxWidth} nodes from the layer. Each
+     * selected node forms a separate cluster.
      *
-     * <p>
-     * The nodes selected for clustering are removed from the input {@code layer}.
+     * <p>The nodes selected for clustering are removed from the input {@code layer}.
      *
-     * @param layer    the list of nodes at the current layer
+     * @param layer the list of nodes at the current layer
      * @param maxWidth the maximum number of clusters (and nodes kept)
      * @return an array of clusters, each cluster being a list containing a single node
      */

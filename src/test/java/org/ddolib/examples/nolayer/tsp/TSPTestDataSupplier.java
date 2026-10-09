@@ -1,5 +1,13 @@
 package org.ddolib.examples.nolayer.tsp;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.BitSet;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Stream;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.util.debug.DebugLevel;
@@ -13,19 +21,19 @@ import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.nolayer.testbench.NoLayerTestDataSupplier;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.BitSet;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.Stream;
-
+/**
+ * Supplies the Traveling Salesman Problem (TSP) instances (read from the files of a directory) and
+ * the no-layer model used to solve them in the tests.
+ */
 public class TSPTestDataSupplier extends NoLayerTestDataSupplier<TSPState, TSPProblem> {
 
     private final Path dir;
 
+    /**
+     * Creates a supplier reading the instances from the given directory.
+     *
+     * @param dir the directory containing the instance files
+     */
     public TSPTestDataSupplier(Path dir) {
         this.dir = dir;
     }
@@ -34,13 +42,14 @@ public class TSPTestDataSupplier extends NoLayerTestDataSupplier<TSPState, TSPPr
     protected List<TSPProblem> generateProblems() {
         try (Stream<Path> stream = Files.walk(dir)) {
             return stream.filter(Files::isRegularFile) // get only files
-                    .map(filePath -> {
-                        try {
-                            return new TSPProblem(filePath.toString());
-                        } catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-                    })
+                    .map(
+                            filePath -> {
+                                try {
+                                    return new TSPProblem(filePath.toString());
+                                } catch (IOException e) {
+                                    throw new RuntimeException(e);
+                                }
+                            })
                     .toList();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -72,7 +81,8 @@ public class TSPTestDataSupplier extends NoLayerTestDataSupplier<TSPState, TSPPr
 
             @Override
             public StateRanking<TSPState> ranking() {
-                return (s1, s2) -> Integer.compare(s1.toVisit.cardinality(), s2.toVisit.cardinality());
+                return (s1, s2) ->
+                        Integer.compare(s1.toVisit.cardinality(), s2.toVisit.cardinality());
             }
 
             @Override

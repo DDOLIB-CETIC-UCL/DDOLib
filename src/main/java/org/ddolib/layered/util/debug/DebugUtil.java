@@ -1,48 +1,50 @@
 package org.ddolib.layered.util.debug;
 
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.layered.modeling.Model;
 import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 
-import java.text.DecimalFormat;
-import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
 /**
  * Utility class providing methods useful for debugging state transitions.
- * <p>
- * This class helps to verify the correctness of the state transition function by
- * checking that states generated from the same origin with the same decision
- * are both equal and have the same hash code.
+ *
+ * <p>This class helps to verify the correctness of the state transition function by checking that
+ * states generated from the same origin with the same decision are both equal and have the same
+ * hash code.
  */
 public class DebugUtil {
 
-    private DebugUtil() {
-    }
+    private DebugUtil() {}
 
     /**
-     * Checks the consistency of a transition function by generating two states
-     * from the same origin state and decision, then verifying that they are equal
-     * and have the same hash code.
-     * <p>
-     * If the generated states either differ in hash code or are not equal, a
-     * {@link RuntimeException} is thrown with detailed information about the
-     * origin state, decision, and resulting states.
+     * Checks the consistency of a transition function by generating two states from the same origin
+     * state and decision, then verifying that they are equal and have the same hash code.
      *
-     * @param state      the original state from which the new states are generated
-     * @param decision   the decision applied to the original state
-     * @param transition the transition function that generates a new state from a state and a decision
-     * @param <T>        the type of the states
+     * <p>If the generated states either differ in hash code or are not equal, a {@link
+     * RuntimeException} is thrown with detailed information about the origin state, decision, and
+     * resulting states.
+     *
+     * @param state the original state from which the new states are generated
+     * @param decision the decision applied to the original state
+     * @param transition the transition function that generates a new state from a state and a
+     *     decision
+     * @param <T> the type of the states
      * @throws RuntimeException if the generated states are not equal or have different hash codes
      */
-    public static <T> void checkHashCodeAndEquality(T state, Decision decision,
-                                                    BiFunction<T, Decision, T> transition) {
+    public static <T> void checkHashCodeAndEquality(
+            T state, Decision decision, BiFunction<T, Decision, T> transition) {
         T newState = transition.apply(state, decision);
         T duplicate = transition.apply(state, decision);
         String transitionDescription = String.format("\torigin state: %s\n", state);
@@ -50,14 +52,16 @@ public class DebugUtil {
         transitionDescription += String.format("\tnew state: %s\n", newState);
         transitionDescription += String.format("\tduplicate: %s\n", duplicate);
         if (newState.hashCode() != duplicate.hashCode()) {
-            String failureMsg = "Two states generated from the same origin state with the same " +
-                    "decision does not have the same hash code !\n";
+            String failureMsg =
+                    "Two states generated from the same origin state with the same "
+                            + "decision does not have the same hash code !\n";
             failureMsg += transitionDescription;
 
             throw new RuntimeException(failureMsg);
         } else if (!newState.equals(duplicate)) {
-            String failureMsg = "Two states generated from the same origin state with the same " +
-                    "decision have the same hash code but are not equals!\n";
+            String failureMsg =
+                    "Two states generated from the same origin state with the same "
+                            + "decision have the same hash code but are not equals!\n";
             failureMsg += transitionDescription;
             throw new RuntimeException(failureMsg);
         }
@@ -67,43 +71,56 @@ public class DebugUtil {
      * Given a set of states check if the {@link org.ddolib.layered.modeling.FastLowerBound} is
      * admissible, i.e., whether the bound does not overestimate the path from the states to a
      * terminal node.
-     * <p>
-     * The checks are performed by running solvers starting for the tested states.
+     *
+     * <p>The checks are performed by running solvers starting for the tested states.
      *
      * @param toCheck the states to check
-     * @param model   a model used to initialize solvers ran during the tests
-     * @param solver  returns a solver given a root state
-     * @param <T>     the type of the states
+     * @param model a model used to initialize solvers ran during the tests
+     * @param solver returns a solver given a root state
+     * @param <T> the type of the states
      */
-    public static <T> void checkFlbAdmissibility(Set<StateAndDepth<T>> toCheck,
-                                                 Model<T> model,
-                                                 Function<StateAndDepth<T>, Solver> solver) {
+    public static <T> void checkFlbAdmissibility(
+            Set<StateAndDepth<T>> toCheck,
+            Model<T> model,
+            Function<StateAndDepth<T>, Solver> solver) {
 
         for (StateAndDepth<T> current : toCheck) {
             Solver internalSolver = solver.apply(current);
             Set<Integer> vars =
-                    IntStream.range(current.depth(), model.problem().nbVars()).boxed().collect(Collectors.toSet());
+                    IntStream.range(current.depth(), model.problem().nbVars())
+                            .boxed()
+                            .collect(Collectors.toSet());
             double currentFLB = model.lowerBound().fastLowerBound(current.state(), vars);
 
-            internalSolver.minimize(s -> false, (sol, stats) -> {
-            });
+            internalSolver.minimize(s -> false, (sol, stats) -> {});
             Optional<Double> shortestFromCurrent = internalSolver.bestValue();
             Optional<Set<Decision>> shortestPath = internalSolver.bestSolution();
             if (shortestFromCurrent.isPresent() && currentFLB - 1e-10 > shortestFromCurrent.get()) {
                 List<Decision> sortedDecisions = new ArrayList<>(shortestPath.get());
                 sortedDecisions.sort(Comparator.comparingInt(Decision::variable));
 
-                List<Decision> subPath = sortedDecisions.subList(current.depth(), model.problem().nbVars());
+                List<Decision> subPath =
+                        sortedDecisions.subList(current.depth(), model.problem().nbVars());
 
                 DecimalFormat df = new DecimalFormat("#.#########");
-                String failureMsg = "Your lower bound is not admissible.\n" +
-                        "State: " + current.state().toString() + "\n" +
-                        "Depth: " + current.depth() + "\n" +
-                        "Path estimation: " + df.format(currentFLB) + "\n" +
-                        "Shortest path length to end: " + df.format(shortestFromCurrent.get())
-                        + "\n\nFull Path to end:\n" +
-                        subPath.stream().map(d -> "\t" + d).collect(Collectors.joining("\n"))
-                        + "\n";
+                String failureMsg =
+                        "Your lower bound is not admissible.\n"
+                                + "State: "
+                                + current.state().toString()
+                                + "\n"
+                                + "Depth: "
+                                + current.depth()
+                                + "\n"
+                                + "Path estimation: "
+                                + df.format(currentFLB)
+                                + "\n"
+                                + "Shortest path length to end: "
+                                + df.format(shortestFromCurrent.get())
+                                + "\n\nFull Path to end:\n"
+                                + subPath.stream()
+                                        .map(d -> "\t" + d)
+                                        .collect(Collectors.joining("\n"))
+                                + "\n";
 
                 throw new RuntimeException(failureMsg);
             }
@@ -113,24 +130,27 @@ public class DebugUtil {
     /**
      * Given the current node and one of its successor. Checks if the lower bound is consistent.
      *
-     * @param current        the current node
-     * @param next           a successor of the current node
+     * @param current the current node
+     * @param next a successor of the current node
      * @param transitionCost the transition cost from {@code current} to {@code next}
-     * @param <T>            the type of the states
+     * @param <T> the type of the states
      */
     public static <T> void checkFlbConsistency(
-            SubProblem<T> current,
-            SubProblem<T> next,
-            double transitionCost
-    ) {
+            SubProblem<T> current, SubProblem<T> next, double transitionCost) {
         Logger logger = Logger.getLogger("Debug Mode");
         if (current.getLowerBound() - 1e-10 > next.getLowerBound() + transitionCost) {
-            String warningMsg = "Your lower bound is not consistent. You may lose performance.\n" +
-                    "Current state " + current + "\n" +
-                    "Next state: " + next + "\n" +
-                    "Transition cost: " + transitionCost + "\n";
+            String warningMsg =
+                    "Your lower bound is not consistent. You may lose performance.\n"
+                            + "Current state "
+                            + current
+                            + "\n"
+                            + "Next state: "
+                            + next
+                            + "\n"
+                            + "Transition cost: "
+                            + transitionCost
+                            + "\n";
             logger.warning(warningMsg);
         }
-
     }
 }

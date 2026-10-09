@@ -5,8 +5,8 @@ import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.Problem;
 
 /**
- * Nolayer model for the Golomb Ruler Problem, bundling the {@link GRProblem} with its
- * {@link GRFlb} fast lower bound.
+ * Nolayer model for the Golomb Ruler Problem, bundling the {@link GRProblem} with its {@link GRFlb}
+ * fast lower bound.
  */
 public class GRModel implements Model<GRState> {
 

@@ -5,28 +5,21 @@ import org.ddolib.layered.modeling.StateRanking;
 /**
  * Class that defines a ranking between two {@link TSPState} instances.
  *
- * <p>
- * This class implements the {@link StateRanking} interface for TSP states.
- * It is intended to provide a comparison method between states, which can be used
- * to prioritize or order states in search algorithms such as DDO or A*.
- * </p>
+ * <p>This class implements the {@link StateRanking} interface for TSP states. It is intended to
+ * provide a comparison method between states, which can be used to prioritize or order states in
+ * search algorithms such as DDO or A*.
  *
- * <p>
- * Currently, the {@link #compare(TSPState, TSPState)} method returns 0 for all states,
- * indicating that all states are considered equal in terms of ranking.
- * This can be customized to implement a meaningful heuristic-based ranking.
- * </p>
+ * <p>Currently, the {@link #compare(TSPState, TSPState)} method returns 0 for all states,
+ * indicating that all states are considered equal in terms of ranking. This can be customized to
+ * implement a meaningful heuristic-based ranking.
  *
  * @see TSPState
  * @see StateRanking
  */
 public class TSPRanking implements StateRanking<TSPState> {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-    public TSPRanking() {
-    }
+    /** Creates a new instance of this ranking. */
+    public TSPRanking() {}
 
     /**
      * Compares two TSP states.

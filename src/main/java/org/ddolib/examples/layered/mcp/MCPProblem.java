@@ -1,71 +1,62 @@
 package org.ddolib.examples.layered.mcp;
 
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.*;
-
 import static java.lang.Integer.max;
 import static java.lang.Integer.min;
 import static java.lang.Math.abs;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.solving.ddo.core.Decision;
+
 /**
  * Represents an instance of the <b>Maximum Cut Problem (MCP)</b>.
- * <p>
- * In the MCP, given a weighted undirected graph, the goal is to partition the nodes
- * into two sets (S and T) such that the sum of the weights of edges between the sets
- * is maximized.
- * </p>
  *
- * <p>
- * This class implements the {@link Problem} interface and provides methods for:
- * </p>
+ * <p>In the MCP, given a weighted undirected graph, the goal is to partition the nodes into two
+ * sets (S and T) such that the sum of the weights of edges between the sets is maximized.
+ *
+ * <p>This class implements the {@link Problem} interface and provides methods for:
+ *
  * <ul>
- *     <li>Initializing the problem from a graph or a file.</li>
- *     <li>Defining the decision domain (which partition a node belongs to).</li>
- *     <li>Computing transitions and transition costs between states.</li>
- *     <li>Accessing the initial state and value, and optional optimal value.</li>
+ *   <li>Initializing the problem from a graph or a file.
+ *   <li>Defining the decision domain (which partition a node belongs to).
+ *   <li>Computing transitions and transition costs between states.
+ *   <li>Accessing the initial state and value, and optional optimal value.
  * </ul>
  *
- * <p>
- * Constants {@link #S} and {@link #T} are used to model decisions: placing a node in
- * partition S or T, respectively.
- * </p>
+ * <p>Constants {@link #S} and {@link #T} are used to model decisions: placing a node in partition S
+ * or T, respectively.
  *
  * @see Graph
  * @see MCPState
  * @see Decision
  */
-
 public class MCPProblem implements Problem<MCPState> {
 
-    /**
-     * Constant to model decision "put in partition {@code S}".
-     */
+    /** Constant to model decision "put in partition {@code S}". */
+    @SuppressWarnings("checkstyle:MemberName") // public API
     public final int S = 0;
 
-    /**
-     * Constant to model decision "put in partition {@code T}".
-     */
+    /** Constant to model decision "put in partition {@code T}". */
+    @SuppressWarnings("checkstyle:MemberName") // public API
     public final int T = 1;
 
-    /**
-     * The underlying graph representing the instance.
-     */
+    /** The underlying graph representing the instance. */
     final Graph graph;
 
-    /**
-     * Optional known optimal value for the problem instance.
-     */
+    /** Optional known optimal value for the problem instance. */
     public Optional<Double> optimal = Optional.empty();
 
-    /**
-     * Optional name for the instance to ease readability in tests.
-     */
+    /** Optional name for the instance to ease readability in tests. */
     private Optional<String> name = Optional.empty();
 
     /**
@@ -73,7 +64,6 @@ public class MCPProblem implements Problem<MCPState> {
      *
      * @param graph the graph representing the instance
      */
-
     public MCPProblem(Graph graph) {
         this.graph = graph;
     }
@@ -81,7 +71,7 @@ public class MCPProblem implements Problem<MCPState> {
     /**
      * Constructs an MCP problem from a given graph and known optimal value.
      *
-     * @param graph   the graph representing the instance
+     * @param graph the graph representing the instance
      * @param optimal the known optimal value of the instance
      */
     public MCPProblem(Graph graph, Double optimal) {
@@ -91,10 +81,9 @@ public class MCPProblem implements Problem<MCPState> {
 
     /**
      * Constructs an MCP problem by reading an instance from a file.
-     * <p>
-     * The file should contain the number of nodes and the adjacency matrix of weights,
+     *
+     * <p>The file should contain the number of nodes and the adjacency matrix of weights,
      * optionally including the optimal solution value.
-     * </p>
      *
      * @param fname the path to the file containing the instance
      * @throws IOException if the file cannot be read
@@ -121,7 +110,11 @@ public class MCPProblem implements Problem<MCPState> {
                 } else {
                     int node = linesCount - skip - 1;
                     String[] tokens = line.split("\\s+");
-                    int[] row = Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToInt(Integer::parseInt).toArray();
+                    int[] row =
+                            Arrays.stream(tokens)
+                                    .filter(s -> !s.isEmpty())
+                                    .mapToInt(Integer::parseInt)
+                                    .toArray();
                     matrix[node] = row;
                 }
                 linesCount++;
@@ -162,8 +155,11 @@ public class MCPProblem implements Problem<MCPState> {
     @Override
     public Iterator<Integer> domain(MCPState state, int var) {
         // The first node can be arbitrary put in S
-        if (state.depth() == 0) return List.of(S).iterator();
-        else return List.of(S, T).iterator();
+        if (state.depth() == 0) {
+            return List.of(S).iterator();
+        } else {
+            return List.of(S, T).iterator();
+        }
     }
 
     @Override
@@ -178,7 +174,8 @@ public class MCPProblem implements Problem<MCPState> {
             }
         } else {
             for (int l = k + 1; l < nbVars(); l++) {
-                // If k is put in T, and then l is also put in T, we lose the weight of the edge k -- l
+                // If k is put in T, and then l is also put in T, we lose the weight of the edge k
+                // -- l
                 int benef = state.netBenefit().get(l) - graph.weightOf(k, l);
                 newBenefits.set(l, benef);
             }
@@ -188,9 +185,13 @@ public class MCPProblem implements Problem<MCPState> {
 
     @Override
     public double transitionCost(MCPState state, Decision decision) {
-        if (state.depth() == 0) return 0;
-        else if (decision.value() == S) return -branchOnS(state, decision.variable());
-        else return -branchOnT(state, decision.variable());
+        if (state.depth() == 0) {
+            return 0;
+        } else if (decision.value() == S) {
+            return -branchOnS(state, decision.variable());
+        } else {
+            return -branchOnT(state, decision.variable());
+        }
     }
 
     @Override
@@ -201,16 +202,21 @@ public class MCPProblem implements Problem<MCPState> {
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
         if (solution.length != nbVars()) {
-            throw new InvalidSolutionException(String.format("The solution %s does not cover all " +
-                    "the %d variables", Arrays.toString(solution), nbVars()));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not cover all " + "the %d variables",
+                            Arrays.toString(solution), nbVars()));
         }
 
         BitSet s = new BitSet(nbVars());
         BitSet t = new BitSet(nbVars());
 
         for (int i = 0; i < solution.length; i++) {
-            if (solution[i] == 0) s.set(i);
-            else t.set(i);
+            if (solution[i] == 0) {
+                s.set(i);
+            } else {
+                t.set(i);
+            }
         }
 
         double value = 0.0;
@@ -227,7 +233,7 @@ public class MCPProblem implements Problem<MCPState> {
      * Computes the transition cost when placing node {@code k} in partition S.
      *
      * @param state the current state
-     * @param k     the node index
+     * @param k the node index
      * @return the estimated cost
      */
     private int branchOnS(MCPState state, int k) {
@@ -238,7 +244,9 @@ public class MCPProblem implements Problem<MCPState> {
             int skl = state.netBenefit().get(l);
             int wkl = graph.weightOf(k, l);
 
-            if (skl * wkl <= 0) cost += min(abs(skl), abs(wkl));
+            if (skl * wkl <= 0) {
+                cost += min(abs(skl), abs(wkl));
+            }
         }
 
         return cost;
@@ -248,7 +256,7 @@ public class MCPProblem implements Problem<MCPState> {
      * Computes the transition cost when placing node {@code k} in partition T.
      *
      * @param state the current state
-     * @param k     the node index
+     * @param k the node index
      * @return the estimated cost
      */
     private int branchOnT(MCPState state, int k) {
@@ -259,7 +267,9 @@ public class MCPProblem implements Problem<MCPState> {
             int skl = state.netBenefit().get(l);
             int wkl = graph.weightOf(k, l);
 
-            if (skl * wkl >= 0) cost += min(abs(skl), abs(wkl));
+            if (skl * wkl >= 0) {
+                cost += min(abs(skl), abs(wkl));
+            }
         }
 
         return cost;
@@ -281,7 +291,6 @@ public class MCPProblem implements Problem<MCPState> {
      * @param x the value
      * @return min(x, 0)
      */
-
     private int negativeOrNull(int x) {
         return min(x, 0);
     }

@@ -2,50 +2,58 @@ package org.ddolib.layered.modeling;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
  * Interface representing a model for Large Neighborhood Search (LNS) problems.
  *
- * <p>This interface extends {@link Model} and provides default implementations
- * and configuration options specifically for LNS-based search algorithms.</p>
+ * <p>This interface extends {@link Model} and provides default implementations and configuration
+ * options specifically for LNS-based search algorithms.
  *
- * <p>Key responsibilities of an {@code LnsModel} include:</p>
+ * <p>Key responsibilities of an {@code LnsModel} include:
+ *
  * <ul>
- *     <li>Providing the underlying {@link Problem} instance.</li>
- *     <li>Specifying a {@link FastLowerBound} for efficient lower bound estimation.</li>
- *     <li>Optionally providing a {@link DominanceChecker} to prune dominated states.</li>
- *     <li>Providing heuristics such as {@link StateRanking} and {@link WidthHeuristic} to guide search.</li>
- *     <li>Supporting optional configuration of LNS parameters like initial solution, destruction probability, and width.</li>
+ *   <li>Providing the underlying {@link Problem} instance.
+ *   <li>Specifying a {@link FastLowerBound} for efficient lower bound estimation.
+ *   <li>Optionally providing a {@link DominanceChecker} to prune dominated states.
+ *   <li>Providing heuristics such as {@link StateRanking} and {@link WidthHeuristic} to guide
+ *       search.
+ *   <li>Supporting optional configuration of LNS parameters like initial solution, destruction
+ *       probability, and width.
  * </ul>
  *
- * <p>Default implementations:</p>
+ * <p>Default implementations:
+ *
  * <ul>
- *     <li>{@link #ranking()} returns a trivial ranking (no preference).</li>
- *     <li>{@link #widthHeuristic()} defaults to a {@link FixedWidth} of 10.</li>
- *     <li>{@link #exportDot()} returns {@code false} (no DOT export by default).</li>
- *     <li>{@link #restrictStrategy()} defaults to a {@link CostBased} reduction with zero comparator.</li>
- *     <li>{@link #stateDistance()} returns 0 between any two states.</li>
- *     <li>{@link #initialSolution()} returns {@code null} (no initial solution by default).</li>
- *     <li>{@link #probability()} returns 0.2 as default destruction probability.</li>
- *     <li>{@link #useLNS()} returns {@code true} by default.</li>
- *     <li>{@link #seed()} returns {@link #DEFAULT_SEED}, so that the search is deterministic.</li>
+ *   <li>{@link #ranking()} returns a trivial ranking (no preference).
+ *   <li>{@link #widthHeuristic()} defaults to a {@link FixedWidth} of 10.
+ *   <li>{@link #exportDot()} returns {@code false} (no DOT export by default).
+ *   <li>{@link #restrictStrategy()} defaults to a {@link CostBased} reduction with zero comparator.
+ *   <li>{@link #stateDistance()} returns 0 between any two states.
+ *   <li>{@link #initialSolution()} returns {@code null} (no initial solution by default).
+ *   <li>{@link #probability()} returns 0.2 as default destruction probability.
+ *   <li>{@link #useLNS()} returns {@code true} by default.
+ *   <li>{@link #seed()} returns {@link #DEFAULT_SEED}, so that the search is deterministic.
  * </ul>
  *
- * <p>Configuration methods allow creating modified copies of the model with custom parameters:</p>
+ * <p>Configuration methods allow creating modified copies of the model with custom parameters:
+ *
  * <ul>
- *     <li>{@link #fixWidth(int)} returns a new {@code LnsModel} with a fixed search width.</li>
- *     <li>{@link #setInitialSolution(int[])} returns a new {@code LnsModel} using a given initial solution.</li>
- *     <li>{@link #setProbability(double)} returns a new {@code LnsModel} with a specified destruction probability.</li>
- *     <li>{@link #setSeed(long)} returns a new {@code LnsModel} with a specified seed.</li>
+ *   <li>{@link #fixWidth(int)} returns a new {@code LnsModel} with a fixed search width.
+ *   <li>{@link #setInitialSolution(int[])} returns a new {@code LnsModel} using a given initial
+ *       solution.
+ *   <li>{@link #setProbability(double)} returns a new {@code LnsModel} with a specified destruction
+ *       probability.
+ *   <li>{@link #setSeed(long)} returns a new {@code LnsModel} with a specified seed.
  * </ul>
  *
- * <p>Example usage:</p>
+ * <p>Example usage:
+ *
  * <pre>
  * LnsModel model = new MyLnsModel()
  *     .fixWidth(20)
@@ -53,22 +61,22 @@ import org.ddolib.common.util.verbosity.VerbosityLevel;
  *     .setProbability(0.3);
  * </pre>
  *
- * <p>This interface is intended for use with {@link Solvers#minimizeLns(LnsModel, java.util.function.Predicate, java.util.function.BiConsumer)}
- * or similar LNS solvers.</p>
+ * <p>This interface is intended for use with {@link Solvers#minimizeLns(LnsModel,
+ * java.util.function.Predicate, java.util.function.BiConsumer)} or similar LNS solvers.
  *
  * @param <T> the type of state used in the problem
  */
 public interface LnsModel<T> extends Model<T> {
 
     /**
-     * Seed used by default for the randomized LNS restriction. A fixed seed makes the
-     * search deterministic, as in the original ddo solver.
+     * Seed used by default for the randomized LNS restriction. A fixed seed makes the search
+     * deterministic, as in the original ddo solver.
      */
     long DEFAULT_SEED = 0L;
 
     /**
-     * Returns the state ranking heuristic used to guide the search.
-     * Default implementation returns a neutral ranking (all states equal).
+     * Returns the state ranking heuristic used to guide the search. Default implementation returns
+     * a neutral ranking (all states equal).
      *
      * @return the state ranking
      */
@@ -77,8 +85,8 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Returns the width heuristic used for tree exploration.
-     * Default is {@link FixedWidth} with width 10.
+     * Returns the width heuristic used for tree exploration. Default is {@link FixedWidth} with
+     * width 10.
      *
      * @return the width heuristic
      */
@@ -87,8 +95,7 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Indicates whether to export the search tree to DOT format.
-     * Default is {@code false}.
+     * Indicates whether to export the search tree to DOT format. Default is {@code false}.
      *
      * @return {@code true} if DOT export is enabled, {@code false} otherwise
      */
@@ -106,8 +113,7 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Returns a measure of distance between two states.
-     * Default returns 0 for all states.
+     * Returns a measure of distance between two states. Default returns 0 for all states.
      *
      * @return the state distance
      */
@@ -116,8 +122,8 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Returns the initial solution to start the search from.
-     * Default is {@code null} (no initial solution).
+     * Returns the initial solution to start the search from. Default is {@code null} (no initial
+     * solution).
      *
      * @return the initial solution as an array of variable assignments
      */
@@ -126,8 +132,7 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Returns the probability used to destruct parts of the solution in LNS.
-     * Default is 0.2.
+     * Returns the probability used to destruct parts of the solution in LNS. Default is 0.2.
      *
      * @return destruction probability
      */
@@ -136,8 +141,7 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Indicates whether LNS should be used.
-     * Default is {@code true}.
+     * Indicates whether LNS should be used. Default is {@code true}.
      *
      * @return {@code true} if LNS is enabled, {@code false} otherwise
      */
@@ -146,9 +150,9 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
-     * Returns the seed of the random number generator used by the LNS restriction.
-     * Two runs with the same model and the same seed explore the same neighborhoods.
-     * Default is {@link #DEFAULT_SEED}.
+     * Returns the seed of the random number generator used by the LNS restriction. Two runs with
+     * the same model and the same seed explore the same neighborhoods. Default is {@link
+     * #DEFAULT_SEED}.
      *
      * @return the seed of the random number generator
      */

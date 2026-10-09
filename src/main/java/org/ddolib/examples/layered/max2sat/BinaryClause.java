@@ -4,21 +4,20 @@ import static java.lang.Math.abs;
 
 /**
  * Class to model a Binary clause of two literals for CNF formula. <br>
- * <p>
- * To symbolize a literal {@code x_i    }, for {@code i > 0}, we give the value {@code i} as
- * input. To symbolize {@code NOT x_i}, we give {@code -i}.
+ *
+ * <p>To symbolize a literal {@code x_i }, for {@code i > 0}, we give the value {@code i} as input.
+ * To symbolize {@code NOT x_i}, we give {@code -i}.
  *
  * @param i the first literal of the clause
  * @param j the second literal of the clause
  */
 public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
 
-    /**
-     * Creates a new binary clause, checking that neither literal is {@code 0}.
-     */
+    /** Creates a new binary clause, checking that neither literal is {@code 0}. */
     public BinaryClause {
-        if (i == 0 || j == 0)
+        if (i == 0 || j == 0) {
             throw new IllegalArgumentException("Id of variable in Binary clauses must be != 0");
+        }
     }
 
     /**
@@ -34,11 +33,13 @@ public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
         return literal1 | literal2;
     }
 
-
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof BinaryClause other) return this.i == other.i && this.j == other.j;
-        else return false;
+        if (obj instanceof BinaryClause other) {
+            return this.i == other.i && this.j == other.j;
+        } else {
+            return false;
+        }
     }
 
     @Override
@@ -61,17 +62,19 @@ public record BinaryClause(int i, int j) implements Comparable<BinaryClause> {
      * Used to compare binary clauses. It is used to sort them when generating Max2Sat instances.
      * <br>
      * The induced order is the following:
+     *
      * <ol>
-     *     <li>The lexical order on the literals' indices. </li>
-     *     <li>The positive literal before the negative ones.</li>
+     *   <li>The lexical order on the literals' indices.
+     *   <li>The positive literal before the negative ones.
      * </ol>
      *
      * @param other the binary clause to be compared
-     * @return <ul>
-     *     <li> {@code 0} if if {@code this == other}</li>
-     *     <li><code>1</code> if {@code this > other}</li>
-     *     <li><code>-1</code> if {@code this < other}</li>
-     * </ul>
+     * @return
+     *     <ul>
+     *       <li>{@code 0} if if {@code this == other}
+     *       <li><code>1</code> if {@code this > other}
+     *       <li><code>-1</code> if {@code this < other}
+     *     </ul>
      */
     @Override
     public int compareTo(BinaryClause other) {

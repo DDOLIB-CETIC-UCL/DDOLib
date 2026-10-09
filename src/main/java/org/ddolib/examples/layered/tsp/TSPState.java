@@ -6,32 +6,26 @@ import java.util.Objects;
 /**
  * Represents a state in the Traveling Salesman Problem (TSP).
  *
- * <p>
- * A {@code TSPState} captures the current situation of the tour:
- * </p>
+ * <p>A {@code TSPState} captures the current situation of the tour:
+ *
  * <ul>
- *     <li>{@code current} – the set of nodes currently being considered as the current location.
- *         In most cases, this is a singleton, but during state merging (relaxation), it may contain multiple nodes.</li>
- *     <li>{@code toVisit} – the set of nodes that have not yet been visited.</li>
+ *   <li>{@code current} – the set of nodes currently being considered as the current location. In
+ *       most cases, this is a singleton, but during state merging (relaxation), it may contain
+ *       multiple nodes.
+ *   <li>{@code toVisit} – the set of nodes that have not yet been visited.
  * </ul>
  *
- * <p>
- * This class provides methods to handle singleton nodes, and overrides {@code equals}, {@code hashCode},
- * and {@code toString} for proper use in collections and debugging.
- * </p>
+ * <p>This class provides methods to handle singleton nodes, and overrides {@code equals}, {@code
+ * hashCode}, and {@code toString} for proper use in collections and debugging.
  *
  * @see TSPProblem
  * @see TSPRelax
  */
 public class TSPState {
-    /**
-     * Set of nodes that have not been visited yet.
-     */
+    /** Set of nodes that have not been visited yet. */
     public BitSet toVisit;
 
-    /**
-     * Current node(s). Usually a singleton, but can be multiple in merged states.
-     */
+    /** Current node(s). Usually a singleton, but can be multiple in merged states. */
     public BitSet current;
 
     /**
@@ -53,8 +47,7 @@ public class TSPState {
     @Override
     public boolean equals(Object obj) {
         TSPState that = (TSPState) obj;
-        return (this.current.equals(that.current))
-                && this.toVisit.equals(that.toVisit);
+        return (this.current.equals(that.current)) && this.toVisit.equals(that.toVisit);
     }
 
     /**

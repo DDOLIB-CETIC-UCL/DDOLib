@@ -1,32 +1,39 @@
 package org.ddolib.examples.nolayer.tsp;
 
-import org.ddolib.nolayer.modeling.Problem;
-import org.ddolib.common.util.InvalidSolutionException;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Traveling Salesman Problem (TSP), using the no-layer modeling API.
- * <p>
- * Models the classic TSP: starting from and returning to city 0, visit every other city
- * exactly once while minimizing the total travelled distance. States are represented by
- * {@link TSPState} (current city and set of cities still to visit).
- * </p>
+ *
+ * <p>Models the classic TSP: starting from and returning to city 0, visit every other city exactly
+ * once while minimizing the total travelled distance. States are represented by {@link TSPState}
+ * (current city and set of cities still to visit).
  */
 public class TSPProblem implements Problem<TSPState> {
 
     /** Distance (cost) matrix between cities, indexed by origin and destination city. */
     public final double[][] distanceMatrix;
+
     /** Number of cities. */
+    @SuppressWarnings("checkstyle:MemberName") // public API
     public final int n;
+
     private final Optional<String> name;
 
     /**
      * Creates a new unnamed TSP instance from a distance matrix.
      *
      * @param distanceMatrix distance (cost) matrix between cities, indexed by origin and
-     *                       destination city
+     *     destination city
      */
     public TSPProblem(final double[][] distanceMatrix) {
         this.distanceMatrix = distanceMatrix;
@@ -41,7 +48,8 @@ public class TSPProblem implements Problem<TSPState> {
      * @throws java.io.IOException if the instance file cannot be read or parsed
      */
     public TSPProblem(final String fname) throws java.io.IOException {
-        javax.xml.parsers.DocumentBuilderFactory dbf = javax.xml.parsers.DocumentBuilderFactory.newInstance();
+        javax.xml.parsers.DocumentBuilderFactory dbf =
+                javax.xml.parsers.DocumentBuilderFactory.newInstance();
         int n;
         double[][] distanceMatrix;
         try {
@@ -126,20 +134,24 @@ public class TSPProblem implements Problem<TSPState> {
     @Override
     public double evaluate(List<Integer> solution) throws InvalidSolutionException {
         if (solution.size() != n) {
-            throw new InvalidSolutionException(String.format("The solution %s does not match " +
-                    "the number %d variables", solution, n));
+            throw new InvalidSolutionException(
+                    String.format(
+                            "The solution %s does not match " + "the number %d variables",
+                            solution, n));
         }
 
-        Map<Integer, Long> count = solution.stream()
-                .collect(Collectors.groupingBy(x -> x, Collectors.counting()));
+        Map<Integer, Long> count =
+                solution.stream().collect(Collectors.groupingBy(x -> x, Collectors.counting()));
 
         if (count.values().stream().anyMatch(x -> x != 1)) {
-            String msg = "The solution has duplicated nodes and does not reach each node exactly once";
+            String msg =
+                    "The solution has duplicated nodes and does not reach each node exactly once";
             throw new InvalidSolutionException(msg);
         }
 
         if (solution.get(n - 1) != 0) {
-            throw new InvalidSolutionException("The solution does not return to the depot (node 0)");
+            throw new InvalidSolutionException(
+                    "The solution does not return to the depot (node 0)");
         }
 
         double value = distanceMatrix[0][solution.get(0)];

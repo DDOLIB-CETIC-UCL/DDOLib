@@ -3,18 +3,15 @@ package org.ddolib.examples.layered.mcp;
 import org.ddolib.layered.modeling.StateRanking;
 
 /**
- * Class used to compare two states for the MCP problem.
- * <br>
- * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
- * That's why we sum the absolute value of each benefit to compare the states.
+ * Class used to compare two states for the MCP problem. <br>
+ * When comparing two states, the best is the one that can generate the biggest benefit,
+ * independently of the decisions. That's why we sum the absolute value of each benefit to compare
+ * the states.
  */
 public class MCPRanking implements StateRanking<MCPState> {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-    public MCPRanking() {
-    }
+    /** Creates a new instance of this ranking. */
+    public MCPRanking() {}
 
     /**
      * Computes the ranking value of a state, defined as the sum of the absolute value of the net
@@ -27,7 +24,6 @@ public class MCPRanking implements StateRanking<MCPState> {
         int toReturn = 0;
         for (int i = state.depth(); i < state.netBenefit().size(); i++) {
             toReturn += Math.abs(state.netBenefit().get(i));
-
         }
         return toReturn;
     }
@@ -36,6 +32,4 @@ public class MCPRanking implements StateRanking<MCPState> {
     public int compare(MCPState o1, MCPState o2) {
         return Integer.compare(rank(o1), rank(o2));
     }
-
-
 }

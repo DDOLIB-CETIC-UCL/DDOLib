@@ -1,0 +1,41 @@
+name: checkstyle
+
+on: push
+
+jobs:
+  checkstyle:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      matrix:
+        maven: [ '3.8.5' ]
+        java: [ '21' ]
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Maven
+        uses: s4u/setup-maven-action@v1.18.0
+        with:
+          java-version: ${{ matrix.java }}
+          maven-version: ${{ matrix.maven }}
+          checkout-enabled: false
+
+      # Blocking: any Checkstyle warning fails the job (see violationSeverity in pom.xml)
+      - name: Run Checkstyle
+        run: mvn checkstyle:check | tee checkstyle.log
+
+      - name: Summary
+        if: always()
+        run: |
+          total=$(grep -cE '^\[WARN\] ' checkstyle.log || true)
+          {
+            echo "## Checkstyle (Google Java Style)"
+            echo ""
+            echo "Total warnings: ${total}"
+            echo ""
+            echo "| Rule | Warnings |"
+            echo "|---|---|"
+            grep -E '^\[WARN\] ' checkstyle.log | sed -E 's/.*\[([A-Za-z]+)\]$/\1/' \
+              | sort | uniq -c | sort -rn | awk '{print "| " $2 " | " $1 " |"}'
+          } >> "$GITHUB_STEP_SUMMARY"

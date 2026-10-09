@@ -1,27 +1,24 @@
 package org.ddolib.examples.nolayer.knapsack;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.nolayer.modeling.AcsModel;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
 import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Knapsack Problem (KS) with ACS, using the no-layer modeling API.
- * <p>
- * This class demonstrates how to solve an instance of the Knapsack Problem
- * using the Anytime Column Search (ACS) algorithm, reusing the fast lower bound
- * and dominance checker defined by {@link KSModel}.
- * </p>
+ *
+ * <p>This class demonstrates how to solve an instance of the Knapsack Problem using the Anytime
+ * Column Search (ACS) algorithm, reusing the fast lower bound and dominance checker defined by
+ * {@link KSModel}.
  */
 public final class KSAcsMain {
 
-    private KSAcsMain() {
-    }
+    private KSAcsMain() {}
 
     /**
      * Entry point of the ACS demonstration for the Knapsack Problem.
@@ -30,36 +27,42 @@ public final class KSAcsMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
-                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance =
+                args.length == 0
+                        ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString()
+                        : args[0];
         final KSProblem problem = KSProblem.fromFile(instance);
         final KSModel baseModel = new KSModel(problem);
 
-        final AcsModel<KSState> model = new AcsModel<>() {
-            @Override
-            public Problem<KSState> problem() {
-                return problem;
-            }
+        final AcsModel<KSState> model =
+                new AcsModel<>() {
+                    @Override
+                    public Problem<KSState> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<KSState> lowerBound() {
-                return baseModel.lowerBound();
-            }
+                    @Override
+                    public FastLowerBound<KSState> lowerBound() {
+                        return baseModel.lowerBound();
+                    }
 
-            @Override
-            public NoLayerDominanceChecker<KSState> dominance() {
-                return baseModel.dominance();
-            }
+                    @Override
+                    public NoLayerDominanceChecker<KSState> dominance() {
+                        return baseModel.dominance();
+                    }
 
-            @Override
-            public int columnWidth() {
-                return 10;
-            }
-        };
+                    @Override
+                    public int columnWidth() {
+                        return 10;
+                    }
+                };
 
-        Solution bestSolution = org.ddolib.nolayer.modeling.Solvers.minimizeAcs(model, (sol, stats) -> {
-            SolutionPrinter.printSolution(stats, sol);
-        });
+        Solution bestSolution =
+                org.ddolib.nolayer.modeling.Solvers.minimizeAcs(
+                        model,
+                        (sol, stats) -> {
+                            SolutionPrinter.printSolution(stats, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);

@@ -4,31 +4,25 @@ import org.ddolib.layered.modeling.StateRanking;
 
 /**
  * Ranking strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
- * <p>
- * This class implements {@link StateRanking} to compare two LCS states. The comparison
- * is based on the sum of the positions in each string: states with smaller total positions
- * are considered "better" because they represent progress earlier in the strings.
- * </p>
- * <p>
- * It is typically used in search algorithms (ACS, A*, DDO) to prioritize states that
- * are closer to the beginning of the strings, which may lead to faster exploration of
- * potential optimal LCS solutions.
- * </p>
+ *
+ * <p>This class implements {@link StateRanking} to compare two LCS states. The comparison is based
+ * on the sum of the positions in each string: states with smaller total positions are considered
+ * "better" because they represent progress earlier in the strings.
+ *
+ * <p>It is typically used in search algorithms (ACS, A*, DDO) to prioritize states that are closer
+ * to the beginning of the strings, which may lead to faster exploration of potential optimal LCS
+ * solutions.
  */
 public class LCSRanking implements StateRanking<LCSState> {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-    public LCSRanking() {
-    }
+    /** Creates a new instance of this ranking. */
+    public LCSRanking() {}
 
     /**
      * Compares two LCS states.
-     * <p>
-     * The state with the smaller sum of positions across all strings is considered
-     * better and will be ranked higher.
-     * </p>
+     *
+     * <p>The state with the smaller sum of positions across all strings is considered better and
+     * will be ranked higher.
      *
      * @param state1 the first LCS state to compare
      * @param state2 the second LCS state to compare
@@ -48,9 +42,8 @@ public class LCSRanking implements StateRanking<LCSState> {
 
     /**
      * Indicates whether this ranking object is equal to another.
-     * <p>
-     * Currently always returns false since ranking objects do not maintain state.
-     * </p>
+     *
+     * <p>Currently always returns false since ranking objects do not maintain state.
      *
      * @param obj the other object to compare to
      * @return false

@@ -1,76 +1,60 @@
 package org.ddolib.common.solver.stat;
 
-import org.ddolib.common.util.PrettyPrint;
+import static java.lang.Math.abs;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
-
-import static java.lang.Math.abs;
+import org.ddolib.common.util.PrettyPrint;
 
 /**
  * Class representing the statistics of a search process in a solver.
- * <p>
- * This class tracks various metrics such as runtime, number of iterations,
- * incumbent value, and optimality gap. It is designed to be immutable-like,
- * where update methods return a new instance with the updated value.
- * </p>
- * <p>
- * It represents the search statistics of a solver. Subclasses override the update
- * methods to return their specific type via covariant return types.
- * </p>
+ *
+ * <p>This class tracks various metrics such as runtime, number of iterations, incumbent value, and
+ * optimality gap. It is designed to be immutable-like, where update methods return a new instance
+ * with the updated value.
+ *
+ * <p>It represents the search statistics of a solver. Subclasses override the update methods to
+ * return their specific type via covariant return types.
  */
+@SuppressWarnings("checkstyle:MemberName") // protected fields of the public API (_startTime...)
 public abstract class SearchStatistics {
-    /**
-     * Start time of the search (in milliseconds)
-     */
+    /** Start time of the search (in milliseconds). */
     protected final long _startTime;
-    /**
-     * Time at which the last improvement was found (in milliseconds)
-     */
-    protected long _lastTimeOfImprovement;
-    /**
-     * Current time of the search (in milliseconds)
-     */
-    protected long _currentTime;
-    /**
-     * Current status of the search
-     */
-    protected SearchStatus _status = SearchStatus.UNKNOWN;
-    /**
-     * Total number of iterations performed
-     */
-    protected int _nbIterations = 0;
-    /**
-     * Iteration during which the last improvement was found
-     */
-    protected int _lastIterationOfImprovement = 0;
-    /**
-     * Value of the best solution found so far (incumbent)
-     */
-    protected double _incumbent;
-    /**
-     * Value of the previous incumbent found
-     */
-    protected double _prevIncumbent = Double.POSITIVE_INFINITY;
-    /**
-     * Best optimality gap reached so far
-     */
-    protected double _gap = Double.POSITIVE_INFINITY;
-    /**
-     * Maximum size reached by the search frontier
-     */
-    protected int _frontierMaxSize = 0;
-    /**
-     * Relative improvement of the incumbent value
-     */
-    protected double _relativeImprovement = 1.0;
-    /**
-     * Iteration during which the last gap improvement was found
-     */
-    protected int _lastIterationOfGapImprovement = 0;
 
+    /** Time at which the last improvement was found (in milliseconds). */
+    protected long _lastTimeOfImprovement;
+
+    /** Current time of the search (in milliseconds). */
+    protected long _currentTime;
+
+    /** Current status of the search. */
+    protected SearchStatus _status = SearchStatus.UNKNOWN;
+
+    /** Total number of iterations performed. */
+    protected int _nbIterations = 0;
+
+    /** Iteration during which the last improvement was found. */
+    protected int _lastIterationOfImprovement = 0;
+
+    /** Value of the best solution found so far (incumbent). */
+    protected double _incumbent;
+
+    /** Value of the previous incumbent found. */
+    protected double _prevIncumbent = Double.POSITIVE_INFINITY;
+
+    /** Best optimality gap reached so far. */
+    protected double _gap = Double.POSITIVE_INFINITY;
+
+    /** Maximum size reached by the search frontier. */
+    protected int _frontierMaxSize = 0;
+
+    /** Relative improvement of the incumbent value. */
+    protected double _relativeImprovement = 1.0;
+
+    /** Iteration during which the last gap improvement was found. */
+    protected int _lastIterationOfGapImprovement = 0;
 
     /**
      * Constructs a new SearchStatistics instance.
@@ -86,8 +70,8 @@ public abstract class SearchStatistics {
     }
 
     /**
-     * Creates a new instance of the specific subclass with initial values.
-     * This is used by the copy method to maintain the correct type.
+     * Creates a new instance of the specific subclass with initial values. This is used by the copy
+     * method to maintain the correct type.
      *
      * @return a new instance of the specific subclass
      */
@@ -227,7 +211,7 @@ public abstract class SearchStatistics {
      * Returns a new SearchStatistics instance with an updated incumbent value and gap.
      *
      * @param incumbent the new incumbent value
-     * @param gap       the new optimality gap
+     * @param gap the new optimality gap
      * @return a new instance with updated incumbent and gap
      */
     public SearchStatistics updateIncumbent(double incumbent, double gap) {
@@ -312,7 +296,6 @@ public abstract class SearchStatistics {
         return toReturn;
     }
 
-
     @Override
     public String toString() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
@@ -320,25 +303,25 @@ public abstract class SearchStatistics {
         DecimalFormat df = new DecimalFormat("#,##0.##########", symbols);
         DecimalFormat gapFormat = new DecimalFormat("#,##0.####", symbols);
 
-        List<String> labels = List.of(
-                "Status",
-                "Iterations",
-                "Frontier Max Size",
-                "Runtime",
-                "Incumbent",
-                "Gap",
-                "Relative improvement"
-        );
+        List<String> labels =
+                List.of(
+                        "Status",
+                        "Iterations",
+                        "Frontier Max Size",
+                        "Runtime",
+                        "Incumbent",
+                        "Gap",
+                        "Relative improvement");
 
-        List<String> values = List.of(
-                _status.toString(),
-                df.format(_nbIterations),
-                df.format(_frontierMaxSize),
-                PrettyPrint.formatMs(runtime()),
-                Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
-                Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %",
-                df.format(relativeImprovement()) + " %"
-        );
+        List<String> values =
+                List.of(
+                        _status.toString(),
+                        df.format(_nbIterations),
+                        df.format(_frontierMaxSize),
+                        PrettyPrint.formatMs(runtime()),
+                        Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
+                        Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %",
+                        df.format(relativeImprovement()) + " %");
 
         int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;
         int valueSize = values.stream().mapToInt(String::length).max().orElse(1) + 1;

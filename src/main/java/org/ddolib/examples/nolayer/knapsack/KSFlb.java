@@ -1,18 +1,16 @@
 package org.ddolib.examples.nolayer.knapsack;
 
-import org.ddolib.nolayer.modeling.FastLowerBound;
-
 import java.util.Arrays;
 import java.util.Comparator;
+import org.ddolib.nolayer.modeling.FastLowerBound;
 
 /**
  * Fast lower bound for the Knapsack Problem (KS), using the no-layer modeling API.
- * <p>
- * The bound is computed by a fractional-relaxation greedy heuristic: remaining items are
- * sorted by decreasing profit-to-weight ratio and packed into the remaining capacity,
- * allowing the last item to be split fractionally. The negated value of this greedy
- * profit is returned, consistently with the library's minimization convention.
- * </p>
+ *
+ * <p>The bound is computed by a fractional-relaxation greedy heuristic: remaining items are sorted
+ * by decreasing profit-to-weight ratio and packed into the remaining capacity, allowing the last
+ * item to be split fractionally. The negated value of this greedy profit is returned, consistently
+ * with the library's minimization convention.
  */
 public class KSFlb implements FastLowerBound<KSState> {
 
@@ -34,16 +32,23 @@ public class KSFlb implements FastLowerBound<KSState> {
         int n = totalItems - start;
 
         Integer[] items = new Integer[n];
-        for (int i = 0; i < n; i++) items[i] = start + i;
+        for (int i = 0; i < n; i++) {
+            items[i] = start + i;
+        }
 
-        Arrays.sort(items, Comparator.comparingDouble(
-                (Integer i) -> (double) problem.profit[i] / problem.weight[i]).reversed());
+        Arrays.sort(
+                items,
+                Comparator.comparingDouble(
+                                (Integer i) -> (double) problem.profit[i] / problem.weight[i])
+                        .reversed());
 
         double maxProfit = 0;
         int capacity = state.remainingCapacity();
 
         for (int item : items) {
-            if (capacity <= 0) break;
+            if (capacity <= 0) {
+                break;
+            }
             int w = problem.weight[item];
             if (capacity >= w) {
                 maxProfit += problem.profit[item];

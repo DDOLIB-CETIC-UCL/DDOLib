@@ -1,36 +1,28 @@
 package org.ddolib.examples.layered.mks;
 
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.solving.ddo.core.Decision;
+import static java.lang.Math.max;
 
 import java.util.Iterator;
-
-import static java.lang.Math.max;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Relaxation strategy for the multi-dimensional Knapsack problem (MKS) states.
  *
- * <p>
- * This class implements the {@link Relaxation} interface and provides a way to
- * merge multiple MKS states into a single relaxed state for use in decision diagrams.
- * The relaxation ensures that the merged state overestimates the remaining capacities,
- * which is safe for optimization purposes.
+ * <p>This class implements the {@link Relaxation} interface and provides a way to merge multiple
+ * MKS states into a single relaxed state for use in decision diagrams. The relaxation ensures that
+ * the merged state overestimates the remaining capacities, which is safe for optimization purposes.
  */
 public class MKSRelax implements Relaxation<MKSState> {
 
-    /**
-     * Creates a new instance of this relaxation.
-     */
-    public MKSRelax() {
-    }
+    /** Creates a new instance of this relaxation. */
+    public MKSRelax() {}
 
     /**
      * Merges multiple MKS states into a single relaxed state.
      *
-     * <p>
-     * The merged state takes the maximum capacity along each dimension across all
-     * input states. This produces a relaxed state that safely overestimates the
-     * remaining capacities.
+     * <p>The merged state takes the maximum capacity along each dimension across all input states.
+     * This produces a relaxed state that safely overestimates the remaining capacities.
      *
      * @param states an iterator over the states to merge
      * @return a new {@link MKSState} representing the relaxed merged state
@@ -52,15 +44,13 @@ public class MKSRelax implements Relaxation<MKSState> {
     /**
      * Returns the cost of an edge in the relaxed decision diagram.
      *
-     * <p>
-     * For this relaxation, the edge cost is unchanged and simply returns the
-     * original cost.
+     * <p>For this relaxation, the edge cost is unchanged and simply returns the original cost.
      *
-     * @param from   the source state
-     * @param to     the destination state
+     * @param from the source state
+     * @param to the destination state
      * @param merged the merged state corresponding to the relaxation
-     * @param d      the decision taken along this edge
-     * @param cost   the original cost of the edge
+     * @param d the decision taken along this edge
+     * @param cost the original cost of the edge
      * @return the relaxed edge cost, equal to {@code cost}
      */
     @Override

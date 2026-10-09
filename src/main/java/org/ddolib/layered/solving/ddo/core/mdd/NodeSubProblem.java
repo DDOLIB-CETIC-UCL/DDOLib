@@ -1,55 +1,48 @@
 package org.ddolib.layered.solving.ddo.core.mdd;
 
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.layered.solving.ddo.core.SubProblem;
+import static org.ddolib.common.util.MathUtil.saturatedAdd;
 
 import java.text.DecimalFormat;
 import java.util.HashSet;
 import java.util.Set;
-
-import static org.ddolib.common.util.MathUtil.saturatedAdd;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.layered.solving.ddo.core.SubProblem;
 
 /**
- * Encapsulates the association of a node in a decision diagram with its corresponding state
- * and an associated rough lower bound.
- * <p>
- * This class serves two main purposes:
+ * Encapsulates the association of a node in a decision diagram with its corresponding state and an
+ * associated rough lower bound.
+ *
+ * <p>This class serves two main purposes:
+ *
  * <ul>
- *     <li>Associates a node with a state during decision diagram compilation, allowing the state
- *         to be discarded afterward to save memory.</li>
- *     <li>Converts an exact MDD node into a {@link SubProblem}, which can then be used in the API
- *         for search or optimization.</li>
+ *   <li>Associates a node with a state during decision diagram compilation, allowing the state to
+ *       be discarded afterward to save memory.
+ *   <li>Converts an exact MDD node into a {@link SubProblem}, which can then be used in the API for
+ *       search or optimization.
  * </ul>
  *
  * @param <T> the type of state associated with the node
  */
 public final class NodeSubProblem<T> {
-    /**
-     * The state associated with this node.
-     */
+    /** The state associated with this node. */
     public final T state;
 
-    /**
-     * The actual node from the decision diagram graph.
-     */
+    /** The actual node from the decision diagram graph. */
     public final Node node;
 
-    /**
-     * The lower bound associated with this node (root to terminal node)
-     */
+    /** The lower bound associated with this node (root to terminal node). */
     public double lb;
 
-    /**
-     * The fast lower bound of this node (this node to terminal node)
-     */
+    /** The fast lower bound of this node (this node to terminal node). */
     public double flb;
 
     /**
      * Creates a new NodeSubProblem associating a state with a node and a lower bound.
      *
      * @param state the state associated with the node
-     * @param lb    the rough lower bound associated with the state-node pair (g cost + fast lower bound)
-     * @param node  the node in the decision diagram
+     * @param lb the rough lower bound associated with the state-node pair (g cost + fast lower
+     *     bound)
+     * @param node the node in the decision diagram
      */
     public NodeSubProblem(final T state, final double lb, final Node node) {
         this.state = state;
@@ -59,11 +52,10 @@ public final class NodeSubProblem<T> {
 
     /**
      * Converts this node-state association into an actual {@link SubProblem}.
-     * <p>
-     * The resulting {@link SubProblem} incorporates the path of decisions from the root to this node,
-     * updates the lower bound based on the node's value and suffix, and can be used directly
+     *
+     * <p>The resulting {@link SubProblem} incorporates the path of decisions from the root to this
+     * node, updates the lower bound based on the node's value and suffix, and can be used directly
      * in search or optimization routines.
-     * </p>
      *
      * @param pathToRoot the set of decisions forming the path from the root to this node
      * @return a {@link SubProblem} representing this node-state association
@@ -90,7 +82,8 @@ public final class NodeSubProblem<T> {
     @Override
     public String toString() {
         DecimalFormat df = new DecimalFormat("#.##########");
-        return String.format("%s - lb: %s - value: %s", state, df.format(lb), df.format(node.value));
+        return String.format(
+                "%s - lb: %s - value: %s", state, df.format(lb), df.format(node.value));
     }
 
     /**
@@ -110,5 +103,4 @@ public final class NodeSubProblem<T> {
     public double getLb() {
         return lb;
     }
-
 }

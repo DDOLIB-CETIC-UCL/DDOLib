@@ -4,18 +4,15 @@ import java.util.Iterator;
 
 /**
  * An iterator that transforms the inner subproblems into their representing states.
- * <p>
- * This iterator allows for iterating over subproblems and extracting the states that
- * they represent, simplifying access to the actual state without needing to deal
- * with the subproblem details directly.
- * </p>
+ *
+ * <p>This iterator allows for iterating over subproblems and extracting the states that they
+ * represent, simplifying access to the actual state without needing to deal with the subproblem
+ * details directly.
  *
  * @param <T> the type of state
  */
 final class NodeSubProblemsAsStateIterator<T> implements Iterator<T> {
-    /**
-     * The collection of {@link NodeSubProblem} instances being iterated upon.
-     */
+    /** The collection of {@link NodeSubProblem} instances being iterated upon. */
     private final Iterator<NodeSubProblem<T>> it;
 
     /**

@@ -1,58 +1,55 @@
 package org.ddolib.examples.layered.knapsack;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.frontier.SimpleFrontier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.modeling.*;
-import org.ddolib.layered.solver.Solution;
 import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-
-import java.io.IOException;
-import java.nio.file.Path;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Knapsack Problem (KS) with Ddo.
- * <p>
- * This class demonstrates how to solve an instance of the bounded Knapsack
- * Problem (BKP)
- * using a Decision Diagram Optimization (DDO) algorithm.
- * </p>
- * <p>
- * The program performs the following steps:
- * </p>
+ *
+ * <p>This class demonstrates how to solve an instance of the bounded Knapsack Problem (BKP) using a
+ * Decision Diagram Optimization (DDO) algorithm.
+ *
+ * <p>The program performs the following steps:
+ *
  * <ol>
- * <li>Loads a knapsack instance from a data file.</li>
- * <li>Defines a {@link DdoModel} with:
- * <ul>
- * <li>A relaxation function for merging states ({@link KSRelax}).</li>
- * <li>A state ranking heuristic ({@link KSRanking}).</li>
- * <li>A fast lower bound heuristic ({@link KSFastLowerBound}).</li>
- * <li>A dominance checker ({@link KSDominance}).</li>
- * <li>A frontier of type {@link CutSetType#Frontier}
- * ({@link SimpleFrontier}).</li>
- * <li>A width heuristic ({@link FixedWidth}) and cache usage.</li>
- * <li>Verbose output level ({@link VerbosityLevel}).</li>
- * </ul>
- * </li>
- * <li>Creates a {@link Solvers} and runs the DDO algorithm.</li>
- * <li>Prints updates when a new incumbent solution is found and stops after 10
- * seconds of runtime.</li>
- * <li>Outputs the final search statistics.</li>
+ *   <li>Loads a knapsack instance from a data file.
+ *   <li>Defines a {@link DdoModel} with:
+ *       <ul>
+ *         <li>A relaxation function for merging states ({@link KSRelax}).
+ *         <li>A state ranking heuristic ({@link KSRanking}).
+ *         <li>A fast lower bound heuristic ({@link KSFastLowerBound}).
+ *         <li>A dominance checker ({@link KSDominance}).
+ *         <li>A frontier of type {@link CutSetType#Frontier} ({@link SimpleFrontier}).
+ *         <li>A width heuristic ({@link FixedWidth}) and cache usage.
+ *         <li>Verbose output level ({@link VerbosityLevel}).
+ *       </ul>
+ *   <li>Creates a {@link Solvers} and runs the DDO algorithm.
+ *   <li>Prints updates when a new incumbent solution is found and stops after 10 seconds of
+ *       runtime.
+ *   <li>Outputs the final search statistics.
  * </ol>
  *
- * <p>
- * The DDO solver leverages relaxed decision diagrams, caching, and state
- * ranking to
- * efficiently explore the search space for high-quality solutions.
- * </p>
+ * <p>The DDO solver leverages relaxed decision diagrams, caching, and state ranking to efficiently
+ * explore the search space for high-quality solutions.
  */
 public class KSDdoMain {
 
-    private KSDdoMain() {
-    }
+    private KSDdoMain() {}
 
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
@@ -61,57 +58,62 @@ public class KSDdoMain {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-        final String instance = args.length == 0 ? Path.of("data", "Knapsack",
-                "instance_n1000_c1000_10_5_10_5_0").toString() : args[0];
+        final String instance =
+                args.length == 0
+                        ? Path.of("data", "Knapsack", "instance_n1000_c1000_10_5_10_5_0").toString()
+                        : args[0];
         final KSProblem problem = new KSProblem(instance);
-        final DdoModel<Integer> model = new DdoModel<>() {
-            @Override
-            public Problem<Integer> problem() {
-                return problem;
-            }
+        final DdoModel<Integer> model =
+                new DdoModel<>() {
+                    @Override
+                    public Problem<Integer> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public FastLowerBound<Integer> lowerBound() {
-                return new KSFastLowerBound(problem);
-            }
+                    @Override
+                    public FastLowerBound<Integer> lowerBound() {
+                        return new KSFastLowerBound(problem);
+                    }
 
-            @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
-            }
+                    @Override
+                    public DominanceChecker<Integer> dominance() {
+                        return new SimpleDominanceChecker<>(new KSDominance(), problem.nbVars());
+                    }
 
-            @Override
-            public Relaxation<Integer> relaxation() {
-                return new KSRelax();
-            }
+                    @Override
+                    public Relaxation<Integer> relaxation() {
+                        return new KSRelax();
+                    }
 
-            @Override
-            public KSRanking ranking() {
-                return new KSRanking();
-            }
+                    @Override
+                    public KSRanking ranking() {
+                        return new KSRanking();
+                    }
 
-            @Override
-            public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(10);
-            }
+                    @Override
+                    public WidthHeuristic<Integer> widthHeuristic() {
+                        return new FixedWidth<>(10);
+                    }
 
-            @Override
-            public Frontier<Integer> frontier() {
-                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
-            }
+                    @Override
+                    public Frontier<Integer> frontier() {
+                        return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+                    }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
-        };
+                    @Override
+                    public boolean useCache() {
+                        return true;
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-
     }
 }

@@ -1,23 +1,21 @@
 package org.ddolib.examples.layered.max2sat;
 
-
 import org.ddolib.layered.modeling.StateRanking;
 
 /**
- * Class used to compare two states for the Max2Sat problem.
- * <br>
- * A positive value means that we have a bigger benefit by setting <code>x<sub>k</sub></code> to <code>T</code>.<br>
- * A negative value means that we have a bigger benefit by setting <code>x<sub>k</sub></code> to <code>F</code>.<br>
- * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
- * That's why we sum the absolute value of each benefit to compare the states.
+ * Class used to compare two states for the Max2Sat problem. <br>
+ * A positive value means that we have a bigger benefit by setting <code>x<sub>k</sub></code> to
+ * <code>T</code>.<br>
+ * A negative value means that we have a bigger benefit by setting <code>x<sub>k</sub></code> to
+ * <code>F</code>.<br>
+ * When comparing two states, the best is the one that can generate the biggest benefit,
+ * independently of the decisions. That's why we sum the absolute value of each benefit to compare
+ * the states.
  */
 public class Max2SatRanking implements StateRanking<Max2SatState> {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-    public Max2SatRanking() {
-    }
+    /** Creates a new instance of this ranking. */
+    public Max2SatRanking() {}
 
     /**
      * Computes the ranking value of a state, defined as the sum of the absolute value of the net

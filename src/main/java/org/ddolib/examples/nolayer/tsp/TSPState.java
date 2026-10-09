@@ -3,18 +3,12 @@ package org.ddolib.examples.nolayer.tsp;
 import java.util.BitSet;
 import java.util.Objects;
 
-/**
- * Represents a state in the Traveling Salesman Problem (TSP) for nolayer models.
- */
+/** Represents a state in the Traveling Salesman Problem (TSP) for nolayer models. */
 public class TSPState {
-    /**
-     * Set of nodes that have not been visited yet.
-     */
+    /** Set of nodes that have not been visited yet. */
     public BitSet toVisit;
 
-    /**
-     * Current node(s). Usually a singleton, but can be multiple in merged states.
-     */
+    /** Current node(s). Usually a singleton, but can be multiple in merged states. */
     public BitSet current;
 
     /**
@@ -35,8 +29,12 @@ public class TSPState {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof TSPState that)) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (!(obj instanceof TSPState that)) {
+            return false;
+        }
         return (this.current.equals(that.current)) && this.toVisit.equals(that.toVisit);
     }
 

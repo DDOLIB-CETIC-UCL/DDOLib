@@ -6,10 +6,9 @@ import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Base model for the Knapsack Problem (KS), using the no-layer modeling API.
- * <p>
- * Bundles a {@link KSProblem} instance together with the {@link KSFlb} fast lower bound
- * used to guide and prune the search.
- * </p>
+ *
+ * <p>Bundles a {@link KSProblem} instance together with the {@link KSFlb} fast lower bound used to
+ * guide and prune the search.
  */
 public class KSModel implements Model<KSState> {
 

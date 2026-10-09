@@ -1,11 +1,12 @@
 package org.ddolib.common.heuristics.width;
 
 /**
- * Interface for heuristics that determine the maximum width of a layer in a multi-valued decision diagram (MDD).
- * <p>
- * Implementations of this interface define how the width of a layer is calculated based on the given state.
- * The maximum width can depend on the state, the depth of the layer, or be a fixed value, depending on the heuristic.
- * </p>
+ * Interface for heuristics that determine the maximum width of a layer in a multi-valued decision
+ * diagram (MDD).
+ *
+ * <p>Implementations of this interface define how the width of a layer is calculated based on the
+ * given state. The maximum width can depend on the state, the depth of the layer, or be a fixed
+ * value, depending on the heuristic.
  *
  * @param <T> the type of state used to compute the layer width
  */

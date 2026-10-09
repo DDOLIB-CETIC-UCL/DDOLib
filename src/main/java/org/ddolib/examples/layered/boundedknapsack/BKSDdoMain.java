@@ -4,101 +4,105 @@ import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.SimpleFrontier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
-import org.ddolib.common.util.io.SolutionPrinter;
 
 /**
- * Bounded Knapsack Problem (BKS) with Ddo.
- * Main class for solving the Bounded Knapsack Problem (BKS) using a Decision Diagram Optimization (DDO) approach.
- * <p>
- * This class demonstrates how to set up a BKS problem instance, define a DDO model with relaxation,
- * ranking, lower bound, dominance checker, width heuristic, and frontier, and solve the problem using
- * {@link Solvers#minimizeDdo(DdoModel, java.util.function.BiConsumer)}. The solution and statistics are printed to the console.
- * </p>
+ * Bounded Knapsack Problem (BKS) with Ddo. Main class for solving the Bounded Knapsack Problem
+ * (BKS) using a Decision Diagram Optimization (DDO) approach.
+ *
+ * <p>This class demonstrates how to set up a BKS problem instance, define a DDO model with
+ * relaxation, ranking, lower bound, dominance checker, width heuristic, and frontier, and solve the
+ * problem using {@link Solvers#minimizeDdo(DdoModel, java.util.function.BiConsumer)}. The solution
+ * and statistics are printed to the console.
  */
 public class BKSDdoMain {
 
-    private BKSDdoMain() {
-    }
+    private BKSDdoMain() {}
 
     /**
      * Entry point of the application.
-     * <p>
-     * The method performs the following steps:
-     * </p>
+     *
+     * <p>The method performs the following steps:
+     *
      * <ol>
-     *     <li>Creates a BKS problem instance with 100 items, capacity 1000, and strongly correlated instance type.</li>
-     *     <li>Defines a DDO model for the problem, including:
-     *         <ul>
-     *             <li>Relaxation using {@link BKSRelax}</li>
-     *             <li>Ranking using {@link BKSRanking}</li>
-     *             <li>Lower bound using {@link BKSFastLowerBound}</li>
-     *             <li>Dominance checker using {@link SimpleDominanceChecker} and {@link BKSDominance}</li>
-     *             <li>Cache enabled</li>
-     *             <li>Width heuristic using {@link FixedWidth}</li>
-     *             <li>Frontier using {@link SimpleFrontier} and {@link CutSetType#Frontier}</li>
-     *         </ul>
-     *     </li>
-     *     <li>Solves the problem using the DDO solver.</li>
-     *     <li>Prints the solution and search statistics to the console.</li>
+     *   <li>Creates a BKS problem instance with 100 items, capacity 1000, and strongly correlated
+     *       instance type.
+     *   <li>Defines a DDO model for the problem, including:
+     *       <ul>
+     *         <li>Relaxation using {@link BKSRelax}
+     *         <li>Ranking using {@link BKSRanking}
+     *         <li>Lower bound using {@link BKSFastLowerBound}
+     *         <li>Dominance checker using {@link SimpleDominanceChecker} and {@link BKSDominance}
+     *         <li>Cache enabled
+     *         <li>Width heuristic using {@link FixedWidth}
+     *         <li>Frontier using {@link SimpleFrontier} and {@link CutSetType#Frontier}
+     *       </ul>
+     *   <li>Solves the problem using the DDO solver.
+     *   <li>Prints the solution and search statistics to the console.
      * </ol>
      *
      * @param args command-line arguments (not used)
      */
     public static void main(String[] args) {
-        final BKSProblem problem = new BKSProblem(35, 100, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
-        DdoModel<Integer> model = new DdoModel<>() {
-            @Override
-            public BKSProblem problem() {
-                return problem;
-            }
+        final BKSProblem problem =
+                new BKSProblem(35, 100, BKSProblem.InstanceType.STRONGLY_CORRELATED, 0);
+        DdoModel<Integer> model =
+                new DdoModel<>() {
+                    @Override
+                    public BKSProblem problem() {
+                        return problem;
+                    }
 
-            @Override
-            public BKSFastLowerBound lowerBound() {
-                return new BKSFastLowerBound(problem);
-            }
+                    @Override
+                    public BKSFastLowerBound lowerBound() {
+                        return new BKSFastLowerBound(problem);
+                    }
 
-            @Override
-            public DominanceChecker<Integer> dominance() {
-                return new SimpleDominanceChecker<Integer>(new BKSDominance(), problem.nbVars());
-            }
+                    @Override
+                    public DominanceChecker<Integer> dominance() {
+                        return new SimpleDominanceChecker<Integer>(
+                                new BKSDominance(), problem.nbVars());
+                    }
 
-            @Override
-            public BKSRelax relaxation() {
-                return new BKSRelax();
-            }
+                    @Override
+                    public BKSRelax relaxation() {
+                        return new BKSRelax();
+                    }
 
-            @Override
-            public BKSRanking ranking() {
-                return new BKSRanking();
-            }
+                    @Override
+                    public BKSRanking ranking() {
+                        return new BKSRanking();
+                    }
 
-            @Override
-            public WidthHeuristic<Integer> widthHeuristic() {
-                return new FixedWidth<>(100);
-            }
+                    @Override
+                    public WidthHeuristic<Integer> widthHeuristic() {
+                        return new FixedWidth<>(100);
+                    }
 
-            @Override
-            public SimpleFrontier<Integer> frontier() {
-                return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
-            }
+                    @Override
+                    public SimpleFrontier<Integer> frontier() {
+                        return new SimpleFrontier<>(ranking(), CutSetType.Frontier);
+                    }
 
-            @Override
-            public boolean useCache() {
-                return true;
-            }
-        };
+                    @Override
+                    public boolean useCache() {
+                        return true;
+                    }
+                };
 
-        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -> {
-            SolutionPrinter.printSolution(s, sol);
-        });
+        Solution bestSolution =
+                Solvers.minimizeDdo(
+                        model,
+                        (sol, s) -> {
+                            SolutionPrinter.printSolution(s, sol);
+                        });
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
     }
 }
-

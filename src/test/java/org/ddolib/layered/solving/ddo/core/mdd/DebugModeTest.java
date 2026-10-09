@@ -1,24 +1,33 @@
 package org.ddolib.layered.solving.ddo.core.mdd;
 
-import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.heuristics.width.FixedWidth;
-import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.examples.layered.misp.MispProblem;
-import org.ddolib.layered.modeling.*;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.BitSet;
 import java.util.Iterator;
+import org.ddolib.common.heuristics.width.FixedWidth;
+import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.examples.layered.misp.MispProblem;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.ExactModel;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.Solvers;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+/**
+ * Tests that the debug mode detects invalid models (wrong fast lower bound or wrong relaxation) on
+ * a MISP instance.
+ */
 public class DebugModeTest {
 
-    private static ExactModel<BitSet> getFailingFlbModel(String instance, DebugLevel debugLvl) throws IOException {
+    private static ExactModel<BitSet> getFailingFlbModel(String instance, DebugLevel debugLvl)
+            throws IOException {
         final MispProblem problem = new MispProblem(instance);
         return new ExactModel<>() {
             @Override
@@ -38,7 +47,17 @@ public class DebugModeTest {
         };
     }
 
-    public static DdoModel<BitSet> getFailingRelaxationModel(String instance, DebugLevel debugLvl) throws IOException {
+    /**
+     * Builds a DDO model of a MISP instance whose relaxation is invalid: the merged state is the
+     * intersection of the merged states instead of their union.
+     *
+     * @param instance the path to the MISP instance file
+     * @param debugLvl the debug level of the model
+     * @return a DDO model with an invalid relaxation
+     * @throws IOException if the instance file cannot be read
+     */
+    public static DdoModel<BitSet> getFailingRelaxationModel(String instance, DebugLevel debugLvl)
+            throws IOException {
         final MispProblem problem = new MispProblem(instance);
 
         return new DdoModel<>() {
@@ -62,11 +81,10 @@ public class DebugModeTest {
                     }
 
                     @Override
-                    public double relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
+                    public double relaxEdge(
+                            BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
                         return cost;
                     }
-
-
                 };
             }
 
@@ -85,106 +103,128 @@ public class DebugModeTest {
     @Test
     public void debugModeDetectFlbError() throws IOException {
 
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final String instance =
+                Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
         ExactModel<BitSet> model = getFailingFlbModel(instance, DebugLevel.ON);
 
         // Expecting a RuntimeException because the lower bound is invalid
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            Solvers.minimizeExact(model);
-        });
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> {
+                            Solvers.minimizeExact(model);
+                        });
         assertTrue(exception.getMessage().contains("lower bound"));
-
     }
 
     @Test
     public void debugModeDetectRelaxationError() throws IOException {
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final String instance =
+                Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
         DdoModel<BitSet> model = getFailingRelaxationModel(instance, DebugLevel.ON);
 
         // Expecting a RuntimeException because the lower bound is invalid
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            Solvers.minimizeDdo(model);
-        });
-        assertTrue(exception.getMessage().contains("Found relaxed node that lead to worst solution"));
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> {
+                            Solvers.minimizeDdo(model);
+                        });
+        assertTrue(
+                exception.getMessage().contains("Found relaxed node that lead to worst solution"));
     }
 
     @Test
     public void debugModeDetectRelaxedCostError() throws IOException {
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final String instance =
+                Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
         final MispProblem problem = new MispProblem(instance);
-        DdoModel<BitSet> model = new DdoModel<>() {
+        DdoModel<BitSet> model =
+                new DdoModel<>() {
 
-            @Override
-            public WidthHeuristic<BitSet> widthHeuristic() {
-                return new FixedWidth<>(2);
-            }
-
-            @Override
-            public Relaxation<BitSet> relaxation() {
-                return new Relaxation<>() {
                     @Override
-                    public BitSet mergeStates(Iterator<BitSet> states) {
-                        var merged = new BitSet(problem.nbVars());
-                        while (states.hasNext()) {
-                            final BitSet state = states.next();
-                            // the merged state is the union of all the state
-                            merged.or(state);
-                        }
-                        return merged;
+                    public WidthHeuristic<BitSet> widthHeuristic() {
+                        return new FixedWidth<>(2);
                     }
 
                     @Override
-                    public double relaxEdge(BitSet from, BitSet to, BitSet merged, Decision d, double cost) {
-                        return cost + 1000;
+                    public Relaxation<BitSet> relaxation() {
+                        return new Relaxation<>() {
+                            @Override
+                            public BitSet mergeStates(Iterator<BitSet> states) {
+                                var merged = new BitSet(problem.nbVars());
+                                while (states.hasNext()) {
+                                    final BitSet state = states.next();
+                                    // the merged state is the union of all the state
+                                    merged.or(state);
+                                }
+                                return merged;
+                            }
+
+                            @Override
+                            public double relaxEdge(
+                                    BitSet from,
+                                    BitSet to,
+                                    BitSet merged,
+                                    Decision d,
+                                    double cost) {
+                                return cost + 1000;
+                            }
+                        };
                     }
 
+                    @Override
+                    public Problem<BitSet> problem() {
+                        return problem;
+                    }
 
+                    @Override
+                    public DebugLevel debugMode() {
+                        return DebugLevel.ON;
+                    }
                 };
-            }
-
-            @Override
-            public Problem<BitSet> problem() {
-                return problem;
-            }
-
-            @Override
-            public DebugLevel debugMode() {
-                return DebugLevel.ON;
-            }
-        };
 
         // Expecting a RuntimeException because the lower bound is invalid
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            Solvers.minimizeDdo(model);
-        });
-        assertTrue(exception.getMessage().contains("Found relaxed node that lead to worst solution"));
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> {
+                            Solvers.minimizeDdo(model);
+                        });
+        assertTrue(
+                exception.getMessage().contains("Found relaxed node that lead to worst solution"));
     }
 
     @Test
     public void debugModeExportMDDFlbError() throws IOException {
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final String instance =
+                Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
         ExactModel<BitSet> model = getFailingFlbModel(instance, DebugLevel.EXTENDED);
 
         // Expecting a RuntimeException because the lower bound is invalid
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            Solvers.minimizeExact(model);
-        });
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> {
+                            Solvers.minimizeExact(model);
+                        });
         assertTrue(exception.getMessage().contains("MDD saved in output/failed.dot"));
     }
 
     @Test
     public void debugModeExportMddRelaxationError() throws IOException {
-        final String instance = Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
+        final String instance =
+                Path.of("src", "test", "resources", "MISP", "tadpole_4_2.dot").toString();
         final MispProblem problem = new MispProblem(instance);
         DdoModel<BitSet> model = getFailingRelaxationModel(instance, DebugLevel.EXTENDED);
 
-
         // Expecting a RuntimeException because the lower bound is invalid
-        RuntimeException exception = assertThrows(RuntimeException.class, () -> {
-            Solvers.minimizeDdo(model);
-        });
+        RuntimeException exception =
+                assertThrows(
+                        RuntimeException.class,
+                        () -> {
+                            Solvers.minimizeDdo(model);
+                        });
         assertTrue(exception.getMessage().contains("MDD saved in output/failed.dot"));
     }
-
-
 }

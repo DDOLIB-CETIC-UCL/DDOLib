@@ -1,5 +1,20 @@
 package org.ddolib.layered.solving.acs.core.solver;
 
+import static java.lang.Math.min;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -8,7 +23,11 @@ import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.modeling.AcsModel;
+import org.ddolib.layered.modeling.DefaultFastLowerBound;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
@@ -16,31 +35,23 @@ import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.util.debug.DebugUtil;
 
-import java.util.*;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import static java.lang.Math.min;
-
 /**
- * Implementation of an Anytime Column Search (ACS) solver for decision diagram-based optimization problems.
- * <p>
- * The solver uses a combination of a lower bound, dominance rules, and variable heuristics to explore the
- * search space efficiently. It maintains open and closed lists of subproblems organized by depth (columns)
- * and attempts to minimize the objective function while keeping track of the best known solution (incumbent).
- * </p>
+ * Implementation of an Anytime Column Search (ACS) solver for decision diagram-based optimization
+ * problems.
  *
- * <p>
- * Features:
- * </p>
+ * <p>The solver uses a combination of a lower bound, dominance rules, and variable heuristics to
+ * explore the search space efficiently. It maintains open and closed lists of subproblems organized
+ * by depth (columns) and attempts to minimize the objective function while keeping track of the
+ * best known solution (incumbent).
+ *
+ * <p>Features:
+ *
  * <ul>
- *     <li>Maintains a frontier of subproblems using a priority queue at each column.</li>
- *     <li>Applies a {@link FastLowerBound} to prune subproblems unlikely to improve the incumbent.</li>
- *     <li>Optionally uses {@link DominanceChecker} to avoid exploring dominated states.</li>
- *     <li>Supports variable selection heuristics through {@link VariableHeuristic}.</li>
- *     <li>Can report search statistics and provide the best solution found at any time.</li>
+ *   <li>Maintains a frontier of subproblems using a priority queue at each column.
+ *   <li>Applies a {@link FastLowerBound} to prune subproblems unlikely to improve the incumbent.
+ *   <li>Optionally uses {@link DominanceChecker} to avoid exploring dominated states.
+ *   <li>Supports variable selection heuristics through {@link VariableHeuristic}.
+ *   <li>Can report search statistics and provide the best solution found at any time.
  * </ul>
  *
  * @param <T> the type representing a state in the problem
@@ -53,62 +64,57 @@ import static java.lang.Math.min;
  */
 public final class AcsSolver<T> implements Solver {
 
-    /**
-     * The problem we want to minimize
-     */
+    /** The problem we want to minimize. */
     private final Problem<T> problem;
-    /**
-     * A suitable lb for the problem we want to minimize
-     */
+
+    /** A suitable lb for the problem we want to minimize. */
     private final FastLowerBound<T> lb;
-    /**
-     * A heuristic to choose the next variable to branch on when developing a DD
-     */
+
+    /** A heuristic to choose the next variable to branch on when developing a DD. */
     private final VariableHeuristic<T> varh;
-    /**
-     * The dominance object that will be used to prune the search space.
-     */
+
+    /** The dominance object that will be used to prune the search space. */
     private final DominanceChecker<T> dominance;
+
     /**
-     * HashMap mapping (state,depth) to the f value.
-     * Closed nodes are the ones for which their children have been generated.
+     * HashMap mapping (state,depth) to the f value. Closed nodes are the ones for which their
+     * children have been generated.
      */
     private final HashMap<StateAndDepth<T>, Double> closed;
-    /**
-     * HashMap mapping (state,depth) to the f value.
-     * Open nodes are the ones in the frontier.
-     */
+
+    /** HashMap mapping (state,depth) to the f value. Open nodes are the ones in the frontier. */
     private final HashMap<StateAndDepth<T>, Double> present;
+
     private final List<PriorityQueue<SubProblem<T>>> open;
     private final int columnWidth;
     private final SubProblem<T> root;
     private final VerboseMode verboseMode;
     private final DebugLevel debugLevel;
     private boolean defaultLowerBoundValue;
-    /**
-     * Value of the best known upper bound (incumbent solution).
-     */
+
+    /** Value of the best known upper bound (incumbent solution). */
     private double bestUB;
-    /**
-     * If set, this keeps the info about the best solution so far.
-     */
+
+    /** If set, this keeps the info about the best solution so far. */
     private Optional<Set<Decision>> bestSol;
 
     /**
-     * Constructs an ACS solver with all required and optional components provided via an {@link AcsModel}.
+     * Constructs an ACS solver with all required and optional components provided via an {@link
+     * AcsModel}.
      *
-     * <p>
-     * Mandatory parameters:
-     * </p>
+     * <p>Mandatory parameters:
+     *
      * <ul>
-     *     <li>{@link Problem} implementation</li>
-     *     <li>{@link FastLowerBound} implementation</li>
-     *     <li>{@link VariableHeuristic} implementation</li>
+     *   <li>{@link Problem} implementation
+     *   <li>{@link FastLowerBound} implementation
+     *   <li>{@link VariableHeuristic} implementation
      * </ul>
-     * Optional parameters:
+     *
+     * <p>Optional parameters:
+     *
      * <ul>
-     *     <li>{@link DominanceChecker} implementation</li>
-     *     <li>{@link VerbosityLevel} for debug/logging</li>
+     *   <li>{@link DominanceChecker} implementation
+     *   <li>{@link VerbosityLevel} for debug/logging
      * </ul>
      *
      * @param model provides all parameters needed to configure the solver
@@ -125,7 +131,6 @@ public final class AcsSolver<T> implements Solver {
         this.closed = new HashMap<>();
         this.present = new HashMap<>();
 
-
         this.open = new ArrayList<>(problem.nbVars() + 1);
         for (int i = 0; i < problem.nbVars() + 1; i++) {
             this.open.add(new PriorityQueue<>(Comparator.comparingDouble(SubProblem<T>::f)));
@@ -136,7 +141,6 @@ public final class AcsSolver<T> implements Solver {
 
         this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
-
     }
 
     private AcsSolver(AcsModel<T> model, StateAndDepth<T> rootKey) {
@@ -178,13 +182,16 @@ public final class AcsSolver<T> implements Solver {
     /**
      * Minimizes the problem using the ACS strategy.
      *
-     * @param limit      a predicate to stop the search based on current {@link SearchStatistics}
-     * @param onSolution a consumer invoked on each new solution found (solution array and statistics)
+     * @param limit a predicate to stop the search based on current {@link SearchStatistics}
+     * @param onSolution a consumer invoked on each new solution found (solution array and
+     *     statistics)
      * @return final {@link SearchStatistics} of the search
      */
     @Override
-    public Solution minimize(Predicate<SearchStatistics> limit,
-                             BiConsumer<int[], SearchStatistics> onSolution) {
+    public Solution minimize(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        // declared first on purpose: it records the start time of the search
+        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
         AstarStats statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
@@ -194,14 +201,15 @@ public final class AcsSolver<T> implements Solver {
         }
         ArrayList<SubProblem<T>> candidates = new ArrayList<>();
         while (!allEmpty()) {
-            verboseMode.detailedSearchState(statistics.nbIterations(),
+            verboseMode.detailedSearchState(
+                    statistics.nbIterations(),
                     open.stream().map(PriorityQueue::size).mapToInt(x -> x).sum(),
                     bestUB,
                     open.stream()
                             .filter(pq -> !pq.isEmpty())
                             .mapToDouble(pq -> pq.peek().getLowerBound())
-                            .min().
-                            orElse(Double.POSITIVE_INFINITY),
+                            .min()
+                            .orElse(Double.POSITIVE_INFINITY),
                     gap());
 
             statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
@@ -213,10 +221,14 @@ public final class AcsSolver<T> implements Solver {
             for (int i = 0; i < problem.nbVars() + 1; i++) { // for each layer
                 candidates.clear();
                 int l = min(columnWidth, open.get(i).size());
-                for (int j = 0; j < l; j++) { // expand the layer by expanding the best columnWidth best nodes
+                for (int j = 0;
+                        j < l;
+                        j++) { // expand the layer by expanding the best columnWidth best nodes
                     SubProblem<T> sub = open.get(i).poll();
                     // if the new state is dominated, we skip it
-                    if (sub.getState() != null && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                    if (sub.getState() != null
+                            && dominance.updateDominance(
+                                    sub.getState(), sub.getDepth(), sub.getValue())) {
                         continue;
                     }
                     StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
@@ -238,8 +250,10 @@ public final class AcsSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
-                            statistics = statistics.updateIncumbent(bestUB, gap())
-                                    .updateStatus(SearchStatus.SAT);
+                            statistics =
+                                    statistics
+                                            .updateIncumbent(bestUB, gap())
+                                            .updateStatus(SearchStatus.SAT);
                             onSolution.accept(constructSolution(bestSol.get()), statistics);
                         }
                         verboseMode.newBest(bestUB);
@@ -248,9 +262,10 @@ public final class AcsSolver<T> implements Solver {
                         addChildren(sub);
                     }
                 }
-
             }
-            statistics = statistics.updateFrontierMaxSize(open.stream().mapToInt(PriorityQueue::size).sum());
+            statistics =
+                    statistics.updateFrontierMaxSize(
+                            open.stream().mapToInt(PriorityQueue::size).sum());
         }
 
         if (debugLevel != DebugLevel.OFF) {
@@ -259,8 +274,11 @@ public final class AcsSolver<T> implements Solver {
 
         statistics = statistics.updateTime(System.currentTimeMillis());
 
-        if (bestSol.isPresent()) statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
-        else statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        if (bestSol.isPresent()) {
+            statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);
+        } else {
+            statistics = statistics.updateStatus(SearchStatus.UNSAT);
+        }
 
         return new Solution(bestSolution(), statistics);
     }
@@ -282,7 +300,8 @@ public final class AcsSolver<T> implements Solver {
     /**
      * Returns the set of decisions corresponding to the best solution found, if any.
      *
-     * @return {@link Optional} containing the set of {@link Decision} objects or empty if none found
+     * @return {@link Optional} containing the set of {@link Decision} objects or empty if none
+     *     found
      */
     @Override
     public Optional<Set<Decision>> bestSolution() {
@@ -296,13 +315,17 @@ public final class AcsSolver<T> implements Solver {
      * @return gap as a percentage
      */
     private double gap() {
-        if (Double.isInfinite(bestUB)) return Double.POSITIVE_INFINITY;
+        if (Double.isInfinite(bestUB)) {
+            return Double.POSITIVE_INFINITY;
+        }
 
-        double globalLB = open.stream()
-                .filter(pq -> !pq.isEmpty())
-                .mapToDouble(pq -> defaultLowerBoundValue ? pq.peek().getValue() : pq.peek().f())
-                .min()
-                .orElse(bestUB);
+        double globalLB =
+                open.stream()
+                        .filter(pq -> !pq.isEmpty())
+                        .mapToDouble(
+                                pq -> defaultLowerBoundValue ? pq.peek().getValue() : pq.peek().f())
+                        .min()
+                        .orElse(bestUB);
 
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
     }
@@ -326,11 +349,7 @@ public final class AcsSolver<T> implements Solver {
             }
         }
 
-        return new SubProblem<>(
-                state,
-                value,
-                lb.fastLowerBound(state, vars),
-                nullDecisions);
+        return new SubProblem<>(state, value, lb.fastLowerBound(state, vars), nullDecisions);
     }
 
     /**
@@ -345,19 +364,23 @@ public final class AcsSolver<T> implements Solver {
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
-            if (debugLevel != DebugLevel.OFF)
+            if (debugLevel != DebugLevel.OFF) {
                 DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);
+            }
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
 
             double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
-            double h = lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
+            double h =
+                    lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));
             double f = g + h;
 
             // this child can only lead to less good solution
-            if (f + 1e-10 > bestUB) continue;
+            if (f + 1e-10 > bestUB) {
+                continue;
+            }
 
             SubProblem<T> newSub = new SubProblem<>(newState, g, h, path);
             if (debugLevel == DebugLevel.EXTENDED) {
@@ -379,8 +402,6 @@ public final class AcsSolver<T> implements Solver {
                     present.put(newKey, newSub.f());
                 }
             }
-
-
         }
     }
 
@@ -388,31 +409,30 @@ public final class AcsSolver<T> implements Solver {
         Set<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());
         toCheck.addAll(present.keySet());
 
-        AcsModel<T> model = new AcsModel<>() {
+        AcsModel<T> model =
+                new AcsModel<>() {
 
+                    @Override
+                    public Problem<T> problem() {
+                        return problem;
+                    }
 
-            @Override
-            public Problem<T> problem() {
-                return problem;
-            }
+                    @Override
+                    public FastLowerBound<T> lowerBound() {
+                        return lb;
+                    }
 
-            @Override
-            public FastLowerBound<T> lowerBound() {
-                return lb;
-            }
+                    @Override
+                    public DominanceChecker<T> dominance() {
+                        return dominance;
+                    }
 
-            @Override
-            public DominanceChecker<T> dominance() {
-                return dominance;
-            }
-
-            @Override
-            public int columnWidth() {
-                return columnWidth;
-            }
-        };
+                    @Override
+                    public int columnWidth() {
+                        return columnWidth;
+                    }
+                };
 
         DebugUtil.checkFlbAdmissibility(toCheck, model, key -> new AcsSolver<>(model, key));
     }
-
 }

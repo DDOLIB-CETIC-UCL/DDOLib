@@ -1,14 +1,10 @@
 package org.ddolib.nolayer.solver;
 
+import java.util.List;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.util.PrettyPrint;
 
-import java.util.List;
-
-/**
- * Wrapper defining a solution for a no-layer problem
- *
- */
+/** Wrapper defining a solution for a no-layer problem. */
 public class Solution {
 
     private final List<Integer> solution;
@@ -17,7 +13,7 @@ public class Solution {
     /**
      * Creates a new solution wrapping the given labels and search statistics.
      *
-     * @param solution   the ordered list of labels leading to this solution from the initial state
+     * @param solution the ordered list of labels leading to this solution from the initial state
      * @param statistics the search statistics associated with this solution
      */
     public Solution(List<Integer> solution, SearchStatistics statistics) {

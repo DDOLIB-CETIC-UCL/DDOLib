@@ -1,14 +1,22 @@
 package org.ddolib.examples.layered.mks;
 
+import java.nio.file.Path;
+import java.util.stream.Stream;
 import org.ddolib.layered.testbench.ProblemTestBench;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
 
-import java.nio.file.Path;
-import java.util.stream.Stream;
-
+/**
+ * Tests of the layered solvers on multi-dimensional knapsack (MKS) instances, using the {@link
+ * ProblemTestBench}.
+ */
 public class MKSTest {
+    /**
+     * Generates the dynamic tests for each multi-dimensional knapsack (MKS) instance.
+     *
+     * @return the stream of generated tests
+     */
     @DisplayName("MKS")
     @TestFactory
     public Stream<DynamicTest> testMaxCover() {
@@ -21,5 +29,4 @@ public class MKSTest {
         bench.testLns = false;
         return bench.generateTests();
     }
-
 }

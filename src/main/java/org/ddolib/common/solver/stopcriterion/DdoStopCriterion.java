@@ -4,18 +4,18 @@ import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 
 /**
- * Interface representing a stop criterion specifically for Decision Diagram Optimization (DDO) solvers.
- * <p>
- * This extends {@link StopCriterion} to provide access to DDO-specific statistics
- * such as the total number of MDD nodes or the explored depth.
- * </p>
+ * Interface representing a stop criterion specifically for Decision Diagram Optimization (DDO)
+ * solvers.
+ *
+ * <p>This extends {@link StopCriterion} to provide access to DDO-specific statistics such as the
+ * total number of MDD nodes or the explored depth.
  */
 @FunctionalInterface
 public interface DdoStopCriterion extends StopCriterion {
 
     /**
-     * Creates a stop criterion that terminates the search when the total number
-     * of MDD nodes created exceeds a specified limit.
+     * Creates a stop criterion that terminates the search when the total number of MDD nodes
+     * created exceeds a specified limit.
      *
      * @param maxNodes the maximum allowed number of MDD nodes
      * @return a DdoStopCriterion for maximum total nodes
@@ -25,20 +25,21 @@ public interface DdoStopCriterion extends StopCriterion {
     }
 
     /**
-     * Creates a stop criterion that terminates the search when the number of iterations
-     * without any lower bound improvement exceeds a specified limit.
+     * Creates a stop criterion that terminates the search when the number of iterations without any
+     * lower bound improvement exceeds a specified limit.
      *
-     * @param maxIter the maximum allowed number of iterations since the last lower bound improvement
+     * @param maxIter the maximum allowed number of iterations since the last lower bound
+     *     improvement
      * @return a DdoStopCriterion based on iterations since last lower bound improvement
      */
     static DdoStopCriterion maxIterWithoutLowerBoundImprovement(int maxIter) {
-        return stats -> (stats.nbIterations() - stats.lastIterationOfLowerBoundImprovement()) >= maxIter;
+        return stats ->
+                (stats.nbIterations() - stats.lastIterationOfLowerBoundImprovement()) >= maxIter;
     }
 
     /**
-     * Creates a stop criterion that terminates the search when the depth of the
-     * subproblem root being explored (the node popped from the frontier)
-     * reaches or exceeds a specified limit.
+     * Creates a stop criterion that terminates the search when the depth of the subproblem root
+     * being explored (the node popped from the frontier) reaches or exceeds a specified limit.
      *
      * @param maxDepth the maximum allowed depth for a subproblem root
      * @return a DdoStopCriterion for maximum explored depth
@@ -58,7 +59,8 @@ public interface DdoStopCriterion extends StopCriterion {
     /**
      * {@inheritDoc}
      *
-     * @throws IllegalArgumentException if the provided statistics are not an instance of {@link DdoStats}
+     * @throws IllegalArgumentException if the provided statistics are not an instance of {@link
+     *     DdoStats}
      */
     @Override
     default boolean test(SearchStatistics stats) {

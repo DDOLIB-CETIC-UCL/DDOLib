@@ -7,8 +7,8 @@ package org.ddolib.nolayer.modeling;
  */
 public interface FastLowerBound<T> {
     /**
-     * Computes a lower bound on the remaining cost from the given state
-     * to reach any valid target state.
+     * Computes a lower bound on the remaining cost from the given state to reach any valid target
+     * state.
      *
      * @param state the current state
      * @return a lower bound on the remaining cost

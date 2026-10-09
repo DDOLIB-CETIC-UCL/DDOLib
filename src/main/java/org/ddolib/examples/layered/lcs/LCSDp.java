@@ -3,8 +3,8 @@ package org.ddolib.examples.layered.lcs;
 import java.util.Arrays;
 
 /**
- * Naive DP solver the 2-strings longest common subsequence problem, used
- * to build a heuristic for the m-strings problem.
+ * Naive DP solver the 2-strings longest common subsequence problem, used to build a heuristic for
+ * the m-strings problem.
  */
 public class LCSDp {
     int charNb;
@@ -18,8 +18,8 @@ public class LCSDp {
     }
 
     /**
-     * Solves the 2-strings LCS problem using a naive DP method.
-     * Initiates the matrix and calls the heuristic.
+     * Solves the 2-strings LCS problem using a naive DP method. Initiates the matrix and calls the
+     * heuristic.
      *
      * @return a Matrix containing the remaining LCS length based on the position in the strings
      */
@@ -39,19 +39,20 @@ public class LCSDp {
         for (int j = 0; j <= s2.length; j++) {
             table[s1.length][j] = 0;
         }
-        _solve(table, 0, 0);
+        solveFrom(table, 0, 0);
         return table;
     }
 
-    int _solve(int[][] table, int i, int j) {
-        if (table[i][j] != -1) return table[i][j];
-
+    int solveFrom(int[][] table, int i, int j) {
+        if (table[i][j] != -1) {
+            return table[i][j];
+        }
 
         // Max of (below, right, current + 1 (if same id))
         table[i][j] =
                 Math.max(
-                        Math.max(_solve(table, i + 1, j), _solve(table, i, j + 1)),
-                        _solve(table, i + 1, j + 1) + ((s1[i] == s2[j]) ? 1 : 0));
+                        Math.max(solveFrom(table, i + 1, j), solveFrom(table, i, j + 1)),
+                        solveFrom(table, i + 1, j + 1) + ((s1[i] == s2[j]) ? 1 : 0));
         return table[i][j];
     }
 }

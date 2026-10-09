@@ -1,40 +1,41 @@
 package org.ddolib.layered.solving.ddo.core.heuristics.cluster;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Random;
 import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
-
-import java.util.*;
 
 /**
  * Generalized Hyperplane Partitioning (GHP) reduction strategy for decision diagram layers.
  *
- * <p>
- * This class implements {@link ReductionStrategy} and clusters nodes in a layer using
- * a distance-based partitioning method inspired by hyperplane separation. It requires
- * a problem-specific {@link StateDistance} function to compute distances between states.
+ * <p>This class implements {@link ReductionStrategy} and clusters nodes in a layer using a
+ * distance-based partitioning method inspired by hyperplane separation. It requires a
+ * problem-specific {@link StateDistance} function to compute distances between states.
  *
- * <p>
- * The GHP strategy works by:
+ * <p>The GHP strategy works by:
+ *
  * <ol>
- *   <li>Selecting two distant pivot nodes from the layer</li>
- *   <li>Assigning each remaining node to the cluster of the closer pivot</li>
- *   <li>Recursively splitting clusters until the desired number of clusters ({@code maxWidth}) is reached</li>
+ *   <li>Selecting two distant pivot nodes from the layer
+ *   <li>Assigning each remaining node to the cluster of the closer pivot
+ *   <li>Recursively splitting clusters until the desired number of clusters ({@code maxWidth}) is
+ *       reached
  * </ol>
  *
- * <p>
- * A random number generator is used for tie-breaking and initial shuffling of the layer.
+ * <p>A random number generator is used for tie-breaking and initial shuffling of the layer.
  *
  * @param <T> the type of states associated with the nodes
  */
 public class GHP<T> implements ReductionStrategy<T> {
-    /**
-     * Distance function used to measure distances between states.
-     */
-    final private StateDistance<T> distance;
-    /**
-     * Random number generator for shuffling and tie-breaking.
-     */
-    final private Random rnd;
+    /** Distance function used to measure distances between states. */
+    private final StateDistance<T> distance;
 
+    /** Random number generator for shuffling and tie-breaking. */
+    private final Random rnd;
 
     /**
      * Constructs a GHP reduction strategy with a default random seed.
@@ -50,7 +51,7 @@ public class GHP<T> implements ReductionStrategy<T> {
      * Constructs a GHP reduction strategy with a specified random seed.
      *
      * @param distance the distance function used to compare states
-     * @param seed     the random seed
+     * @param seed the random seed
      */
     public GHP(StateDistance<T> distance, long seed) {
         this.distance = distance;
@@ -69,19 +70,18 @@ public class GHP<T> implements ReductionStrategy<T> {
     /**
      * Partitions the given layer into clusters using Generalized Hyperplane Partitioning.
      *
-     * <p>
-     * The method recursively divides the layer by selecting pivot nodes and assigning
-     * nodes to the cluster of the closest pivot. All nodes in the layer are included
-     * in one of the resulting clusters, and the input layer is emptied.
+     * <p>The method recursively divides the layer by selecting pivot nodes and assigning nodes to
+     * the cluster of the closest pivot. All nodes in the layer are included in one of the resulting
+     * clusters, and the input layer is emptied.
      *
-     * @param layer    the list of nodes at the current layer
+     * @param layer the list of nodes at the current layer
      * @param maxWidth the desired number of clusters (maximum width after reduction)
      * @return an array of clusters, each cluster being a list of nodes
      */
     @Override
     public List<NodeSubProblem<T>>[] defineClusters(List<NodeSubProblem<T>> layer, int maxWidth) {
 
-        Map<T, Double> distanceWithPivot = new HashMap<>(layer.size());
+        final Map<T, Double> distanceWithPivot = new HashMap<>(layer.size());
 
         Collections.shuffle(layer, rnd);
         NodeSubProblem<T> pivotA = layer.getFirst();
@@ -111,14 +111,14 @@ public class GHP<T> implements ReductionStrategy<T> {
             List<NodeSubProblem<T>> newClusterA = new ArrayList<>(current.size());
             List<NodeSubProblem<T>> newClusterB = new ArrayList<>(current.size());
 
+            newClusterA.add(pivotA);
+            newClusterB.add(pivotB);
+            distanceWithPivot.put(pivotB.state, 0.0);
+
             NodeSubProblem<T> furthestFromA = pivotA;
             double maxDistanceA = -1;
             NodeSubProblem<T> furthestFromB = pivotB;
             double maxDistanceB = -1;
-
-            newClusterA.add(pivotA);
-            newClusterB.add(pivotB);
-            distanceWithPivot.put(pivotB.state, 0.0);
 
             for (NodeSubProblem<T> node : current) {
                 if (node.state.equals(pivotA.state) || node.state.equals(pivotB.state)) {
@@ -156,11 +156,9 @@ public class GHP<T> implements ReductionStrategy<T> {
         List<NodeSubProblem<T>>[] clusters = new List[pqClusters.size()];
         int index = 0;
 
-
         for (ClusterNode cluster : pqClusters) {
             clusters[index] = cluster.cluster;
             index++;
-
         }
 
         return clusters;
@@ -169,7 +167,7 @@ public class GHP<T> implements ReductionStrategy<T> {
     /**
      * Selects the node in a cluster that is farthest from a reference node.
      *
-     * @param ref   the reference node
+     * @param ref the reference node
      * @param nodes the cluster of nodes to search
      * @return the node farthest from the reference
      */
@@ -187,28 +185,25 @@ public class GHP<T> implements ReductionStrategy<T> {
         return furthest;
     }
 
-    /**
-     * Internal class representing a cluster with its pivot nodes and priority.
-     */
+    /** Internal class representing a cluster with its pivot nodes and priority. */
     private class ClusterNode implements Comparable<ClusterNode> {
-        /**
-         * Priority of the cluster for splitting (based on maximum distance from pivot).
-         */
+        /** Priority of the cluster for splitting (based on maximum distance from pivot). */
         final double priority;
-        /**
-         * List of nodes contained in the cluster.
-         */
+
+        /** List of nodes contained in the cluster. */
         final List<NodeSubProblem<T>> cluster;
-        /**
-         * Primary pivot node of the cluster.
-         */
+
+        /** Primary pivot node of the cluster. */
         final NodeSubProblem<T> pivot;
-        /**
-         * Node farthest from the primary pivot, used for recursive splitting.
-         */
+
+        /** Node farthest from the primary pivot, used for recursive splitting. */
         final NodeSubProblem<T> furthestFromPivot;
 
-        public ClusterNode(double priority, List<NodeSubProblem<T>> cluster, NodeSubProblem<T> pivot, NodeSubProblem<T> furthestFromPivot) {
+        public ClusterNode(
+                double priority,
+                List<NodeSubProblem<T>> cluster,
+                NodeSubProblem<T> pivot,
+                NodeSubProblem<T> furthestFromPivot) {
             this.priority = priority;
             this.cluster = cluster;
             this.pivot = pivot;
@@ -229,5 +224,4 @@ public class GHP<T> implements ReductionStrategy<T> {
             return this.cluster.toString();
         }
     }
-
 }

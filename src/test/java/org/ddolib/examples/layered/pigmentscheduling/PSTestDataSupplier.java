@@ -1,19 +1,27 @@
 package org.ddolib.examples.layered.pigmentscheduling;
 
-import org.ddolib.layered.modeling.DdoModel;
-import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.layered.testbench.TestDataSupplier;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Stream;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.testbench.TestDataSupplier;
 
+/**
+ * Supplies the Pigment Sequencing Problem (PSP) instances (read from the files of a directory) and
+ * the layered model used to solve them in the tests.
+ */
 public class PSTestDataSupplier extends TestDataSupplier<PSState, PSProblem> {
 
     private final Path dir;
 
+    /**
+     * Creates a supplier reading the instances from the given directory.
+     *
+     * @param dir the directory containing the instance files
+     */
     public PSTestDataSupplier(Path dir) {
         this.dir = dir;
     }

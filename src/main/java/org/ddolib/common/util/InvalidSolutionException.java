@@ -1,8 +1,8 @@
 package org.ddolib.common.util;
 
 /**
- * Exception thrown by {@link org.ddolib.layered.modeling.Problem#evaluate(int[])} method if its input solution does not
- * respect the problem's constraints.
+ * Exception thrown by {@link org.ddolib.layered.modeling.Problem#evaluate(int[])} method if its
+ * input solution does not respect the problem's constraints.
  */
 public class InvalidSolutionException extends Exception {
 

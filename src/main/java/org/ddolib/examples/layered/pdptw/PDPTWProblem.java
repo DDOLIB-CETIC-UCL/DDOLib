@@ -1,111 +1,113 @@
 package org.ddolib.examples.layered.pdptw;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.IntStream;
+import org.ddolib.common.util.InvalidSolutionException;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
-import java.io.*;
-import java.util.*;
-import java.util.stream.IntStream;
 
 /**
  * Represents a Pickup and Delivery Problem (PDP) instance with a single vehicle.
- * <p>
- * In this problem:
- * </p>
+ *
+ * <p>In this problem:
+ *
  * <ul>
- *     <li>Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before its associated delivery node.</li>
- *     <li>There may also be unrelated nodes that are not part of any pair.</li>
- *     <li>The vehicle has a capacity limit that restricts how many pickups can be carried simultaneously.</li>
- *     <li>The problem is represented as a TSP-like graph with distances between nodes.</li>
+ *   <li>Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before
+ *       its associated delivery node.
+ *   <li>There may also be unrelated nodes that are not part of any pair.
+ *   <li>The vehicle has a capacity limit that restricts how many pickups can be carried
+ *       simultaneously.
+ *   <li>The problem is represented as a TSP-like graph with distances between nodes.
  * </ul>
  *
- * <p>The class implements the {@link Problem} interface, providing methods for:</p>
+ * <p>The class implements the {@link Problem} interface, providing methods for:
+ *
  * <ul>
- *     <li>Number of variables {@link #nbVars()}</li>
- *     <li>Initial state {@link #initialState()}</li>
- *     <li>Transition function {@link #transition(PDPTWState, Decision)}</li>
- *     <li>Transition cost {@link #transitionCost(PDPTWState, Decision)}</li>
- *     <li>Domain of possible decisions {@link #domain(PDPTWState, int)}</li>
+ *   <li>Number of variables {@link #nbVars()}
+ *   <li>Initial state {@link #initialState()}
+ *   <li>Transition function {@link #transition(PDPTWState, Decision)}
+ *   <li>Transition cost {@link #transitionCost(PDPTWState, Decision)}
+ *   <li>Domain of possible decisions {@link #domain(PDPTWState, int)}
  * </ul>
  *
+ * <p>States are represented by {@link PDPTWState}, including:
  *
- * <p>States are represented by {@link PDPTWState}, including:</p>
  * <ul>
- *     <li>The set of currently visited nodes</li>
- *     <li>The set of nodes still to visit</li>
- *     <li>The current vehicle load</li>
+ *   <li>The set of currently visited nodes
+ *   <li>The set of nodes still to visit
+ *   <li>The current vehicle load
  * </ul>
  */
 public class PDPTWProblem implements Problem<PDPTWState> {
 
-    /**
-     * Number of nodes in the problem.
-     */
+    /** Number of nodes in the problem. */
+    @SuppressWarnings("checkstyle:MemberName") // public API
     public final int n;
 
-    /**
-     * Distance matrix between all nodes.
-     */
+    /** Distance matrix between all nodes. */
     public final double[][] timeMatrix;
 
-    /**
-     * Maximum capacity of the vehicle.
-     */
+    /** Maximum capacity of the vehicle. */
     public final int maxCapa;
 
-    /**
-     * Map of pickup nodes to their associated delivery nodes.
-     */
+    /** Map of pickup nodes to their associated delivery nodes. */
     public final HashMap<Integer, Integer> pickupToAssociatedDelivery;
 
-    /**
-     * Map of delivery nodes to their associated pickup nodes.
-     */
+    /** Map of delivery nodes to their associated pickup nodes. */
     public final HashMap<Integer, Integer> deliveryToAssociatedPickup;
 
-    /**
-     * Set of nodes that are not part of any pickup-delivery pair.
-     */
+    /** Set of nodes that are not part of any pickup-delivery pair. */
     public final Set<Integer> unrelatedNodes;
 
-    /**
-     * Time window associated to each node.
-     */
+    /** Time window associated to each node. */
     public final TimeWindow[] timeWindows;
 
-    /**
-     * Optional: a known solution of the problem.
-     */
-    private final Optional<Double> aKnownSolutionValue;
+    /** Optional: a known solution of the problem. */
+    private final Optional<Double> knownSolutionValue;
+
     PDPTWFastLowerBound myBoundCalculator = null;
-    /**
-     * Optional name of the instance to ease readability in tests.
-     */
+
+    /** Optional name of the instance to ease readability in tests. */
     private Optional<String> name = Optional.empty();
 
     /**
-     * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
+     * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a
+     * maximum vehicle capacity.
      *
-     * @param timeMatrix                 distance matrix between all nodes
+     * @param timeMatrix distance matrix between all nodes
      * @param pickupToAssociatedDelivery mapping from pickup nodes to delivery nodes
-     * @param maxCapa                    maximum capacity of the vehicle
-     * @param timeWindows                the time window associated to each node
-     * @param aKnownSolutionValue        an optional known solution value of the instance
-     * @param strengthenTimeWindows      whether the time windows should be strengthened at construction time
+     * @param maxCapa maximum capacity of the vehicle
+     * @param timeWindows the time window associated to each node
+     * @param knownSolutionValue an optional known solution value of the instance
+     * @param strengthenTimeWindows whether the time windows should be strengthened at construction
+     *     time
      */
-    public PDPTWProblem(final double[][] timeMatrix,
-                        HashMap<Integer, Integer> pickupToAssociatedDelivery,
-                        int maxCapa,
-                        TimeWindow[] timeWindows,
-                        Optional<Double> aKnownSolutionValue,
-                        Boolean strengthenTimeWindows) {
+    public PDPTWProblem(
+            final double[][] timeMatrix,
+            HashMap<Integer, Integer> pickupToAssociatedDelivery,
+            int maxCapa,
+            TimeWindow[] timeWindows,
+            Optional<Double> knownSolutionValue,
+            Boolean strengthenTimeWindows) {
 
         this.timeMatrix = timeMatrix;
         this.n = timeMatrix.length;
         this.timeWindows = timeWindows;
         this.maxCapa = maxCapa;
-        this.aKnownSolutionValue = aKnownSolutionValue;
+        this.knownSolutionValue = knownSolutionValue;
 
         this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
         this.unrelatedNodes = new HashSet<Integer>(IntStream.range(0, n).boxed().toList());
@@ -125,13 +127,13 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     /**
      * Constructs a PDPProblem by reading an instance from a file.
-     * <p>
-     * The file format should include:
-     * </p>
+     *
+     * <p>The file format should include:
+     *
      * <ul>
-     *     <li>The number of nodes and optionally the optimal value.</li>
-     *     <li>The distance matrix between nodes.</li>
-     *     <li>The pickup-delivery pairs.</li>
+     *   <li>The number of nodes and optionally the optimal value.
+     *   <li>The distance matrix between nodes.
+     *   <li>The pickup-delivery pairs.
      * </ul>
      *
      * @param fname path to the instance file
@@ -167,15 +169,21 @@ public class PDPTWProblem implements Problem<PDPTWState> {
                     int node = linesCount - 2;
                     String[] tokens = line.split("\\s+");
                     double[] row =
-                            Arrays.stream(tokens).filter(s -> !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();
+                            Arrays.stream(tokens)
+                                    .filter(s -> !s.isEmpty())
+                                    .mapToDouble(Double::parseDouble)
+                                    .toArray();
                     matrix[node] = row;
-                } else if (linesCount <= numNodes * 2 + 1) { //read timeWindow
+                } else if (linesCount <= numNodes * 2 + 1) { // read timeWindow
                     int node = linesCount - numNodes - 2;
                     String[] tokens = line.split("\\s+");
-                    tw[node] = new TimeWindow(Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]));
+                    tw[node] =
+                            new TimeWindow(
+                                    Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]));
                 } else { // read pick-up and delivery pairs
                     String[] tokens = line.split(" -> ");
-                    pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
+                    pickupToAssociatedDelivery.put(
+                            Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));
                 }
 
                 linesCount++;
@@ -186,7 +194,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;
         this.timeWindows = tw;
         this.n = timeMatrix.length;
-        this.aKnownSolutionValue = opti;
+        this.knownSolutionValue = opti;
         this.maxCapa = maxCapa;
 
         this.unrelatedNodes = new HashSet<>(IntStream.range(0, n).boxed().toList());
@@ -206,8 +214,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
     }
 
     /**
-     * Strengthens the time windows of pickup and delivery nodes using the precedence
-     * and travel time relations between each pickup and its associated delivery.
+     * Strengthens the time windows of pickup and delivery nodes using the precedence and travel
+     * time relations between each pickup and its associated delivery.
      */
     public void strengthenTimeWindows() {
 
@@ -217,16 +225,26 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         for (int pickup : pickupToAssociatedDelivery.keySet()) {
             int delivery = pickupToAssociatedDelivery.get(pickup);
 
-            //delivery.earlyLine = max(delivry.earlyLine,pickUp.ealyLine + travelTime(pickup,delivery)
+            // delivery.earlyLine = max(delivry.earlyLine,pickUp.ealyLine +
+            // travelTime(pickup,delivery)
             double newEarlyLine = timeWindows[pickup].start() + timeMatrix[pickup][delivery];
             if (newEarlyLine > timeWindows[delivery].start()) {
                 deadlineStrengthen++;
                 TimeWindow oldTW = timeWindows[delivery];
                 TimeWindow newTW = new TimeWindow(newEarlyLine, timeWindows[delivery].end());
-                //Strengthening the earlyLine is not about this one delivery node.
-                //it is about exposing other earlylines in the FLB heuristics
-                //and to do that we must shift as many early lines as possible to the latest time they are actually relevant
-                toReturn += "\n\tearlyLineStrengthening " + pickup + "->*" + delivery + "*\n\t\tOLD:" + oldTW + "\n\t\tNEW:" + newTW;
+                // Strengthening the earlyLine is not about this one delivery node.
+                // it is about exposing other earlylines in the FLB heuristics
+                // and to do that we must shift as many early lines as possible to the latest time
+                // they are actually relevant
+                toReturn +=
+                        "\n\tearlyLineStrengthening "
+                                + pickup
+                                + "->*"
+                                + delivery
+                                + "*\n\t\tOLD:"
+                                + oldTW
+                                + "\n\t\tNEW:"
+                                + newTW;
                 timeWindows[delivery] = newTW;
             }
 
@@ -235,14 +253,26 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             if (newDeadline < timeWindows[pickup].end()) {
                 earlyLineStrengthen++;
                 TimeWindow oldTW = timeWindows[pickup];
-                TimeWindow newTW = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
-                //strengthening the deadline of pickup sill enable the solver to quicker identify
+                TimeWindow newTW =
+                        new TimeWindow(
+                                timeWindows[pickup].start(),
+                                timeWindows[delivery].end() - timeMatrix[pickup][delivery]);
+                // strengthening the deadline of pickup sill enable the solver to quicker identify
                 // that a prefix does not lead to a feasible solution
-                toReturn += "\n\tdeadlineStrengthen *" + pickup + "*->" + delivery + "\n\t\tOLD:" + oldTW + " \n\t\tNEW:" + newTW;
+                toReturn +=
+                        "\n\tdeadlineStrengthen *"
+                                + pickup
+                                + "*->"
+                                + delivery
+                                + "\n\t\tOLD:"
+                                + oldTW
+                                + " \n\t\tNEW:"
+                                + newTW;
                 timeWindows[pickup] = newTW;
             }
         }
-        //System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen: " + deadlineStrengthen + toReturn);
+        // System.out.println("earlyLineStrengthen: " + earlyLineStrengthen + " deadlineStrengthen:
+        // " + deadlineStrengthen + toReturn);
     }
 
     /**
@@ -255,22 +285,23 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
         try (BufferedWriter bw = new BufferedWriter(new FileWriter(fname))) {
 
-            //the number of nodes
+            // the number of nodes
             bw.write("" + this.n);
-            aKnownSolutionValue.ifPresent(val -> {
-                try {
-                    bw.write(" " + val);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            knownSolutionValue.ifPresent(
+                    val -> {
+                        try {
+                            bw.write(" " + val);
+                        } catch (IOException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
             bw.write("\n\n");
 
-            //the max capa
+            // the max capa
             bw.write("" + this.maxCapa);
             bw.write("\n\n");
 
-            //the time matrix
+            // the time matrix
             for (double[] line : timeMatrix) {
                 for (double value : line) {
                     bw.write(value + " ");
@@ -279,7 +310,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             }
             bw.write("\n");
 
-            //time window
+            // time window
             for (TimeWindow tw : timeWindows) {
                 bw.write(tw.start() + "  " + tw.end() + "\n");
             }
@@ -294,15 +325,14 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     /**
      * Returns the number of variables (decisions) in the problem.
-     * <p>
-     * Note: the last decision corresponds to returning to the depot (node 0).
-     * </p>
+     *
+     * <p>Note: the last decision corresponds to returning to the depot (node 0).
      *
      * @return number of variables
      */
     @Override
     public int nbVars() {
-        return n; //the last decision will be to come back to point zero
+        return n; // the last decision will be to come back to point zero
     }
 
     @Override
@@ -317,8 +347,14 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         BitSet allToVisit = new BitSet(n);
         allToVisit.set(1, n);
 
-        return new PDPTWState(singleton(0), openToVisit, allToVisit, 0, 0,
-                timeWindows[0].start(), timeWindows[0].start());
+        return new PDPTWState(
+                singleton(0),
+                openToVisit,
+                allToVisit,
+                0,
+                0,
+                timeWindows[0].start(),
+                timeWindows[0].start());
     }
 
     /**
@@ -340,16 +376,19 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     @Override
     public Optional<Double> optimalValue() {
-        return aKnownSolutionValue;
+        return knownSolutionValue;
     }
 
     @Override
     public Iterator<Integer> domain(PDPTWState state, int var) {
         if (var == n - 1) {
-            //the final decision is to come back to node zero
-            //it is only possible  if we are before the deadline of node0
+            // the final decision is to come back to node zero
+            // it is only possible  if we are before the deadline of node0
             if (state.minCurrentTime
-                    + state.current.stream().mapToDouble(from -> timeMatrix[from][0]).min().getAsDouble()
+                            + state.current.stream()
+                                    .mapToDouble(from -> timeMatrix[from][0])
+                                    .min()
+                                    .getAsDouble()
                     > timeWindows[0].end()) {
                 return Collections.emptyIterator();
             } else {
@@ -359,33 +398,60 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             boolean canIncludePickups = state.minContent < maxCapa;
             boolean canIncludeDeliveries = state.maxContent != 0;
 
-            //how many we need to visit from now on?
+            // how many we need to visit from now on?
             int howManyToVisit = n - 1 - var;
 
-            //check that all states that must be visited can still be visited given the currentTime,
+            // check that all states that must be visited can still be visited given the
+            // currentTime,
             // otherwise, there is no successor at all.
-            //this assumes that we have triangular inequality
-            long nbStillReachablePoints = state.allToVisit.stream().filter(point ->
-                    (state.minCurrentTime + (state.current.stream().mapToDouble(
-                            from -> timeMatrix[from][point])).min().getAsDouble()) <= timeWindows[point].end()
-            ).count();
+            // this assumes that we have triangular inequality
+            long nbStillReachablePoints =
+                    state.allToVisit.stream()
+                            .filter(
+                                    point -> {
+                                        double minTravelTime =
+                                                state.current.stream()
+                                                        .mapToDouble(
+                                                                from -> timeMatrix[from][point])
+                                                        .min()
+                                                        .getAsDouble();
+                                        return state.minCurrentTime + minTravelTime
+                                                <= timeWindows[point].end();
+                                    })
+                            .count();
 
-            if (nbStillReachablePoints < howManyToVisit) return Collections.emptyIterator();
+            if (nbStillReachablePoints < howManyToVisit) {
+                return Collections.emptyIterator();
+            }
 
-            IntStream choices = state.openToVisit.stream()
-                    .filter(point ->
-                            ((canIncludePickups | !pickupToAssociatedDelivery.containsKey(point))
-                                    && (canIncludeDeliveries | !deliveryToAssociatedPickup.containsKey(point))));
+            IntStream choices =
+                    state.openToVisit.stream()
+                            .filter(
+                                    point ->
+                                            ((canIncludePickups
+                                                            | !pickupToAssociatedDelivery
+                                                                    .containsKey(point))
+                                                    && (canIncludeDeliveries
+                                                            | !deliveryToAssociatedPickup
+                                                                    .containsKey(point))));
 
-            //TODO: can we re-use this instead of throwing it away?
-            IntStream choices2 = choices.filter(choice -> {
-                if (!state.openToVisit.get(choice)) throw new Error("error");
-                if (var >= n - 1) return true;
-                PDPTWState potentialNext = transition(state, new Decision(var, choice));
-                return (myBoundCalculator.fastLowerBound(potentialNext, n - var - 2) < Double.MAX_VALUE);
-            });
+            // TODO: can we re-use this instead of throwing it away?
+            IntStream choices2 =
+                    choices.filter(
+                            choice -> {
+                                if (!state.openToVisit.get(choice)) {
+                                    throw new Error("error");
+                                }
+                                if (var >= n - 1) {
+                                    return true;
+                                }
+                                PDPTWState potentialNext =
+                                        transition(state, new Decision(var, choice));
+                                return (myBoundCalculator.fastLowerBound(potentialNext, n - var - 2)
+                                        < Double.MAX_VALUE);
+                            });
 
-            //IntStream choices2 = choices;
+            // IntStream choices2 = choices;
             return choices2.boxed().iterator();
         }
     }
@@ -416,23 +482,41 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             newMaxContent -= 1;
         }
 
-        if (newMinContent < 0) newMinContent = 0;
-        if (newMaxContent > maxCapa) newMaxContent = maxCapa;
+        if (newMinContent < 0) {
+            newMinContent = 0;
+        }
+        if (newMaxContent > maxCapa) {
+            newMaxContent = maxCapa;
+        }
 
-        if (newMinContent > maxCapa) throw new Error("error");
-        if (newMaxContent < 0) throw new Error("error");
+        if (newMinContent > maxCapa) {
+            throw new Error("error");
+        }
+        if (newMaxContent < 0) {
+            throw new Error("error");
+        }
 
-        double minArrivalTime = state.minCurrentTime + state.current.stream()
-                .mapToDouble(possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
-                .min().getAsDouble();
+        double minArrivalTime =
+                state.minCurrentTime
+                        + state.current.stream()
+                                .mapToDouble(
+                                        possibleCurrentNode ->
+                                                timeMatrix[possibleCurrentNode][decision.value()])
+                                .min()
+                                .getAsDouble();
 
         if (minArrivalTime < timeWindows[node].start()) {
             minArrivalTime = timeWindows[node].start();
         }
 
-        double maxArrivalTime = state.minCurrentTime + state.current.stream()
-                .mapToDouble(possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
-                .min().getAsDouble();
+        double maxArrivalTime =
+                state.minCurrentTime
+                        + state.current.stream()
+                                .mapToDouble(
+                                        possibleCurrentNode ->
+                                                timeMatrix[possibleCurrentNode][decision.value()])
+                                .min()
+                                .getAsDouble();
 
         if (maxArrivalTime < timeWindows[node].start()) {
             maxArrivalTime = timeWindows[node].start();
@@ -450,16 +534,19 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     @Override
     public double transitionCost(PDPTWState state, Decision decision) {
-        double travelTime = state.current.stream()
-                .filter(possibleCurrentNode -> possibleCurrentNode != decision.value())
-                .mapToDouble(
-                        possibleCurrentNode -> timeMatrix[possibleCurrentNode][decision.value()])
-                .min()
-                .getAsDouble();
+        double travelTime =
+                state.current.stream()
+                        .filter(possibleCurrentNode -> possibleCurrentNode != decision.value())
+                        .mapToDouble(
+                                possibleCurrentNode ->
+                                        timeMatrix[possibleCurrentNode][decision.value()])
+                        .min()
+                        .getAsDouble();
 
-        //the final decision is to come back to node zero.
+        // the final decision is to come back to node zero.
         // The earlyLine has a different semantics for that node.
-        // However, since we started from it, we come back after its earlyLine anyway so we can use the same formula as the other nodes
+        // However, since we started from it, we come back after its earlyLine anyway so we can use
+        // the same formula as the other nodes
 
         double waitTime = timeWindows[decision.value()].waitTime(state.maxCurrentTime + travelTime);
         return travelTime + waitTime;
@@ -470,7 +557,7 @@ public class PDPTWProblem implements Problem<PDPTWState> {
         int vehicleContent = 0;
         double currentTime = timeWindows[0].start();
         int prevNode = 0;
-        for (int i = 0; i < solution.length - 1; i++) { //zero is in the solution as well
+        for (int i = 0; i < solution.length - 1; i++) { // zero is in the solution as well
             if (pickupToAssociatedDelivery.containsKey(solution[i])) {
                 vehicleContent += 1;
             } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {
@@ -482,7 +569,8 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             TimeWindow window = timeWindows[solution[i]];
             currentTime += timeMatrix[prevNode][solution[i]];
             if (currentTime > window.end()) {
-                System.out.println("currentTime:" + currentTime + " node:" + solution[i] + " trw:" + window);
+                System.out.println(
+                        "currentTime:" + currentTime + " node:" + solution[i] + " trw:" + window);
                 throw new InvalidSolutionException("after deadline");
             }
             if (currentTime <= window.start()) {
@@ -490,9 +578,10 @@ public class PDPTWProblem implements Problem<PDPTWState> {
             }
             prevNode = solution[i];
         }
-        currentTime += timeMatrix[solution[solution.length - 2]][0]; //final come back
+        currentTime += timeMatrix[solution[solution.length - 2]][0]; // final come back
         if (currentTime > timeWindows[0].end()) {
-            System.out.println("currentTime:" + currentTime + " come back ToZero trw:" + timeWindows[0]);
+            System.out.println(
+                    "currentTime:" + currentTime + " come back ToZero trw:" + timeWindows[0]);
             throw new InvalidSolutionException("comes back after deadline");
         }
         if (vehicleContent != 0) {
@@ -503,13 +592,29 @@ public class PDPTWProblem implements Problem<PDPTWState> {
 
     @Override
     public String toString() {
-        String str = "PDPTWProblem(\n\tn:" + n + "\n" +
-                "\taKnownSolutionValue:" + aKnownSolutionValue + "\n" +
-                "\tpdp:" + pickupToAssociatedDelivery.keySet().stream().map(p -> p + "->" + pickupToAssociatedDelivery.get(p)).toList() + "\n" +
-                "\tmaxCapa:" + maxCapa + "\n" +
-                "\tunrelated:" + unrelatedNodes.stream().toList() + "\n" +
-                "\ttimeWindows" + Arrays.stream(timeWindows).map(l -> "\n\t " + l).toList() + "\n" +
-                "\t" + Arrays.stream(timeMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
+        String str =
+                "PDPTWProblem(\n\tn:"
+                        + n
+                        + "\n"
+                        + "\taKnownSolutionValue:"
+                        + knownSolutionValue
+                        + "\n"
+                        + "\tpdp:"
+                        + pickupToAssociatedDelivery.keySet().stream()
+                                .map(p -> p + "->" + pickupToAssociatedDelivery.get(p))
+                                .toList()
+                        + "\n"
+                        + "\tmaxCapa:"
+                        + maxCapa
+                        + "\n"
+                        + "\tunrelated:"
+                        + unrelatedNodes.stream().toList()
+                        + "\n"
+                        + "\ttimeWindows"
+                        + Arrays.stream(timeWindows).map(l -> "\n\t " + l).toList()
+                        + "\n"
+                        + "\t"
+                        + Arrays.stream(timeMatrix).map(l -> "\n\t " + Arrays.toString(l)).toList();
 
         return name.orElse(str);
     }
