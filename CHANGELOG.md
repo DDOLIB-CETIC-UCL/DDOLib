@@ -25,6 +25,10 @@ This file documents the DDOLib changes.
 - BKS: `BKSFastLowerBound` is now the linear relaxation of the bounded knapsack. It used to add
   the weights of the items to their values and to ignore the capacity already used, which gave a
   very weak bound (LNS gaps above 100 %).
+- PSP: the stocking cost part of `PSFastLowerBound` was negative (sign inherited from the
+  maximization formulation of the original ddo solver), counted some demands several times and
+  scheduled the cheapest demands first. The bound is now positive, which gave LNS gaps above
+  100 % before.
 - PDPTW generator: the case removing both time windows of a pickup/delivery pair was never drawn
   (`random.nextInt(2)` instead of `random.nextInt(3)`). The generated instances change for a
   given seed; the instance files of the tests are not affected.

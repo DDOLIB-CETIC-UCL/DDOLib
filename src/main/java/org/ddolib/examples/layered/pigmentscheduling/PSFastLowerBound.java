@@ -103,23 +103,26 @@ public class PSFastLowerBound implements FastLowerBound<PSState> {
 
         int changeOverLb = tspLb[idx]; // lower-bound on the changeOverCost
 
-        int stockingCostLb = 0; // lower-bound on the stocking cost
+        // Lower-bound on the stocking cost: going backward in time, each period produces the
+        // pending demand with the highest stocking cost. Each demand is only considered once.
+        int stockingCostLb = 0;
+        int[] pendingDemands = state.previousDemands.clone();
         PriorityQueue<ItemDemand> itemDemands =
-                new PriorityQueue<>(Comparator.comparingInt(ItemDemand::cost));
+                new PriorityQueue<>(
+                        Comparator.comparingInt(ItemDemand::cost)
+                                .thenComparingInt(ItemDemand::deadLine)
+                                .reversed());
         for (int time = state.timeSlot - 1; time >= 0; time--) {
-            for (int i = 0; i < state.previousDemands.length; i++) {
-                int demand = state.previousDemands[i]; // previous demand of item i
-                while (demand >= time) {
-                    itemDemands.offer(
-                            new ItemDemand(
-                                    problem.stockingCost[i],
-                                    demand)); // Assuming pb.stocking is defined
-                    demand = problem.previousDemands[i][demand];
+            for (int i = 0; i < pendingDemands.length; i++) {
+                while (pendingDemands[i] >= time) {
+                    itemDemands.offer(new ItemDemand(problem.stockingCost[i], pendingDemands[i]));
+                    pendingDemands[i] = problem.previousDemands[i][pendingDemands[i]];
                 }
             }
             if (!itemDemands.isEmpty()) {
                 ItemDemand item = itemDemands.poll();
-                stockingCostLb += item.cost() * (time - item.deadLine());
+                // the demand is produced at time and stocked until its deadline
+                stockingCostLb += item.cost() * (item.deadLine() - time);
             }
         }
         return changeOverLb + stockingCostLb;
