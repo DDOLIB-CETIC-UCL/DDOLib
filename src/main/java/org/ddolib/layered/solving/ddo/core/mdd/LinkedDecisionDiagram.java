@@ -7,6 +7,7 @@ import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.LnsModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.Relaxation;
 import org.ddolib.layered.solving.ddo.core.Decision;
@@ -139,6 +140,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private int nodesCount = 0;
 
+    /**
+     * Random number generator used by the randomized LNS restriction.
+     */
+    private final Random random;
+
 
     /**
      * Creates a new linked decision diagram.
@@ -155,6 +161,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         this.config = config;
         this.lowerBound = Double.MAX_VALUE;
         this.ranking = new NodeSubProblemComparator<>(config.stateRanking);
+        this.random = config.random != null ? config.random : new Random(LnsModel.DEFAULT_SEED);
 
         dotStr.append("digraph %s{%n".formatted(config.compilationType.toString().toLowerCase()));
         this.cache = config.cache;
@@ -231,6 +238,14 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
             if (!config.useLNS && depthCurrentDD >= 2 && currentLayer.size() > config.maxWidth)
                 limitCurrentLayerWidth(variables, depthCurrentDD);
 
+            // In LNS mode, the restriction must be applied before generating the children,
+            // otherwise the next layer is built from the unrestricted current layer and the
+            // width of the diagram is never bounded.
+            if (config.useLNS && currentLayer.size() > config.maxWidth) {
+                exact = false;
+                restrict(config.maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
+            }
+
             variables.remove(nextVar);
 
             for (NodeSubProblem<T> n : currentLayer) {
@@ -248,15 +263,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                         && !exact && depthCurrentDD >= 2)
                     updateFrontierCutset(variables, n);
             }
-
-            if (config.useLNS) {
-                if (currentLayer.size() > config.maxWidth) {
-                    exact = false;
-                    // Apply restriction for LNS
-                    restrict(config.maxWidth, ranking, config.reductionStrategy, depthGlobalDD);
-                }
-            }
-
 
             // Prepare information for cache updates
             if (cache.isPresent() && config.compilationType == CompilationType.Relaxed)
@@ -579,24 +585,36 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      */
     private void restrict(final int maxWidth, final NodeSubProblemComparator<T> ranking, final ReductionStrategy<T> restrictStrategy, int depth) {
         if (config.useLNS && config.solution != null) {
-            List<NodeSubProblem<T>> layer = new ArrayList<>(currentLayer);
-            currentLayer.clear();
-            int frontier = 0;
-            Random random = new Random();
-            for (int k = 0; k < layer.size(); k++) {
-                if (layer.get(k).getValue() == costInSolutionAtDepth(config.solution, depth) || random.nextDouble() < config.probability) {
-                    swap(layer, frontier, k);
-                    frontier++;
+            final double costInSolution = costInSolutionAtDepth(config.solution, depth);
+            List<NodeSubProblem<T>> onSolution = new ArrayList<>();
+            List<NodeSubProblem<T>> sampled = new ArrayList<>();
+            List<NodeSubProblem<T>> candidates = new ArrayList<>();
+            for (NodeSubProblem<T> n : currentLayer) {
+                if (n.getValue() == costInSolution) {
+                    onSolution.add(n);
+                } else if (random.nextDouble() < config.probability) {
+                    sampled.add(n);
+                } else {
+                    candidates.add(n);
                 }
             }
-            List<NodeSubProblem<T>> keep = new ArrayList<>(layer.subList(0, frontier));
-            List<NodeSubProblem<T>> candidates = new ArrayList<>(layer.subList(frontier, layer.size()));
-            if (keep.size() + candidates.size() > maxWidth) {
-                candidates.sort(Comparator.comparing(NodeSubProblem<T>::getLb));
-                candidates.subList(Math.max(0, maxWidth - keep.size()), candidates.size()).clear();
+            currentLayer.clear();
+
+            // Nodes consistent with the incumbent come first, then the randomly sampled ones,
+            // then the remaining candidates. The layer is truncated to maxWidth so that the
+            // width of the restricted diagram is bounded.
+            Comparator<NodeSubProblem<T>> byLb = Comparator.comparing(NodeSubProblem<T>::getLb);
+            onSolution.sort(byLb);
+            sampled.sort(byLb);
+            candidates.sort(byLb);
+            for (List<NodeSubProblem<T>> group : List.of(onSolution, sampled, candidates)) {
+                for (NodeSubProblem<T> n : group) {
+                    if (currentLayer.size() >= maxWidth) {
+                        return;
+                    }
+                    currentLayer.add(n);
+                }
             }
-            keep.addAll(candidates);
-            currentLayer.addAll(keep);
         } else {
             List<NodeSubProblem<T>>[] clusters = restrictStrategy.defineClusters(currentLayer, maxWidth);
             currentLayer.clear();
@@ -610,19 +628,6 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 cluster.clear();
             }
         }
-    }
-
-    /**
-     * Swaps two elements in the given list.
-     *
-     * @param layer the list of nodes
-     * @param f     the index of the first element
-     * @param k     the index of the second element
-     */
-    private void swap(List<NodeSubProblem<T>> layer, int f, int k) {
-        NodeSubProblem<T> temp = layer.get(f);
-        layer.set(f, layer.get(k));
-        layer.set(k, temp);
     }
 
     /**

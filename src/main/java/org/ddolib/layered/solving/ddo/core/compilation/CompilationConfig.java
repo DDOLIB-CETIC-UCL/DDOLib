@@ -10,6 +10,7 @@ import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic
 import org.ddolib.common.util.debug.DebugLevel;
 
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * Represents the configuration parameters used during the compilation
@@ -160,6 +161,16 @@ public class CompilationConfig<T> {
     public Boolean useLNS = null;
 
     /**
+     * Random number generator used by the randomized LNS restriction.
+     * <p>
+     * It is shared by all the decision diagrams compiled during one LNS run so that a
+     * given seed always leads to the same search. When {@code null}, a generator seeded
+     * with {@link LnsModel#DEFAULT_SEED} is created by the decision diagram.
+     * </p>
+     */
+    public Random random = null;
+
+    /**
      * Constructs a new compilation configuration for the given model.
      *
      * @param model the model containing problem-specific components
@@ -216,6 +227,7 @@ public class CompilationConfig<T> {
         compilation.initialSolution = this.initialSolution;
         compilation.probability = this.probability;
         compilation.useLNS = this.useLNS;
+        compilation.random = this.random;
         compilation.solution = this.initialSolution;
 
         return compilation;

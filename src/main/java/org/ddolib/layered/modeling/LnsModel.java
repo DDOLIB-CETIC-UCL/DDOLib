@@ -34,6 +34,7 @@ import org.ddolib.common.util.verbosity.VerbosityLevel;
  *     <li>{@link #initialSolution()} returns {@code null} (no initial solution by default).</li>
  *     <li>{@link #probability()} returns 0.2 as default destruction probability.</li>
  *     <li>{@link #useLNS()} returns {@code true} by default.</li>
+ *     <li>{@link #seed()} returns {@link #DEFAULT_SEED}, so that the search is deterministic.</li>
  * </ul>
  *
  * <p>Configuration methods allow creating modified copies of the model with custom parameters:</p>
@@ -41,6 +42,7 @@ import org.ddolib.common.util.verbosity.VerbosityLevel;
  *     <li>{@link #fixWidth(int)} returns a new {@code LnsModel} with a fixed search width.</li>
  *     <li>{@link #setInitialSolution(int[])} returns a new {@code LnsModel} using a given initial solution.</li>
  *     <li>{@link #setProbability(double)} returns a new {@code LnsModel} with a specified destruction probability.</li>
+ *     <li>{@link #setSeed(long)} returns a new {@code LnsModel} with a specified seed.</li>
  * </ul>
  *
  * <p>Example usage:</p>
@@ -57,6 +59,12 @@ import org.ddolib.common.util.verbosity.VerbosityLevel;
  * @param <T> the type of state used in the problem
  */
 public interface LnsModel<T> extends Model<T> {
+
+    /**
+     * Seed used by default for the randomized LNS restriction. A fixed seed makes the
+     * search deterministic, as in the original ddo solver.
+     */
+    long DEFAULT_SEED = 0L;
 
     /**
      * Returns the state ranking heuristic used to guide the search.
@@ -138,6 +146,17 @@ public interface LnsModel<T> extends Model<T> {
     }
 
     /**
+     * Returns the seed of the random number generator used by the LNS restriction.
+     * Two runs with the same model and the same seed explore the same neighborhoods.
+     * Default is {@link #DEFAULT_SEED}.
+     *
+     * @return the seed of the random number generator
+     */
+    default long seed() {
+        return DEFAULT_SEED;
+    }
+
+    /**
      * Returns a copy of this model with a fixed search width.
      *
      * @param width the width to fix
@@ -191,8 +210,33 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return LnsModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return LnsModel.this.stateDistance();
+            }
+
+            @Override
+            public int[] initialSolution() {
+                return LnsModel.this.initialSolution();
+            }
+
+            @Override
+            public double probability() {
+                return LnsModel.this.probability();
+            }
+
+            @Override
             public boolean useLNS() {
                 return LnsModel.this.useLNS();
+            }
+
+            @Override
+            public long seed() {
+                return LnsModel.this.seed();
             }
         };
     }
@@ -256,8 +300,28 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return LnsModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return LnsModel.this.stateDistance();
+            }
+
+            @Override
+            public double probability() {
+                return LnsModel.this.probability();
+            }
+
+            @Override
             public boolean useLNS() {
                 return LnsModel.this.useLNS();
+            }
+
+            @Override
+            public long seed() {
+                return LnsModel.this.seed();
             }
         };
     }
@@ -326,8 +390,108 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return LnsModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return LnsModel.this.stateDistance();
+            }
+
+            @Override
             public boolean useLNS() {
                 return LnsModel.this.useLNS();
+            }
+
+            @Override
+            public long seed() {
+                return LnsModel.this.seed();
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model with a specified seed for the random number generator.
+     *
+     * @param seed the seed to use in LNS
+     * @return a new {@code LnsModel} with the specified seed
+     */
+    default LnsModel<T> setSeed(long seed) {
+        return new LnsModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return LnsModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return LnsModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return LnsModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return LnsModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return LnsModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return LnsModel.this.debugMode();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return LnsModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return LnsModel.this.widthHeuristic();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return LnsModel.this.exportDot();
+            }
+
+            @Override
+            public int[] initialSolution() {
+                return LnsModel.this.initialSolution();
+            }
+
+            @Override
+            public double probability() {
+                return LnsModel.this.probability();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return LnsModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return LnsModel.this.stateDistance();
+            }
+
+            @Override
+            public boolean useLNS() {
+                return LnsModel.this.useLNS();
+            }
+
+            @Override
+            public long seed() {
+                return seed;
             }
         };
     }

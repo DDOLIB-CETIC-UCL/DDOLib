@@ -24,11 +24,14 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+
+import static org.ddolib.common.util.MathUtil.saturatedAdd;
 
 /**
  * Large Neighborhood Search (LNS) solver based on restricted decision diagrams.
@@ -52,6 +55,15 @@ public final class LnsSolver<T> implements Solver {
     private boolean firstRestricted = true;
     private int d;
     private int[] solution;
+    /**
+     * Lower bound on the optimal value of the whole problem, given by the fast lower bound
+     * at the root. Unlike the bounds of the restricted neighborhoods, it is valid globally.
+     */
+    private final double globalLB;
+    /**
+     * Random number generator shared by all the restricted DDs of a run.
+     */
+    private final Random random;
 
     /**
      * Creates a new LNS solver for the provided model.
@@ -70,6 +82,10 @@ public final class LnsSolver<T> implements Solver {
         this.maxDepth = Math.max(0, problem.nbVars() - 2);
         this.d = maxDepth;
         this.solution = new int[problem.nbVars()];
+        Set<Integer> vars = IntStream.range(0, problem.nbVars()).boxed().collect(Collectors.toSet());
+        this.globalLB = saturatedAdd(problem.initialValue(),
+                model.lowerBound().fastLowerBound(problem.initialState(), vars));
+        this.random = new Random(model.seed());
     }
 
     @Override
@@ -80,7 +96,7 @@ public final class LnsSolver<T> implements Solver {
         int queueMaxSize = 0;
         DdoStats stats = new DdoStats(start, bestUB);
         SubProblem<T> rootPrime;
-        double gap = 100;
+        double gap = computeGap(bestUB, globalLB);
         while (true) {
             nbIter++;
             queueMaxSize++;
@@ -127,11 +143,9 @@ public final class LnsSolver<T> implements Solver {
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
             restrictedMdd.compile();
 
-            gap = computeGap(bestUB, restrictedMdd.minLowerBound());
-
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
+            gap = computeGap(bestUB, globalLB);
             if (newbest) {
-                gap = computeGap(bestUB, restrictedMdd.minLowerBound());
                 stats = stats
                         .updateTime(System.currentTimeMillis())
                         .updateIncumbent(bestUB, gap)
@@ -146,7 +160,11 @@ public final class LnsSolver<T> implements Solver {
             }
             firstRestricted = false;
 
-            if (d == 0 && restrictedMdd.isExact()) {
+            // The incumbent is optimal when the restricted DD compiled from the root (no fixed
+            // decision) is exact or when it reaches the global lower bound. Note that d cannot
+            // be used here since it has already been updated by maybeUpdateBest.
+            boolean compiledFromRoot = sub.getPath().isEmpty();
+            if ((compiledFromRoot && restrictedMdd.isExact()) || bestUB <= globalLB) {
                 stats = stats
                         .updateTime(System.currentTimeMillis())
                         .updateIncumbent(bestUB, 0.0)
@@ -173,7 +191,7 @@ public final class LnsSolver<T> implements Solver {
             return Optional.of(bestUB);
         } else {
             if (model.initialSolution() != null) {
-                return Optional.of(costInSolutionAtDepth(solution, problem.nbVars()));
+                return Optional.of(costInSolutionAtDepth(model.initialSolution(), problem.nbVars()));
             }
             return Optional.empty();
         }
@@ -181,6 +199,15 @@ public final class LnsSolver<T> implements Solver {
 
     @Override
     public Optional<Set<Decision>> bestSolution() {
+        if (bestSol.isEmpty() && model.initialSolution() != null) {
+            // The initial solution has never been improved: it is the incumbent
+            int[] initial = model.initialSolution();
+            Set<Decision> decisions = new HashSet<>();
+            for (int k = 0; k < initial.length; k++) {
+                decisions.add(new Decision(k, initial[k]));
+            }
+            return Optional.of(decisions);
+        }
         return bestSol;
     }
 
@@ -343,6 +370,7 @@ public final class LnsSolver<T> implements Solver {
         compilation.initialSolution = model.initialSolution();
         compilation.probability = model.probability();
         compilation.useLNS = model.useLNS();
+        compilation.random = random;
         if (bestSol.isPresent()) {
             compilation.solution = constructSolution(bestSol.get());
         } else {

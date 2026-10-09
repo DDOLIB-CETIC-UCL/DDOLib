@@ -3,6 +3,7 @@ package org.ddolib.layered.testbench;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
@@ -14,6 +15,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 /**
@@ -51,6 +53,11 @@ public class ProblemTestBench<T, P extends Problem<T>> {
      * Whether the LNS solver must be tested.
      */
     public boolean testLns = true;
+
+    /**
+     * Maximum number of LNS iterations when the optimality cannot be proved.
+     */
+    private static final int LNS_MAX_ITERATIONS = 500;
     /**
      * The minimum width of mdd to test with the relaxation.
      */
@@ -413,7 +420,26 @@ public class ProblemTestBench<T, P extends Problem<T>> {
             }
         };
 
-        testSolverResult(testModel);
+        // LNS is a heuristic: it can only prove optimality when the DD compiled from the root is
+        // exact or when the incumbent reaches the lower bound. It is thus stopped after a
+        // fixed number of iterations (the search is deterministic thanks to the fixed seed).
+        Solution bestSolution = Solvers.minimizeLns(testModel, s -> s.nbIterations() > LNS_MAX_ITERATIONS);
+        double bestValue = bestSolution.value();
+        Optional<Double> optimal = problem.optimalValue();
+
+        if (optimal.isEmpty()) {
+            assertTrue(Double.isInfinite(bestValue), "LNS found a solution to an infeasible problem");
+            return;
+        }
+        if (bestSolution.statistics().status() == SearchStatus.OPTIMAL) {
+            assertEquals(optimal.get(), bestValue, 1e-10);
+        } else {
+            assertTrue(bestValue >= optimal.get() - 1e-10,
+                    "LNS solution " + bestValue + " is better than the optimum " + optimal.get());
+        }
+        if (bestSolution.solution().length == problem.nbVars()) {
+            assertEquals(bestValue, problem.evaluate(bestSolution.solution()), 1e-10);
+        }
     }
 
     /**
