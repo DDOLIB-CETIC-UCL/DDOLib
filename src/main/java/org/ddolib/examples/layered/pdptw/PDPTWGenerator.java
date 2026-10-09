@@ -156,8 +156,9 @@ public class PDPTWGenerator {
                     deliveryToAssociatedPickup.put(currentNode, pickup);
                     openPickups.remove(pickup);
 
-                    // we delete one of the two timeWindows, to make the problem more challenging
-                    switch (random.nextInt(2)) {
+                    // we delete one or both of the two timeWindows, to make the problem more
+                    // challenging
+                    switch (random.nextInt(3)) {
                         case 0:
                             timeWindows[pickup] = new TimeWindow(0, Integer.MAX_VALUE);
                             break;

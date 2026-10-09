@@ -22,6 +22,9 @@ This file documents the DDOLib changes.
   (it was previously returned empty).
 - LNS: `fixWidth`, `setInitialSolution` and `setProbability` now keep all the LNS parameters of
   the model (initial solution, probability, restriction strategy, state distance).
+- PDPTW generator: the case removing both time windows of a pickup/delivery pair was never drawn
+  (`random.nextInt(2)` instead of `random.nextInt(3)`). The generated instances change for a
+  given seed; the instance files of the tests are not affected.
 
 ### Added
 
