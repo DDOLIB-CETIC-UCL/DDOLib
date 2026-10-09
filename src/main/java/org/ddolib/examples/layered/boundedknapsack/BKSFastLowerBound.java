@@ -2,7 +2,6 @@ package org.ddolib.examples.layered.boundedknapsack;
 
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Set;
 import org.ddolib.layered.modeling.FastLowerBound;
 
@@ -60,36 +59,26 @@ public class BKSFastLowerBound implements FastLowerBound<Integer> {
      */
     @Override
     public double fastLowerBound(Integer state, Set<Integer> variables) {
-        double[] ratio = new double[problem.nbVars()];
-        final int capacity = state;
-        for (int v : variables) {
-            ratio[v] = ((double) problem.values[v] / problem.weights[v]);
-        }
-
-        class RatioComparator implements Comparator<Integer> {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return Double.compare(ratio[o1], ratio[o2]);
-            }
-        }
-
         Integer[] sorted = variables.toArray(new Integer[0]);
-        Arrays.sort(sorted, new RatioComparator().reversed());
+        // most efficient items first
+        Arrays.sort(
+                sorted,
+                Comparator.comparingDouble(
+                                (Integer i) -> (double) problem.values[i] / problem.weights[i])
+                        .reversed());
 
-        int currentSolutionValue = 0;
-        int currentTotalWeight = 0;
-        Iterator<Integer> itemIterator = Arrays.stream(sorted).iterator();
-        while (itemIterator.hasNext()) {
-            int item = itemIterator.next();
-            if (currentTotalWeight + problem.weights[item] < capacity) {
-                int x =
-                        Math.min(
-                                problem.quantities[item],
-                                (capacity - currentTotalWeight) / problem.weights[item]);
-                currentSolutionValue += x * problem.weights[item];
-                currentSolutionValue += x * problem.values[item];
+        double remainingCapacity = state;
+        double maxProfit = 0;
+        for (int item : sorted) {
+            if (remainingCapacity <= 0) {
+                break;
             }
+            // as many units as possible, the last item may be taken fractionally
+            double quantity =
+                    Math.min(problem.quantities[item], remainingCapacity / problem.weights[item]);
+            maxProfit += quantity * problem.values[item];
+            remainingCapacity -= quantity * problem.weights[item];
         }
-        return -currentSolutionValue;
+        return -maxProfit;
     }
 }
