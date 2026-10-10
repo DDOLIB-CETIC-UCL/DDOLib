@@ -29,6 +29,10 @@ This file documents the DDOLib changes.
 - MaxCover: `evaluate` failed on the decision `-1` used once all the items are covered.
 - MKS: an optimum of `0` in the instance files means that the optimum is unknown (OR-Library
   format); it was read as an optimum of 0.
+- MSCT: on a merged state, `MSCTFastLowerBound` summed the completion times of all the jobs that
+  can still be selected, although only the remaining number of decisions is scheduled. The bound
+  overestimated the remaining cost and the DDO solver could return a non-optimal solution as
+  optimal. It now sums the smallest completion times only.
 - BKS: `BKSFastLowerBound` is now the linear relaxation of the bounded knapsack. It used to add
   the weights of the items to their values and to ignore the capacity already used, which gave a
   very weak bound (LNS gaps above 100 %).

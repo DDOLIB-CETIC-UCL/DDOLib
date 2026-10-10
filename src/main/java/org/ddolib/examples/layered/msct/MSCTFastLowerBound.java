@@ -11,27 +11,13 @@ import org.ddolib.layered.modeling.FastLowerBound;
  * within search-based optimization algorithms (such as A*, ACS, or DDO) to prune suboptimal
  * branches and guide the search toward promising solutions.
  *
- * <p>The lower bound is computed based on the remaining tasks to be scheduled and the current state
- * of the system. It takes into account the earliest possible start time (release date) and the
- * smallest processing time among the remaining tasks.
+ * <p><b>Computation logic:</b> a job {@code v} scheduled from the current state cannot complete
+ * before {@code max(currentTime, release[v]) + processing[v]}. Exactly {@code k} more jobs are
+ * scheduled, {@code k} being the number of remaining variables, so the bound is the sum of the
+ * {@code k} smallest of these completion times.
  *
- * <p><b>Computation logic:</b>
- *
- * <ul>
- *   <li>Let {@code k} be the number of remaining tasks to schedule.
- *   <li>{@code minProcessing} is the smallest processing time among the remaining tasks.
- *   <li>{@code minRelease} is the smallest release time among the remaining tasks.
- *   <li>{@code u} is the maximum between {@code state.currentTime()} and {@code minRelease}.
- * </ul>
- *
- * <p>The lower bound is then estimated as:
- *
- * <pre>
- *     LB = k * u + minProcessing * (k * (k + 1) / 2.0)
- * </pre>
- *
- * <p>This formula roughly estimates the minimal cumulative processing time that remains given the
- * current schedule state.
+ * <p>Note that on a merged (relaxed) state, the set of remaining jobs may contain more than {@code
+ * k} jobs: summing the completion times of all of them would overestimate the remaining cost.
  *
  * <p><b>Example:</b>
  *
@@ -71,10 +57,19 @@ public class MSCTFastLowerBound implements FastLowerBound<MSCTState> {
      */
     @Override
     public double fastLowerBound(MSCTState state, Set<Integer> variables) {
-        int lb = 0;
-
-        for (Integer v : state.remainingJobs()) {
-            lb += Math.max(state.currentTime(), problem.release[v]) + problem.processing[v];
+        // earliest completion time of each remaining job
+        int[] completions =
+                state.remainingJobs().stream()
+                        .mapToInt(
+                                v ->
+                                        Math.max(state.currentTime(), problem.release[v])
+                                                + problem.processing[v])
+                        .sorted()
+                        .toArray();
+        // only variables.size() jobs are still scheduled: keep the smallest completion times
+        double lb = 0;
+        for (int i = 0; i < Math.min(variables.size(), completions.length); i++) {
+            lb += completions[i];
         }
         return lb;
     }
