@@ -22,6 +22,10 @@ This file documents the DDOLib changes.
   (it was previously returned empty).
 - LNS: `fixWidth`, `setInitialSolution` and `setProbability` now keep all the LNS parameters of
   the model (initial solution, probability, restriction strategy, state distance).
+- LNS: as long as no solution is known, the restricted DD compiled from the root was the same at
+  each iteration, so the solver could loop forever without finding a solution (e.g. tight TSPTW
+  instances). Its width is now doubled at each iteration until a solution is found.
+- LNS: an infeasible problem is now reported as `UNSAT` (it was reported as `OPTIMAL`).
 - BKS: `BKSFastLowerBound` is now the linear relaxation of the bounded knapsack. It used to add
   the weights of the items to their values and to ignore the capacity already used, which gave a
   very weak bound (LNS gaps above 100 %).

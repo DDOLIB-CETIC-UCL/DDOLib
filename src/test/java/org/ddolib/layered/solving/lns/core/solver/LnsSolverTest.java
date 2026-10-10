@@ -17,6 +17,10 @@ import org.ddolib.examples.layered.knapsack.KSDominance;
 import org.ddolib.examples.layered.knapsack.KSFastLowerBound;
 import org.ddolib.examples.layered.knapsack.KSProblem;
 import org.ddolib.examples.layered.knapsack.KSRanking;
+import org.ddolib.examples.layered.tsptw.TSPTWFastLowerBound;
+import org.ddolib.examples.layered.tsptw.TSPTWProblem;
+import org.ddolib.examples.layered.tsptw.TSPTWRanking;
+import org.ddolib.examples.layered.tsptw.TSPTWState;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.FastLowerBound;
 import org.ddolib.layered.modeling.LnsModel;
@@ -333,5 +337,51 @@ public class LnsSolverTest {
         assertEquals(0.3, model.probability());
         assertArrayEquals(initial, model.initialSolution());
         assertEquals(LnsModel.DEFAULT_SEED, ksModel(problem, 10).seed());
+    }
+
+    private static LnsModel<TSPTWState> tsptwModel(TSPTWProblem problem, int width) {
+        return new LnsModel<>() {
+            @Override
+            public Problem<TSPTWState> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<TSPTWState> lowerBound() {
+                return new TSPTWFastLowerBound(problem);
+            }
+
+            @Override
+            public TSPTWRanking ranking() {
+                return new TSPTWRanking();
+            }
+
+            @Override
+            public WidthHeuristic<TSPTWState> widthHeuristic() {
+                return new FixedWidth<>(width);
+            }
+        };
+    }
+
+    @Test
+    void testWidthIsIncreasedUntilASolutionIsFound() throws Exception {
+        // With a width of 1, the restricted DD compiled from the root has no feasible solution:
+        // the LNS must widen it instead of compiling the same DD again and again.
+        final TSPTWProblem problem =
+                new TSPTWProblem(Path.of("data", "TSPTW", "AFG", "rbg017a.tw").toString());
+        Solution sol = Solvers.minimizeLns(tsptwModel(problem, 1), s -> s.nbIterations() > 30);
+
+        assertFalse(Double.isInfinite(sol.value()));
+        assertEquals(sol.value(), problem.evaluate(sol.solution()), 1e-9);
+    }
+
+    @Test
+    void testInfeasibleProblemIsUnsat() throws IOException {
+        final TSPTWProblem problem =
+                new TSPTWProblem(Path.of("data", "TSPTW", "impossible.txt").toString());
+        Solution sol = Solvers.minimizeLns(tsptwModel(problem, 1), s -> s.nbIterations() > 30);
+
+        assertTrue(Double.isInfinite(sol.value()));
+        assertEquals(SearchStatus.UNSAT, sol.statistics().status());
     }
 }

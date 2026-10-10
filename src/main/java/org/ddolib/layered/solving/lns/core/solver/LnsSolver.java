@@ -99,6 +99,9 @@ public final class LnsSolver<T> implements Solver {
         DdoStats stats = new DdoStats(start, bestUB);
         SubProblem<T> rootPrime;
         double gap = computeGap(bestUB, globalLB);
+        // Without solution, the restricted DD compiled from the root is the same at each
+        // iteration. Its width is thus doubled until a solution is found (or until it is exact).
+        long widthFactor = 1;
         while (true) {
             nbIter++;
             queueMaxSize++;
@@ -138,6 +141,9 @@ public final class LnsSolver<T> implements Solver {
             verboseMode.currentSubProblem(nbIter, sub);
 
             int maxWidth = width.maximumWidth(sub.getState());
+            if (Double.isInfinite(bestUB)) {
+                maxWidth = (int) Math.min(Integer.MAX_VALUE, maxWidth * widthFactor);
+            }
 
             CompilationConfig<T> compilation =
                     configureCompilation(
@@ -150,6 +156,9 @@ public final class LnsSolver<T> implements Solver {
             restrictedMdd.compile();
 
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
+            if (Double.isInfinite(bestUB) && widthFactor < Integer.MAX_VALUE) {
+                widthFactor *= 2;
+            }
             gap = computeGap(bestUB, globalLB);
             if (newbest) {
                 stats =
@@ -171,6 +180,13 @@ public final class LnsSolver<T> implements Solver {
             // decision) is exact or when it reaches the global lower bound. Note that d cannot
             // be used here since it has already been updated by maybeUpdateBest.
             boolean compiledFromRoot = sub.getPath().isEmpty();
+            if (compiledFromRoot && restrictedMdd.isExact() && Double.isInfinite(bestUB)) {
+                // The exact DD compiled from the root has no solution: the problem is infeasible
+                stats =
+                        stats.updateTime(System.currentTimeMillis())
+                                .updateStatus(SearchStatus.UNSAT);
+                return new Solution(bestSolution(), stats);
+            }
             if ((compiledFromRoot && restrictedMdd.isExact()) || bestUB <= globalLB) {
                 stats =
                         stats.updateTime(System.currentTimeMillis())
