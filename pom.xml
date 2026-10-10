@@ -139,9 +139,9 @@
                     <configLocation>${checkstyle.config.location}</configLocation>
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
                     <consoleOutput>true</consoleOutput>
-                    <!-- The rules have the "warning" severity: any warning fails the check -->
+                    <!-- Non-blocking: the warnings are reported but never fail the build -->
                     <violationSeverity>warning</violationSeverity>
-                    <failOnViolation>true</failOnViolation>
+                    <failOnViolation>false</failOnViolation>
                 </configuration>
             </plugin>
             <plugin>

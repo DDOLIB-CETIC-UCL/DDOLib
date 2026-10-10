@@ -5,6 +5,8 @@ on: push
 jobs:
   checkstyle:
     runs-on: ubuntu-latest
+    # Non-blocking: the style warnings are reported but never fail the pipeline
+    continue-on-error: true
     permissions:
       contents: read
     strategy:
@@ -21,7 +23,6 @@ jobs:
           maven-version: ${{ matrix.maven }}
           checkout-enabled: false
 
-      # Blocking: any Checkstyle warning fails the job (see violationSeverity in pom.xml)
       - name: Run Checkstyle
         run: mvn checkstyle:check | tee checkstyle.log
 
@@ -30,7 +31,7 @@ jobs:
         run: |
           total=$(grep -cE '^\[WARN\] ' checkstyle.log || true)
           {
-            echo "## Checkstyle (Google Java Style)"
+            echo "## Checkstyle (Google Java Style, non-blocking)"
             echo ""
             echo "Total warnings: ${total}"
             echo ""

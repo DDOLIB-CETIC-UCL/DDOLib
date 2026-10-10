@@ -46,7 +46,7 @@ This file documents the DDOLib changes.
   default (`LnsModel.DEFAULT_SEED`), as in the original ddo solver.
 - Checkstyle configuration based on the Google Java Style (with a 4-space indentation and the
   abbreviations allowed in names to keep the public API), run with `mvn checkstyle:check` and in a
-  blocking CI workflow (any warning fails the build).
+  non-blocking CI workflow (the warnings are reported but never fail the build).
 
 ### Changed
 
