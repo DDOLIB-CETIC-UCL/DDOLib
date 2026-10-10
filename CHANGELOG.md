@@ -38,6 +38,11 @@ This file documents the DDOLib changes.
   through the remaining nodes. The bound could overestimate the remaining cost and the DDO solver
   could return a non-optimal solution as optimal. The direct edge is now only used when no node
   remains to visit.
+- PDPTW: `PDPTWFastLowerBound` paired the i-th smallest travel time with the i-th smallest earliest
+  start, which is not a relaxation: it could overestimate the remaining cost and declare a feasible
+  state infeasible. It is replaced by a valid bound (the arrival time at each position is at least
+  `t + pre[i]` and `max(t, e(j)) + pre[i - j]`), which is also about twice tighter on the instances
+  of the project.
 - BKS: `BKSFastLowerBound` is now the linear relaxation of the bounded knapsack. It used to add
   the weights of the items to their values and to ignore the capacity already used, which gave a
   very weak bound (LNS gaps above 100 %).
