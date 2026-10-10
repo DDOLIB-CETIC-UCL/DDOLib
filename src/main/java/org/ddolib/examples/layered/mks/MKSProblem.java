@@ -74,7 +74,8 @@ public class MKSProblem implements Problem<MKSState> {
      * <p>The file format is expected to contain:
      *
      * <ul>
-     *   <li>First line: number of items, number of dimensions, optional optimal value
+     *   <li>First line: number of items, number of dimensions, optional optimal value (0 when
+     *       the optimum is unknown, as in the OR-Library files)
      *   <li>Second line: capacities of each dimension
      *   <li>Next lines: profit and weights of each item (profit first, then weights)
      * </ul>
@@ -97,8 +98,11 @@ public class MKSProblem implements Problem<MKSState> {
                                     context.dimensions = Integer.parseInt(tokens[1]);
 
                                     if (tokens.length == 3) {
-                                        context.optimal =
-                                                Optional.of(Double.parseDouble(tokens[2]));
+                                        double optimal = Double.parseDouble(tokens[2]);
+                                        // OR-Library format: 0 means that the optimum is unknown
+                                        if (optimal != 0) {
+                                            context.optimal = Optional.of(optimal);
+                                        }
                                     }
 
                                     context.profit = new int[context.nbItems];
