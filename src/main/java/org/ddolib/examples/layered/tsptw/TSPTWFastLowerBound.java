@@ -121,7 +121,14 @@ public class TSPTWFastLowerBound implements FastLowerBound<TSPTWState> {
         // assume that the longest edge will be replaced by the return to the depot
         travelCost -= maxEdge;
 
-        int total = travelCost == 0 ? problem.minDuration(state, 0) : travelCost + backToDepot;
+        // When no node remains to visit, the vehicle goes straight back to the depot. Otherwise,
+        // the return to the depot is from one of the remaining nodes. Note that travelCost can be
+        // 0 even if nodes remain (zero-cost edges): the direct edge to the depot cannot be used
+        // then since it can be longer than a detour through the remaining nodes.
+        int total =
+                backToDepot == Integer.MAX_VALUE
+                        ? problem.minDuration(state, 0)
+                        : travelCost + backToDepot;
         if (state.time() + total > problem.timeWindows[0].end()) {
             return INFINITY;
         } else {

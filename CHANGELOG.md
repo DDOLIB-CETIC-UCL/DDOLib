@@ -33,6 +33,11 @@ This file documents the DDOLib changes.
   can still be selected, although only the remaining number of decisions is scheduled. The bound
   overestimated the remaining cost and the DDO solver could return a non-optimal solution as
   optimal. It now sums the smallest completion times only.
+- TSPTW: when the sum of the remaining cheapest edges was 0 (zero-cost edges), `TSPTWFastLowerBound`
+  used the direct edge from the current position to the depot, which can be longer than a detour
+  through the remaining nodes. The bound could overestimate the remaining cost and the DDO solver
+  could return a non-optimal solution as optimal. The direct edge is now only used when no node
+  remains to visit.
 - BKS: `BKSFastLowerBound` is now the linear relaxation of the bounded knapsack. It used to add
   the weights of the items to their values and to ignore the capacity already used, which gave a
   very weak bound (LNS gaps above 100 %).
