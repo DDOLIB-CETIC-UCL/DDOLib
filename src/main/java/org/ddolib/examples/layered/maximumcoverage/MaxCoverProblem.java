@@ -334,7 +334,10 @@ public class MaxCoverProblem implements Problem<MaxCoverState> {
         }
         BitSet coveredItems = new BitSet(nbItems);
         for (int selected : solution) {
-            coveredItems.or(subSets[selected]);
+            // -1 is the decision taken once all the items are covered (see domain)
+            if (selected != -1) {
+                coveredItems.or(subSets[selected]);
+            }
         }
 
         return -coveredItems.cardinality();
