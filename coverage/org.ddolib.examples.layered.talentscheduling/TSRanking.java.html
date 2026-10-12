@@ -5,39 +5,32 @@ import org.ddolib.layered.modeling.StateRanking;
 /**
  * Class that defines a ranking (ordering) between two {@link TSState} instances.
  *
- * &lt;p&gt;
- * This ranking is based on the total number of scenes that are either remaining
- * or marked as &quot;maybe&quot; in the state. States with fewer total scenes are considered
- * smaller (i.e., ranked higher) than states with more total scenes.
- * &lt;/p&gt;
+ * &lt;p&gt;This ranking is based on the total number of scenes that are either remaining or marked as
+ * &quot;maybe&quot; in the state. States with fewer total scenes are considered smaller (i.e., ranked higher)
+ * than states with more total scenes.
  *
- * &lt;p&gt;
- * This class implements the {@link StateRanking} interface and is used in DDO or
- * other search algorithms to prioritize states when merging or pruning.
- * &lt;/p&gt;
+ * &lt;p&gt;This class implements the {@link StateRanking} interface and is used in DDO or other search
+ * algorithms to prioritize states when merging or pruning.
  */
 public class TSRanking implements StateRanking&lt;TSState&gt; {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-<span class="fc" id="L24">    public TSRanking() {</span>
-<span class="fc" id="L25">    }</span>
+    /** Creates a new instance of this ranking. */
+<span class="fc" id="L18">    public TSRanking() {}</span>
 
     /**
-     * Compares two {@link TSState} instances based on the total number of scenes
-     * in their {@code remainingScenes} and {@code maybeScenes} sets.
+     * Compares two {@link TSState} instances based on the total number of scenes in their {@code
+     * remainingScenes} and {@code maybeScenes} sets.
      *
      * @param o1 the first state to compare
      * @param o2 the second state to compare
-     * @return A negative integer, zero, or a positive integer as the first argument
-     * is less than, equal to, or greater than the second.
+     * @return A negative integer, zero, or a positive integer as the first argument is less than,
+     *     equal to, or greater than the second.
      */
     @Override
     public int compare(TSState o1, TSState o2) {
-<span class="fc" id="L38">        int totalO1 = o1.remainingScenes().cardinality() + o1.maybeScenes().cardinality();</span>
-<span class="fc" id="L39">        int totalO2 = o2.remainingScenes().cardinality() + o2.maybeScenes().cardinality();</span>
-<span class="fc" id="L40">        return Integer.compare(totalO1, totalO2);</span>
+<span class="fc" id="L31">        int totalO1 = o1.remainingScenes().cardinality() + o1.maybeScenes().cardinality();</span>
+<span class="fc" id="L32">        int totalO2 = o2.remainingScenes().cardinality() + o2.maybeScenes().cardinality();</span>
+<span class="fc" id="L33">        return Integer.compare(totalO1, totalO2);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

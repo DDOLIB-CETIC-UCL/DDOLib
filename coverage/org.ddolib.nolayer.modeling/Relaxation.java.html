@@ -18,18 +18,17 @@ public interface Relaxation&lt;T&gt; {
     T merge(Collection&lt;T&gt; states);
 
     /**
-     * Optional method to compute a local bound (or backward bound component)
-     * when taking a transition from an origin to a destination state.
-     * This bound helps in providing a stronger dual bound in the backward pass.
-     * By default, it returns 0.0.
+     * Optional method to compute a local bound (or backward bound component) when taking a
+     * transition from an origin to a destination state. This bound helps in providing a stronger
+     * dual bound in the backward pass. By default, it returns 0.0.
      *
-     * @param origin      the state before the transition
-     * @param label       the transition action/label
+     * @param origin the state before the transition
+     * @param label the transition action/label
      * @param destination the state after the transition
      * @return the local bound cost
      */
     default double localCost(T origin, int label, T destination) {
-<span class="fc" id="L32">        return 0.0;</span>
+<span class="fc" id="L31">        return 0.0;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

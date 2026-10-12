@@ -4,78 +4,75 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * Represents a residual optimization problem (subproblem) derived from the decomposition
- * of an original problem during the compilation or search process.
- * &lt;p&gt;
- * A {@code SubProblem} corresponds to a portion of the global problem that must be solved
- * in order to complete the resolution of the original optimization task. Subproblems are
- * typically created from nodes located in the exact cutsets of relaxed decision diagrams
- * and encapsulate the remaining computation required from that point onward.
- * &lt;/p&gt;
+ * Represents a residual optimization problem (subproblem) derived from the decomposition of an
+ * original problem during the compilation or search process.
  *
- * &lt;p&gt;
- * Each subproblem maintains:
- * &lt;/p&gt;
+ * &lt;p&gt;A {@code SubProblem} corresponds to a portion of the global problem that must be solved in
+ * order to complete the resolution of the original optimization task. Subproblems are typically
+ * created from nodes located in the exact cutsets of relaxed decision diagrams and encapsulate the
+ * remaining computation required from that point onward.
+ *
+ * &lt;p&gt;Each subproblem maintains:
+ *
  * &lt;ul&gt;
- *   &lt;li&gt;The current {@link #state} of the problem at its root,&lt;/li&gt;
- *   &lt;li&gt;The cumulative objective {@link #value} up to that state,&lt;/li&gt;
- *   &lt;li&gt;A lower bound {@link #lb} estimating the best achievable value below it, and&lt;/li&gt;
- *   &lt;li&gt;The {@link #path} of {@link Decision decisions} taken to reach this subproblem.&lt;/li&gt;
+ *   &lt;li&gt;The current {@link #state} of the problem at its root,
+ *   &lt;li&gt;The cumulative objective {@link #value} up to that state,
+ *   &lt;li&gt;A lower bound {@link #lb} estimating the best achievable value below it, and
+ *   &lt;li&gt;The {@link #path} of {@link Decision decisions} taken to reach this subproblem.
  * &lt;/ul&gt;
- * These attributes allow the solver to estimate, compare, and prioritize subproblems when
+ *
+ * &lt;p&gt;These attributes allow the solver to estimate, compare, and prioritize subproblems when
  * exploring the decision space.
  *
  * @param &lt;T&gt; the type representing the state of the problem
  */
 public final class SubProblem&lt;T&gt; {
     /**
-     * The root state associated with this subproblem.
-     * Represents the current configuration of the problem.
+     * The root state associated with this subproblem. Represents the current configuration of the
+     * problem.
      */
     final T state;
-    /**
-     * The objective value accumulated up to the root of this subproblem.
-     */
+
+    /** The objective value accumulated up to the root of this subproblem. */
     final double value;
+
     /**
-     * A lower bound on the optimal objective value reachable
-     * when continuing from this subproblem.
+     * A lower bound on the optimal objective value reachable when continuing from this subproblem.
      */
     final double lb;
+
     /**
-     * The sequence of {@link Decision decisions} made from the root of the original problem
-     * to reach this subproblem. Represents the partial assignment of variables.
+     * The sequence of {@link Decision decisions} made from the root of the original problem to
+     * reach this subproblem. Represents the partial assignment of variables.
      */
     final Set&lt;Decision&gt; path;
 
     /**
-     * Constructs a new {@code SubProblem} instance with its associated state,
-     * accumulated value, lower bound, and decision path.
+     * Constructs a new {@code SubProblem} instance with its associated state, accumulated value,
+     * lower bound, and decision path.
      *
      * @param state the root state of this subproblem
      * @param value the objective value corresponding to the longest path reaching this subproblem
-     * @param lb    a lower bound on the optimal value reachable when solving through this subproblem
-     * @param path  the sequence of decisions (partial assignment) leading from the root to this subproblem
+     * @param lb a lower bound on the optimal value reachable when solving through this subproblem
+     * @param path the sequence of decisions (partial assignment) leading from the root to this
+     *     subproblem
      */
     public SubProblem(
-            final T state,
-            final double value,
-            final double lb,
-<span class="fc" id="L64">            final Set&lt;Decision&gt; path) {</span>
-<span class="fc" id="L65">        this.state = state;</span>
-<span class="fc" id="L66">        this.value = value;</span>
-<span class="fc" id="L67">        this.lb = lb;</span>
-<span class="fc" id="L68">        this.path = path;</span>
-<span class="fc" id="L69">    }</span>
+<span class="fc" id="L61">            final T state, final double value, final double lb, final Set&lt;Decision&gt; path) {</span>
+<span class="fc" id="L62">        this.state = state;</span>
+<span class="fc" id="L63">        this.value = value;</span>
+<span class="fc" id="L64">        this.lb = lb;</span>
+<span class="fc" id="L65">        this.path = path;</span>
+<span class="fc" id="L66">    }</span>
 
     /**
-     * Returns the depth of this subproblem, corresponding to the number of
-     * decisions taken from the root to reach it.
+     * Returns the depth of this subproblem, corresponding to the number of decisions taken from the
+     * root to reach it.
      *
      * @return the depth of the subproblem
      */
     public int getDepth() {
-<span class="fc" id="L78">        return this.path.size();</span>
+<span class="fc" id="L75">        return this.path.size();</span>
     }
 
     /**
@@ -84,7 +81,7 @@ public final class SubProblem&lt;T&gt; {
      * @return the root state
      */
     public T getState() {
-<span class="fc" id="L87">        return this.state;</span>
+<span class="fc" id="L84">        return this.state;</span>
     }
 
     /**
@@ -93,31 +90,31 @@ public final class SubProblem&lt;T&gt; {
      * @return the current objective value
      */
     public double getValue() {
-<span class="fc" id="L96">        return this.value;</span>
+<span class="fc" id="L93">        return this.value;</span>
     }
 
     /**
-     * Returns the lower bound on the global objective that can be achieved
-     * by solving the remainder of the problem through this subproblem.
+     * Returns the lower bound on the global objective that can be achieved by solving the remainder
+     * of the problem through this subproblem.
      *
      * @return the lower bound on the objective
      */
     public double getLowerBound() {
-<span class="fc" id="L106">        return this.lb;</span>
+<span class="fc" id="L103">        return this.lb;</span>
     }
 
     /**
-     * Computes and returns the &lt;em&gt;f-value&lt;/em&gt; of this subproblem, defined as
-     * the sum of its current objective value and its lower bound.
-     * &lt;p&gt;
-     * This metric is often used to prioritize subproblems in branch-and-bound
-     * or decision diagram exploration.
-     * &lt;/p&gt;
+     * Computes and returns the &lt;em&gt;f-value&lt;/em&gt; of this subproblem, defined as the sum of its
+     * current objective value and its lower bound.
+     *
+     * &lt;p&gt;This metric is often used to prioritize subproblems in branch-and-bound or decision
+     * diagram exploration.
      *
      * @return the f-value (value + lower bound) of this subproblem
      */
+    @SuppressWarnings(&quot;checkstyle:MethodName&quot;) // public API
     public double f() {
-<span class="fc" id="L120">        return this.value + this.lb;</span>
+<span class="fc" id="L117">        return this.value + this.lb;</span>
     }
 
     /**
@@ -126,17 +123,19 @@ public final class SubProblem&lt;T&gt; {
      * @return the set of decisions representing the path
      */
     public Set&lt;Decision&gt; getPath() {
-<span class="fc" id="L129">        return this.path;</span>
+<span class="fc" id="L126">        return this.path;</span>
     }
 
     /**
-     * Returns a string summarizing key statistics about this subproblem,
-     * including its objective value, lower bound, and depth in the decision diagram.
+     * Returns a string summarizing key statistics about this subproblem, including its objective
+     * value, lower bound, and depth in the decision diagram.
      *
      * @return a formatted string of subproblem statistics
      */
     public String statistics() {
-<span class="nc" id="L139">        return String.format(&quot;SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)&quot;, value, lb, (value - lb), this.getPath().size());</span>
+<span class="nc" id="L136">        return String.format(</span>
+                &quot;SubProblem(val:%.0f ub:%.0f fub:%.0f depth:%d)&quot;,
+<span class="nc" id="L138">                value, lb, (value - lb), this.getPath().size());</span>
     }
 
     /**
@@ -146,35 +145,35 @@ public final class SubProblem&lt;T&gt; {
      */
     @Override
     public int hashCode() {
-<span class="nc" id="L149">        return Objects.hash(state, getDepth());</span>
+<span class="nc" id="L148">        return Objects.hash(state, getDepth());</span>
     }
 
     /**
-     * Compares this subproblem to another for equality.
-     * Two subproblems are considered equal if they share the same root state.
+     * Compares this subproblem to another for equality. Two subproblems are considered equal if
+     * they share the same root state.
      *
      * @param obj the object to compare with
      * @return {@code true} if both subproblems have the same state, {@code false} otherwise
      */
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">        if (obj instanceof SubProblem&lt;?&gt; other) {</span>
-<span class="fc bfc" id="L162" title="All 4 branches covered.">            return this.state.equals(other.state) &amp;&amp; this.getDepth() == other.getDepth();</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">        if (obj instanceof SubProblem&lt;?&gt; other) {</span>
+<span class="fc bfc" id="L161" title="All 4 branches covered.">            return this.state.equals(other.state) &amp;&amp; this.getDepth() == other.getDepth();</span>
         }
-<span class="nc" id="L164">        return false;</span>
+<span class="nc" id="L163">        return false;</span>
     }
 
     /**
-     * Returns a human-readable representation of this subproblem,
-     * including its value, lower bound, f-value, depth, and state.
+     * Returns a human-readable representation of this subproblem, including its value, lower bound,
+     * f-value, depth, and state.
      *
      * @return a formatted string describing this subproblem
      */
     @Override
     public String toString() {
-<span class="nc" id="L175">        return String.format(&quot;SubProblem(val: %.0f - lb: %.0f - f: %.0f - depth: %d - state: %s&quot;,</span>
+<span class="nc" id="L174">        return String.format(</span>
+                &quot;SubProblem(val: %.0f - lb: %.0f - f: %.0f - depth: %d - state: %s&quot;,
 <span class="nc" id="L176">                value, lb, f(), this.getPath().size(), state);</span>
     }
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

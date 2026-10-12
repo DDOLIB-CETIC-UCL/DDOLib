@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RestrictionSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.layered.solving.ddo.core.solver</a> &gt; <span class="el_source">RestrictionSolver.java</span></div><h1>RestrictionSolver.java</h1><pre class="source lang-java linenums">package org.ddolib.layered.solving.ddo.core.solver;
 
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
@@ -7,21 +12,20 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.common.util.verbosity.VerboseMode;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
-import org.ddolib.common.util.verbosity.VerboseMode;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
-
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 /**
  * A solver that compile one relaxed MDD from the root node.
@@ -38,112 +42,100 @@ import java.util.function.Predicate;
  * @see DominanceChecker
  */
 public final class RestrictionSolver&lt;T&gt; {
-    /**
-     * The problem we want to minimize
-     */
+    /** The problem we want to minimize. */
     private final Problem&lt;T&gt; problem;
-    /**
-     * A heuristic to choose the maximum width of the DD you compile
-     */
+
+    /** A heuristic to choose the maximum width of the DD you compile. */
     private final WidthHeuristic&lt;T&gt; width;
 
-
     /**
-     * Set of nodes that must still be explored before
-     * the problem can be considered 'solved'.
-     * &lt;p&gt;
-     * # Note:
-     * This fringe orders the nodes by lower bound (so the lowest lower bound is going
-     * to pop first). So, it is guaranteed that the lower-bound of the first
-     * node being popped is a lower bound on the value reachable by exploring
-     * any of the nodes remaining on the fringe. As a consequence, the
-     * exploration can be stopped as soon as a node with an lb &amp;#8804; current best
-     * lower bound is popped.
+     * Set of nodes that must still be explored before the problem can be considered 'solved'.
+     *
+     * &lt;p&gt;# Note: This fringe orders the nodes by lower bound (so the lowest lower bound is going to
+     * pop first). So, it is guaranteed that the lower-bound of the first node being popped is a
+     * lower bound on the value reachable by exploring any of the nodes remaining on the fringe. As
+     * a consequence, the exploration can be stopped as soon as a node with an lb &amp;#8804; current
+     * best lower bound is popped.
      */
     private final Frontier&lt;T&gt; frontier;
 
-    /**
-     * The dominance object that will be used to prune the search space.
-     */
+    /** The dominance object that will be used to prune the search space. */
     private final DominanceChecker&lt;T&gt; dominance;
 
-
     /**
+     * Verbosity level of the solver, i.e. what is printed during the search.
+     *
      * &lt;ul&gt;
-     *     &lt;li&gt;0: no verbosity&lt;/li&gt;
-     *     &lt;li&gt;1: display newBest whenever there is a newBest&lt;/li&gt;
-     *     &lt;li&gt;2: 1 + statistics about the front every half a second (or so)&lt;/li&gt;
-     *     &lt;li&gt;3: 2 + every developed sub-problem&lt;/li&gt;
-     *     &lt;li&gt;4: 3 + details about the developed state&lt;/li&gt;
+     *   &lt;li&gt;0: no verbosity
+     *   &lt;li&gt;1: display newBest whenever there is a newBest
+     *   &lt;li&gt;2: 1 + statistics about the front every half a second (or so)
+     *   &lt;li&gt;3: 2 + every developed sub-problem
+     *   &lt;li&gt;4: 3 + details about the developed state
      * &lt;/ul&gt;
-     * &lt;p&gt;
-     * &lt;p&gt;
-     * 3: 2 + every developed sub-problem
-     * 4: 3 + details about the developed state
      */
     private final VerbosityLevel verbosityLevel;
 
     private final VerboseMode verboseMode;
-    /**
-     * Whether we want to export the first explored restricted and relaxed mdd.
-     */
+
+    /** Whether we want to export the first explored restricted and relaxed mdd. */
     private final boolean exportAsDot;
+
     private final DdoModel&lt;T&gt; model;
-    /**
-     * Value of the best known upper bound.
-     */
+
+    /** Value of the best known upper bound. */
     private double bestUB;
-    /**
-     * If set, this keeps the info about the best solution so far.
-     */
+
+    /** If set, this keeps the info about the best solution so far. */
     private Optional&lt;Set&lt;Decision&gt;&gt; bestSol;
 
     /**
-     * Creates a fully qualified instance. The parameters of this solver are given via a
-     * {@link DdoModel}
+     * Creates a fully qualified instance. The parameters of this solver are given via a {@link
+     * DdoModel}
      *
      * @param model all the parameters needed to configure the solver
      */
-<span class="nc" id="L107">    public RestrictionSolver(DdoModel&lt;T&gt; model) {</span>
-<span class="nc" id="L108">        this.problem = model.problem();</span>
-<span class="nc" id="L109">        this.width = model.widthHeuristic();</span>
-<span class="nc" id="L110">        this.frontier = model.frontier();</span>
-<span class="nc" id="L111">        this.bestUB = Double.POSITIVE_INFINITY;</span>
-<span class="nc" id="L112">        this.bestSol = Optional.empty();</span>
-<span class="nc" id="L113">        this.verbosityLevel = model.verbosityLevel();</span>
-<span class="nc" id="L114">        this.verboseMode = new VerboseMode(verbosityLevel, 500L);</span>
-<span class="nc" id="L115">        this.exportAsDot = model.exportDot();</span>
-<span class="nc" id="L116">        this.dominance = model.dominance();</span>
-<span class="nc" id="L117">        this.model = model;</span>
-<span class="nc" id="L118">    }</span>
+<span class="nc" id="L97">    public RestrictionSolver(DdoModel&lt;T&gt; model) {</span>
+<span class="nc" id="L98">        this.problem = model.problem();</span>
+<span class="nc" id="L99">        this.width = model.widthHeuristic();</span>
+<span class="nc" id="L100">        this.frontier = model.frontier();</span>
+<span class="nc" id="L101">        this.bestUB = Double.POSITIVE_INFINITY;</span>
+<span class="nc" id="L102">        this.bestSol = Optional.empty();</span>
+<span class="nc" id="L103">        this.verbosityLevel = model.verbosityLevel();</span>
+<span class="nc" id="L104">        this.verboseMode = new VerboseMode(verbosityLevel, 500L);</span>
+<span class="nc" id="L105">        this.exportAsDot = model.exportDot();</span>
+<span class="nc" id="L106">        this.dominance = model.dominance();</span>
+<span class="nc" id="L107">        this.model = model;</span>
+<span class="nc" id="L108">    }</span>
 
     /**
      * Solves the model by compiling a single restricted decision diagram.
      *
-     * @param limit      a predicate that can limit or stop the search based on current statistics
+     * @param limit a predicate that can limit or stop the search based on current statistics
      * @param onSolution a callback invoked once with the best solution found, if any
      * @return the statistics of the search after completion
      */
-    public Solution minimize(Predicate&lt;SearchStatistics&gt; limit,
-                             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L129">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);</span>
+    public Solution minimize(
+            Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+        // declared first on purpose: it records the start time of the search
+        @SuppressWarnings(&quot;checkstyle:VariableDeclarationUsageDistance&quot;)
+<span class="nc" id="L121">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);</span>
 
-<span class="nc" id="L131">        SubProblem&lt;T&gt; sub = root();</span>
-<span class="nc" id="L132">        int maxWidth = width.maximumWidth(sub.getState());</span>
-<span class="nc" id="L133">        CompilationConfig&lt;T&gt; compilation = configureCompilation(sub, maxWidth, model.exportDot());</span>
+<span class="nc" id="L123">        SubProblem&lt;T&gt; sub = root();</span>
+<span class="nc" id="L124">        int maxWidth = width.maximumWidth(sub.getState());</span>
+<span class="nc" id="L125">        CompilationConfig&lt;T&gt; compilation = configureCompilation(sub, maxWidth, model.exportDot());</span>
 
-<span class="nc" id="L135">        LinkedDecisionDiagram&lt;T&gt; restrictedMdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
-<span class="nc" id="L136">        restrictedMdd.compile();</span>
-<span class="nc" id="L137">        maybeUpdateBest(restrictedMdd, exportAsDot);</span>
+<span class="nc" id="L127">        LinkedDecisionDiagram&lt;T&gt; restrictedMdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
+<span class="nc" id="L128">        restrictedMdd.compile();</span>
+<span class="nc" id="L129">        maybeUpdateBest(restrictedMdd, exportAsDot);</span>
 
-<span class="nc bnc" id="L139" title="All 2 branches missed.">        if (!restrictedMdd.bestValue().isPresent()) {</span>
-<span class="nc" id="L140">            System.out.println(restrictedMdd.bestSolution());</span>
-<span class="nc" id="L141">            System.exit(0);</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        if (!restrictedMdd.bestValue().isPresent()) {</span>
+<span class="nc" id="L132">            System.out.println(restrictedMdd.bestSolution());</span>
+<span class="nc" id="L133">            System.exit(0);</span>
         }
 
-<span class="nc" id="L144">        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);</span>
-<span class="nc" id="L145">        statistics = statistics.updateStatus(SearchStatus.SAT);</span>
-<span class="nc" id="L146">        return new Solution(bestSolution(), statistics);</span>
+<span class="nc" id="L136">        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);</span>
+<span class="nc" id="L137">        statistics = statistics.updateStatus(SearchStatus.SAT);</span>
+<span class="nc" id="L138">        return new Solution(bestSolution(), statistics);</span>
     }
 
     /**
@@ -152,86 +144,87 @@ public final class RestrictionSolver&lt;T&gt; {
      * @return the value of the best solution in the restricted decision diagram if there is one
      */
     public Optional&lt;Double&gt; bestValue() {
-<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (bestSol.isPresent()) {</span>
-<span class="nc" id="L156">            return Optional.of(bestUB);</span>
+<span class="nc bnc" id="L147" title="All 2 branches missed.">        if (bestSol.isPresent()) {</span>
+<span class="nc" id="L148">            return Optional.of(bestUB);</span>
         } else {
-<span class="nc" id="L158">            return Optional.empty();</span>
+<span class="nc" id="L150">            return Optional.empty();</span>
         }
     }
 
     /**
      * Returns the set of decisions that lead to the best solution found by this solver, if any.
      *
-     * @return an {@link Optional} containing the set of {@link Decision} objects representing the best solution,
-     * or empty if no solution exists
+     * @return an {@link Optional} containing the set of {@link Decision} objects representing the
+     *     best solution, or empty if no solution exists
      */
     public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
-<span class="nc" id="L169">        return bestSol;</span>
+<span class="nc" id="L161">        return bestSol;</span>
     }
 
     /**
+     * Returns the root subproblem.
+     *
      * @return the root subproblem
      */
     private SubProblem&lt;T&gt; root() {
-<span class="nc" id="L176">        return new SubProblem&lt;&gt;(</span>
-<span class="nc" id="L177">                problem.initialState(),</span>
-<span class="nc" id="L178">                problem.initialValue(),</span>
+<span class="nc" id="L170">        return new SubProblem&lt;&gt;(</span>
+<span class="nc" id="L171">                problem.initialState(),</span>
+<span class="nc" id="L172">                problem.initialValue(),</span>
                 Double.NEGATIVE_INFINITY,
-<span class="nc" id="L180">                Collections.emptySet());</span>
+<span class="nc" id="L174">                Collections.emptySet());</span>
     }
 
     /**
-     * Updates the best known node and upper bound in
-     * case the best value of the current `mdd` expansion improves the current
-     * bounds.
+     * Updates the best known node and upper bound in case the best value of the current `mdd`
+     * expansion improves the current bounds.
      */
     private void maybeUpdateBest(DecisionDiagram&lt;T&gt; currentMdd, boolean exportDot) {
-<span class="nc" id="L189">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
-<span class="nc bnc" id="L190" title="All 4 branches missed.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
-<span class="nc" id="L191">            bestUB = ddval.get();</span>
-<span class="nc" id="L192">            bestSol = currentMdd.bestSolution();</span>
-<span class="nc" id="L193">            verboseMode.newBest(bestUB);</span>
-<span class="nc bnc" id="L194" title="All 2 branches missed.">        } else if (exportDot) {</span>
-<span class="nc" id="L195">            currentMdd.exportAsDot(); // to be sure to update the color of the edges.</span>
+<span class="nc" id="L182">        Optional&lt;Double&gt; ddval = currentMdd.bestValue();</span>
+<span class="nc bnc" id="L183" title="All 4 branches missed.">        if (ddval.isPresent() &amp;&amp; ddval.get() &lt; bestUB) {</span>
+<span class="nc" id="L184">            bestUB = ddval.get();</span>
+<span class="nc" id="L185">            bestSol = currentMdd.bestSolution();</span>
+<span class="nc" id="L186">            verboseMode.newBest(bestUB);</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">        } else if (exportDot) {</span>
+<span class="nc" id="L188">            currentMdd.exportAsDot(); // to be sure to update the color of the edges.</span>
         }
-<span class="nc" id="L197">    }</span>
+<span class="nc" id="L190">    }</span>
 
     private double gap() {
-<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (frontier.isEmpty()) {</span>
-<span class="nc" id="L201">            return 100.0;</span>
+<span class="nc bnc" id="L193" title="All 2 branches missed.">        if (frontier.isEmpty()) {</span>
+<span class="nc" id="L194">            return 100.0;</span>
         } else {
-<span class="nc" id="L203">            double bestInFrontier = frontier.bestInFrontier();</span>
-<span class="nc" id="L204">            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);</span>
+<span class="nc" id="L196">            double bestInFrontier = frontier.bestInFrontier();</span>
+<span class="nc" id="L197">            return Math.abs(100 * (Math.abs(bestUB) - Math.abs(bestInFrontier)) / bestUB);</span>
         }
     }
 
     /**
      * Initialize the parameters of a compilation.
      *
-     * @param sub         the root of the current sub-problem
-     * @param maxWidth    the max width of the diagram
+     * @param sub the root of the current sub-problem
+     * @param maxWidth the max width of the diagram
      * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */
-    private CompilationConfig&lt;T&gt; configureCompilation(SubProblem&lt;T&gt; sub,
-                                                      int maxWidth, boolean exportAsDot) {
-<span class="nc" id="L218">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
-<span class="nc" id="L219">        compilation.compilationType = CompilationType.Restricted;</span>
-<span class="nc" id="L220">        compilation.problem = model.problem();</span>
-<span class="nc" id="L221">        compilation.relaxation = model.relaxation();</span>
-<span class="nc" id="L222">        compilation.variableHeuristic = model.variableHeuristic();</span>
-<span class="nc" id="L223">        compilation.stateRanking = model.ranking();</span>
-<span class="nc" id="L224">        compilation.residual = sub;</span>
-<span class="nc" id="L225">        compilation.maxWidth = maxWidth;</span>
-<span class="nc" id="L226">        compilation.flb = model.lowerBound();</span>
-<span class="nc" id="L227">        compilation.dominance = this.dominance;</span>
-<span class="nc" id="L228">        compilation.bestUB = this.bestUB;</span>
-<span class="nc" id="L229">        compilation.cutSetType = frontier.cutSetType();</span>
-<span class="nc" id="L230">        compilation.exportAsDot = exportAsDot;</span>
-<span class="nc" id="L231">        compilation.debugLevel = model.debugMode();</span>
-<span class="nc" id="L232">        compilation.reductionStrategy = model.restrictStrategy();</span>
+    private CompilationConfig&lt;T&gt; configureCompilation(
+            SubProblem&lt;T&gt; sub, int maxWidth, boolean exportAsDot) {
+<span class="nc" id="L211">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
+<span class="nc" id="L212">        compilation.compilationType = CompilationType.Restricted;</span>
+<span class="nc" id="L213">        compilation.problem = model.problem();</span>
+<span class="nc" id="L214">        compilation.relaxation = model.relaxation();</span>
+<span class="nc" id="L215">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="nc" id="L216">        compilation.stateRanking = model.ranking();</span>
+<span class="nc" id="L217">        compilation.residual = sub;</span>
+<span class="nc" id="L218">        compilation.maxWidth = maxWidth;</span>
+<span class="nc" id="L219">        compilation.flb = model.lowerBound();</span>
+<span class="nc" id="L220">        compilation.dominance = this.dominance;</span>
+<span class="nc" id="L221">        compilation.bestUB = this.bestUB;</span>
+<span class="nc" id="L222">        compilation.cutSetType = frontier.cutSetType();</span>
+<span class="nc" id="L223">        compilation.exportAsDot = exportAsDot;</span>
+<span class="nc" id="L224">        compilation.debugLevel = model.debugMode();</span>
+<span class="nc" id="L225">        compilation.reductionStrategy = model.restrictStrategy();</span>
 
-<span class="nc" id="L234">        return compilation;</span>
+<span class="nc" id="L227">        return compilation;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

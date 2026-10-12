@@ -5,30 +5,25 @@ import org.ddolib.layered.modeling.StateRanking;
 /**
  * Ranking function for {@link MaxCoverState} used in the Maximum Coverage problem.
  *
- * &lt;p&gt;
- * This class implements {@link StateRanking} and orders states based on
- * the number of items they have covered. States covering fewer items
- * are considered &quot;smaller&quot; and ranked lower.
+ * &lt;p&gt;This class implements {@link StateRanking} and orders states based on the number of items they
+ * have covered. States covering fewer items are considered &quot;smaller&quot; and ranked lower.
  */
 public class MaxCoverRanking implements StateRanking&lt;MaxCoverState&gt; {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-<span class="fc" id="L18">    public MaxCoverRanking() {</span>
-<span class="fc" id="L19">    }</span>
+    /** Creates a new instance of this ranking. */
+<span class="fc" id="L14">    public MaxCoverRanking() {}</span>
 
     /**
      * Compares two MaxCover states based on the number of items they cover.
      *
      * @param o1 the first state
      * @param o2 the second state
-     * @return a negative integer, zero, or a positive integer as the first state
-     * covers fewer, equal, or more items than the second state
+     * @return a negative integer, zero, or a positive integer as the first state covers fewer,
+     *     equal, or more items than the second state
      */
     @Override
     public int compare(MaxCoverState o1, MaxCoverState o2) {
-<span class="fc" id="L31">        return Integer.compare(o1.coveredItems().size(), o2.coveredItems().size());</span>
+<span class="fc" id="L26">        return Integer.compare(o1.coveredItems().size(), o2.coveredItems().size());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -3,18 +3,15 @@
 import org.ddolib.layered.modeling.StateRanking;
 
 /**
- * Class used to compare two states for the MCP problem.
- * &lt;br&gt;
- * When comparing two states, the best is the one that can generate the biggest benefit, independently of the decisions.
- * That's why we sum the absolute value of each benefit to compare the states.
+ * Class used to compare two states for the MCP problem. &lt;br&gt;
+ * When comparing two states, the best is the one that can generate the biggest benefit,
+ * independently of the decisions. That's why we sum the absolute value of each benefit to compare
+ * the states.
  */
 public class MCPRanking implements StateRanking&lt;MCPState&gt; {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-<span class="fc" id="L16">    public MCPRanking() {</span>
-<span class="fc" id="L17">    }</span>
+    /** Creates a new instance of this ranking. */
+<span class="fc" id="L14">    public MCPRanking() {}</span>
 
     /**
      * Computes the ranking value of a state, defined as the sum of the absolute value of the net
@@ -24,19 +21,16 @@ public class MCPRanking implements StateRanking&lt;MCPState&gt; {
      * @return the ranking value of the state
      */
     public static int rank(MCPState state) {
-<span class="fc" id="L27">        int toReturn = 0;</span>
-<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (int i = state.depth(); i &lt; state.netBenefit().size(); i++) {</span>
-<span class="fc" id="L29">            toReturn += Math.abs(state.netBenefit().get(i));</span>
-
+<span class="fc" id="L24">        int toReturn = 0;</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        for (int i = state.depth(); i &lt; state.netBenefit().size(); i++) {</span>
+<span class="fc" id="L26">            toReturn += Math.abs(state.netBenefit().get(i));</span>
         }
-<span class="fc" id="L32">        return toReturn;</span>
+<span class="fc" id="L28">        return toReturn;</span>
     }
 
     @Override
     public int compare(MCPState o1, MCPState o2) {
-<span class="fc" id="L37">        return Integer.compare(rank(o1), rank(o2));</span>
+<span class="fc" id="L33">        return Integer.compare(rank(o1), rank(o2));</span>
     }
-
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

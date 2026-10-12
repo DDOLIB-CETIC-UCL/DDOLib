@@ -3,21 +3,16 @@
 /**
  * Represents a time window with a start and end time.
  *
- * &lt;p&gt;
- * A {@code TimeWindow} defines an interval [start, end] during which
- * an event, task, or visit must occur. Both {@code start} and {@code end}
- * are inclusive and usually represented as integer time units (e.g., minutes, hours).
- * &lt;/p&gt;
+ * &lt;p&gt;A {@code TimeWindow} defines an interval [start, end] during which an event, task, or visit
+ * must occur. Both {@code start} and {@code end} are inclusive and usually represented as integer
+ * time units (e.g., minutes, hours).
  *
- * &lt;p&gt;
- * Typical usage is in scheduling problems such as the Traveling Salesman Problem
- * with Time Windows (TSPTW), where each location or task has a limited time window
- * in which it can be visited or executed.
- * &lt;/p&gt;
+ * &lt;p&gt;Typical usage is in scheduling problems such as the Traveling Salesman Problem with Time
+ * Windows (TSPTW), where each location or task has a limited time window in which it can be visited
+ * or executed.
  *
  * @param start the beginning of the time window (inclusive)
- * @param end   the end of the time window (inclusive)
+ * @param end the end of the time window (inclusive)
  */
-<span class="fc" id="L21">public record TimeWindow(int start, int end) {</span>
-}
+<span class="fc" id="L17">public record TimeWindow(int start, int end) {}</span>
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

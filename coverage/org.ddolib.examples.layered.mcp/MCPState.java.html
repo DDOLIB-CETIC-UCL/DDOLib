@@ -3,27 +3,28 @@
 import java.util.ArrayList;
 
 /**
- * Class to contain data for the MCP state. The state contains its depth in the associated MDD and a list of net
- * benefits.&lt;br&gt;
- * &lt;p&gt;
- * This list contains:
+ * Class to contain data for the MCP state. The state contains its depth in the associated MDD and a
+ * list of net benefits.&lt;br&gt;
+ *
+ * &lt;p&gt;This list contains:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt; for each {@code k &gt;= depth}, the net benefits by setting the variable {@code k} to the
- *     partition {@code T}
- *     knowing the assignment of the previous variables;
- *     &lt;/li&gt;
- *     &lt;li&gt;for each {@code k &lt; depth}, {@code 0}, modeling that these variable has been assigned in
- *     previous layer and cannot influence the objective anymore.&lt;/li&gt;
- * &lt;/ul&gt;.
+ *   &lt;li&gt;for each {@code k &gt;= depth}, the net benefits by setting the variable {@code k} to the
+ *       partition {@code T} knowing the assignment of the previous variables;
+ *   &lt;li&gt;for each {@code k &lt; depth}, {@code 0}, modeling that these variable has been assigned in
+ *       previous layer and cannot influence the objective anymore.
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;.
  *
  * @param netBenefit the list of cumulative net benefits
- * @param depth      the current depth of the search
+ * @param depth the current depth of the search
  */
-<span class="fc" id="L22">public record MCPState(ArrayList&lt;Integer&gt; netBenefit, int depth) {</span>
+<span class="fc" id="L23">public record MCPState(ArrayList&lt;Integer&gt; netBenefit, int depth) {</span>
 
     @Override
     public String toString() {
-<span class="fc" id="L26">        return netBenefit.toString();</span>
+<span class="fc" id="L27">        return netBenefit.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

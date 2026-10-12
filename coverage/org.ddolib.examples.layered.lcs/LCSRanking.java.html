@@ -4,31 +4,25 @@ import org.ddolib.layered.modeling.StateRanking;
 
 /**
  * Ranking strategy for {@link LCSState} in the Longest Common Subsequence (LCS) problem.
- * &lt;p&gt;
- * This class implements {@link StateRanking} to compare two LCS states. The comparison
- * is based on the sum of the positions in each string: states with smaller total positions
- * are considered &quot;better&quot; because they represent progress earlier in the strings.
- * &lt;/p&gt;
- * &lt;p&gt;
- * It is typically used in search algorithms (ACS, A*, DDO) to prioritize states that
- * are closer to the beginning of the strings, which may lead to faster exploration of
- * potential optimal LCS solutions.
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;This class implements {@link StateRanking} to compare two LCS states. The comparison is based
+ * on the sum of the positions in each string: states with smaller total positions are considered
+ * &quot;better&quot; because they represent progress earlier in the strings.
+ *
+ * &lt;p&gt;It is typically used in search algorithms (ACS, A*, DDO) to prioritize states that are closer
+ * to the beginning of the strings, which may lead to faster exploration of potential optimal LCS
+ * solutions.
  */
 public class LCSRanking implements StateRanking&lt;LCSState&gt; {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-<span class="fc" id="L23">    public LCSRanking() {</span>
-<span class="fc" id="L24">    }</span>
+    /** Creates a new instance of this ranking. */
+<span class="fc" id="L19">    public LCSRanking() {}</span>
 
     /**
      * Compares two LCS states.
-     * &lt;p&gt;
-     * The state with the smaller sum of positions across all strings is considered
-     * better and will be ranked higher.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;The state with the smaller sum of positions across all strings is considered better and
+     * will be ranked higher.
      *
      * @param state1 the first LCS state to compare
      * @param state2 the second LCS state to compare
@@ -37,27 +31,26 @@ public class LCSRanking implements StateRanking&lt;LCSState&gt; {
     @Override
     public int compare(LCSState state1, LCSState state2) {
         // Best state is the one where the sum of string's position is the smallest.
-<span class="fc" id="L40">        int totState1 = 0;</span>
-<span class="fc" id="L41">        int totState2 = 0;</span>
-<span class="fc bfc" id="L42" title="All 2 branches covered.">        for (int i = 0; i &lt; state1.position.length; i++) {</span>
-<span class="fc" id="L43">            totState1 += state1.position[i];</span>
-<span class="fc" id="L44">            totState2 += state2.position[i];</span>
+<span class="fc" id="L34">        int totState1 = 0;</span>
+<span class="fc" id="L35">        int totState2 = 0;</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        for (int i = 0; i &lt; state1.position.length; i++) {</span>
+<span class="fc" id="L37">            totState1 += state1.position[i];</span>
+<span class="fc" id="L38">            totState2 += state2.position[i];</span>
         }
-<span class="fc" id="L46">        return Integer.compare(totState2, totState1);</span>
+<span class="fc" id="L40">        return Integer.compare(totState2, totState1);</span>
     }
 
     /**
      * Indicates whether this ranking object is equal to another.
-     * &lt;p&gt;
-     * Currently always returns false since ranking objects do not maintain state.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;Currently always returns false since ranking objects do not maintain state.
      *
      * @param obj the other object to compare to
      * @return false
      */
     @Override
     public boolean equals(Object obj) {
-<span class="nc" id="L60">        return false;</span>
+<span class="nc" id="L53">        return false;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -7,44 +7,43 @@ import java.util.Objects;
 /**
  * Represents a state in a Single Row Facility Layout Problem (SRFLP) instance.
  *
- * &lt;p&gt;
- * Each state keeps track of which departments must still be placed, which departments
- * are optional (in case of merged nodes), the cumulative cut values, and the depth
- * in the decision diagram or search tree.
- * &lt;/p&gt;
+ * &lt;p&gt;Each state keeps track of which departments must still be placed, which departments are
+ * optional (in case of merged nodes), the cumulative cut values, and the depth in the decision
+ * diagram or search tree.
  *
- * @param must  the set of departments that must still be placed in all possible completions
- *              of the current state. Represented as a {@link BitSet}.
- * @param maybe the set of departments that must be placed for some of the merged states,
- *              but may have already been placed in others. Used primarily in relaxed/merged states.
- * @param cut   an array containing, for each free department, the sum of all traffic intensities
- *              from the fixed departments to that department.
+ * @param must the set of departments that must still be placed in all possible completions of the
+ *     current state. Represented as a {@link BitSet}.
+ * @param maybe the set of departments that must be placed for some of the merged states, but may
+ *     have already been placed in others. Used primarily in relaxed/merged states.
+ * @param cut an array containing, for each free department, the sum of all traffic intensities from
+ *     the fixed departments to that department.
  * @param depth the depth of the state in the associated decision diagram or search tree
  */
-<span class="fc" id="L24">public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {</span>
+<span class="fc" id="L22">public record SRFLPState(BitSet must, BitSet maybe, int[] cut, int depth) {</span>
 
     @Override
     public String toString() {
-<span class="fc" id="L28">        return String.format(&quot;State: must: %s - maybe: %s - cut: %s - depth: %d&quot;,</span>
-<span class="fc" id="L29">                must, maybe, Arrays.toString(cut), depth);</span>
+<span class="fc" id="L26">        return String.format(</span>
+                &quot;State: must: %s - maybe: %s - cut: %s - depth: %d&quot;,
+<span class="fc" id="L28">                must, maybe, Arrays.toString(cut), depth);</span>
     }
 
     @Override
     public int hashCode() {
-<span class="fc" id="L34">        return Objects.hash(must, maybe, Arrays.hashCode(cut), depth);</span>
+<span class="fc" id="L33">        return Objects.hash(must, maybe, Arrays.hashCode(cut), depth);</span>
     }
 
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (obj instanceof SRFLPState(</span>
-<span class="fc" id="L40">                BitSet otherMust, BitSet otherMaybe, int[] otherCut, int otherDepth</span>
-        )) {
-<span class="fc bfc" id="L42" title="All 2 branches covered.">            return this.must.equals(otherMust)</span>
-<span class="fc bfc" id="L43" title="All 2 branches covered.">                    &amp;&amp; this.maybe.equals(otherMaybe)</span>
-<span class="pc bpc" id="L44" title="1 of 4 branches missed.">                    &amp;&amp; Arrays.equals(this.cut, otherCut)</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (obj</span>
+                instanceof
+<span class="fc" id="L40">                SRFLPState(BitSet otherMust, BitSet otherMaybe, int[] otherCut, int otherDepth)) {</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            return this.must.equals(otherMust)</span>
+<span class="fc bfc" id="L42" title="All 2 branches covered.">                    &amp;&amp; this.maybe.equals(otherMaybe)</span>
+<span class="pc bpc" id="L43" title="1 of 4 branches missed.">                    &amp;&amp; Arrays.equals(this.cut, otherCut)</span>
                     &amp;&amp; this.depth == otherDepth;
         } else {
-<span class="nc" id="L47">            return false;</span>
+<span class="nc" id="L46">            return false;</span>
         }
     }
 }

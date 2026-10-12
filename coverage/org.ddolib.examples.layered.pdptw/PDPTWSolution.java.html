@@ -2,73 +2,103 @@
 
 import org.ddolib.layered.solver.Solution;
 
-/**
- * Pretty-printer wrapper for PDPTW solutions.
- */
+/** Pretty-printer wrapper for PDPTW solutions. */
 public class PDPTWSolution {
-    /**
-     * The sequence of visited nodes composing the solution.
-     */
+    /** The sequence of visited nodes composing the solution. */
     public int[] solution;
-    /**
-     * The value (cost) associated to this solution.
-     */
+
+    /** The value (cost) associated to this solution. */
     public double value;
+
     PDPTWProblem problem;
 
     /**
-     * Wraps a raw solver {@link Solution} together with the problem it was found for,
-     * to enable pretty-printing.
+     * Wraps a raw solver {@link Solution} together with the problem it was found for, to enable
+     * pretty-printing.
      *
-     * @param problem  the PDPTW problem the solution was found for
+     * @param problem the PDPTW problem the solution was found for
      * @param solution the raw solution returned by the solver
-     * @param value    the value (cost) associated to this solution
+     * @param value the value (cost) associated to this solution
      */
-<span class="nc" id="L27">    public PDPTWSolution(PDPTWProblem problem, Solution solution, double value) {</span>
-<span class="nc" id="L28">        this.problem = problem;</span>
-<span class="nc" id="L29">        this.solution = solution.solution();</span>
-<span class="nc" id="L30">        this.value = value;</span>
-<span class="nc" id="L31">    }</span>
+<span class="nc" id="L23">    public PDPTWSolution(PDPTWProblem problem, Solution solution, double value) {</span>
+<span class="nc" id="L24">        this.problem = problem;</span>
+<span class="nc" id="L25">        this.solution = solution.solution();</span>
+<span class="nc" id="L26">        this.value = value;</span>
+<span class="nc" id="L27">    }</span>
 
     @Override
     public String toString() {
-<span class="nc" id="L35">        StringBuilder toReturn = new StringBuilder();</span>
+<span class="nc" id="L31">        StringBuilder toReturn = new StringBuilder();</span>
         try {
-<span class="nc" id="L37">            toReturn.append(&quot;eval from scratch: &quot;).append(problem.evaluate(solution)).append(&quot;\n&quot;);</span>
-<span class="nc" id="L38">        } catch (Exception e) {</span>
-<span class="nc" id="L39">            toReturn.append(e.getMessage()).append(&quot;\n&quot;);</span>
-<span class="nc" id="L40">        }</span>
-<span class="nc" id="L41">        toReturn.append(&quot;0\tcontent:&quot; + 0);</span>
+<span class="nc" id="L33">            toReturn.append(&quot;eval from scratch: &quot;).append(problem.evaluate(solution)).append(&quot;\n&quot;);</span>
+<span class="nc" id="L34">        } catch (Exception e) {</span>
+<span class="nc" id="L35">            toReturn.append(e.getMessage()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L36">        }</span>
+<span class="nc" id="L37">        toReturn.append(&quot;0\tcontent:&quot; + 0);</span>
 
-<span class="nc" id="L43">        int currentNode = 0;</span>
-<span class="nc" id="L44">        int currentContent = 0;</span>
-<span class="nc" id="L45">        double currentTime = problem.timeWindows[0].start();</span>
+<span class="nc" id="L39">        int currentNode = 0;</span>
+<span class="nc" id="L40">        int currentContent = 0;</span>
+<span class="nc" id="L41">        double currentTime = problem.timeWindows[0].start();</span>
 
-<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (int j : solution) {</span>
-<span class="nc" id="L48">            int prevNode = currentNode;</span>
-<span class="nc" id="L49">            currentNode = j;</span>
-<span class="nc" id="L50">            currentTime = currentTime + problem.timeMatrix[prevNode][currentNode];</span>
-<span class="nc" id="L51">            toReturn.append(&quot;\ntravelTime:&quot;).append(problem.timeMatrix[prevNode][currentNode]);</span>
-<span class="nc" id="L52">            double earlyLine = problem.timeWindows[currentNode].start();</span>
-<span class="nc" id="L53">            double waitTime = 0;</span>
-<span class="nc bnc" id="L54" title="All 2 branches missed.">            if (currentTime &lt; earlyLine) {</span>
-<span class="nc" id="L55">                waitTime = earlyLine - currentTime;</span>
-<span class="nc" id="L56">                currentTime = earlyLine;</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        for (int j : solution) {</span>
+<span class="nc" id="L44">            int prevNode = currentNode;</span>
+<span class="nc" id="L45">            currentNode = j;</span>
+<span class="nc" id="L46">            currentTime = currentTime + problem.timeMatrix[prevNode][currentNode];</span>
+<span class="nc" id="L47">            toReturn.append(&quot;\ntravelTime:&quot;).append(problem.timeMatrix[prevNode][currentNode]);</span>
+<span class="nc" id="L48">            double earlyLine = problem.timeWindows[currentNode].start();</span>
+<span class="nc" id="L49">            double waitTime = 0;</span>
+<span class="nc bnc" id="L50" title="All 2 branches missed.">            if (currentTime &lt; earlyLine) {</span>
+<span class="nc" id="L51">                waitTime = earlyLine - currentTime;</span>
+<span class="nc" id="L52">                currentTime = earlyLine;</span>
             }
-<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (problem.deliveryToAssociatedPickup.containsKey(currentNode)) {</span>
-                //it is a delivery
-<span class="nc" id="L60">                currentContent = currentContent - 1;</span>
-<span class="nc" id="L61">                toReturn.append(&quot;\n&quot; + currentNode + &quot; \tcontentOut:&quot; + currentContent + &quot;\ttime:&quot; + currentTime + &quot;\twaitTime:&quot; + waitTime + &quot;\t(delivery from &quot; + problem.deliveryToAssociatedPickup.get(currentNode) + &quot; -&quot; + 1 + &quot;)&quot;);</span>
-<span class="nc bnc" id="L62" title="All 2 branches missed.">            } else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)) {</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">            if (problem.deliveryToAssociatedPickup.containsKey(currentNode)) {</span>
+                // it is a delivery
+<span class="nc" id="L56">                currentContent = currentContent - 1;</span>
+<span class="nc" id="L57">                toReturn.append(</span>
+                        &quot;\n&quot;
+                                + currentNode
+                                + &quot; \tcontentOut:&quot;
+                                + currentContent
+                                + &quot;\ttime:&quot;
+                                + currentTime
+                                + &quot;\twaitTime:&quot;
+                                + waitTime
+                                + &quot;\t(delivery from &quot;
+<span class="nc" id="L67">                                + problem.deliveryToAssociatedPickup.get(currentNode)</span>
+                                + &quot; -&quot;
+                                + 1
+                                + &quot;)&quot;);
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            } else if (problem.pickupToAssociatedDelivery.containsKey(currentNode)) {</span>
                 // it is a pickup
-<span class="nc" id="L64">                currentContent = currentContent + 1;</span>
-<span class="nc" id="L65">                toReturn.append(&quot;\n&quot; + currentNode + &quot;\tcontentOut:&quot; + currentContent + &quot;\ttime:&quot; + currentTime + &quot;\twaitTime:&quot; + waitTime + &quot;\t(pickup to &quot; + problem.pickupToAssociatedDelivery.get(currentNode) + &quot; +&quot; + 1 + &quot;)&quot;);</span>
+<span class="nc" id="L73">                currentContent = currentContent + 1;</span>
+<span class="nc" id="L74">                toReturn.append(</span>
+                        &quot;\n&quot;
+                                + currentNode
+                                + &quot;\tcontentOut:&quot;
+                                + currentContent
+                                + &quot;\ttime:&quot;
+                                + currentTime
+                                + &quot;\twaitTime:&quot;
+                                + waitTime
+                                + &quot;\t(pickup to &quot;
+<span class="nc" id="L84">                                + problem.pickupToAssociatedDelivery.get(currentNode)</span>
+                                + &quot; +&quot;
+                                + 1
+                                + &quot;)&quot;);
             } else {
-                //an unrelated node
-<span class="nc" id="L68">                toReturn.append(&quot;\n&quot; + currentNode + &quot;\tcontent:&quot; + currentContent + &quot;\ttime:&quot; + currentTime + &quot;\twaitTime:&quot; + waitTime);</span>
+                // an unrelated node
+<span class="nc" id="L90">                toReturn.append(</span>
+                        &quot;\n&quot;
+                                + currentNode
+                                + &quot;\tcontent:&quot;
+                                + currentContent
+                                + &quot;\ttime:&quot;
+                                + currentTime
+                                + &quot;\twaitTime:&quot;
+                                + waitTime);
             }
         }
-<span class="nc" id="L71">        return toReturn.toString();</span>
+<span class="nc" id="L101">        return toReturn.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

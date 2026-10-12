@@ -1,106 +1,111 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPTWFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pdptw</a> &gt; <span class="el_source">PDPTWFastLowerBound.java</span></div><h1>PDPTWFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pdptw;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
-import java.util.ArrayList;
-import java.util.BitSet;
-import java.util.Collections;
-import java.util.Set;
-
 import static java.lang.Math.max;
 
-/**
- * Implementation of a fast upper bound for the PDPTW
- */
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
+
+/** Implementation of a fast upper bound for the PDPTW. */
 public class PDPTWFastLowerBound implements FastLowerBound&lt;PDPTWState&gt; {
     private final double[] leastIncidentEdge;
     PDPTWProblem problem;
 
     /**
-     * Builds a fast lower bound calculator for the given PDPTW problem, precomputing
-     * the least incident edge of every node.
+     * Builds a fast lower bound calculator for the given PDPTW problem, precomputing the least
+     * incident edge of every node.
      *
      * @param problem the PDPTW problem to compute lower bounds for
      */
-<span class="fc" id="L25">    public PDPTWFastLowerBound(PDPTWProblem problem) {</span>
-<span class="fc" id="L26">        this.problem = problem;</span>
-<span class="fc" id="L27">        this.leastIncidentEdge = new double[problem.n];</span>
-<span class="fc bfc" id="L28" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
-<span class="fc" id="L29">            double min = Double.POSITIVE_INFINITY;</span>
-<span class="fc bfc" id="L30" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
-<span class="fc bfc" id="L31" title="All 2 branches covered.">                if (i != j) {</span>
-<span class="fc" id="L32">                    min = Math.min(min, problem.timeMatrix[i][j]);</span>
+<span class="fc" id="L21">    public PDPTWFastLowerBound(PDPTWProblem problem) {</span>
+<span class="fc" id="L22">        this.problem = problem;</span>
+<span class="fc" id="L23">        this.leastIncidentEdge = new double[problem.n];</span>
+<span class="fc bfc" id="L24" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.n; i++) {</span>
+<span class="fc" id="L25">            double min = Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">            for (int j = 0; j &lt; problem.n; j++) {</span>
+<span class="fc bfc" id="L27" title="All 2 branches covered.">                if (i != j) {</span>
+                    // both directions, so that it bounds the edge entering i even if the
+                    // matrix is not symmetric
+<span class="fc" id="L30">                    min =</span>
+<span class="fc" id="L31">                            Math.min(</span>
+                                    min,
+<span class="fc" id="L33">                                    Math.min(problem.timeMatrix[i][j], problem.timeMatrix[j][i]));</span>
                 }
             }
-<span class="fc" id="L35">            leastIncidentEdge[i] = min;</span>
+<span class="fc" id="L36">            leastIncidentEdge[i] = min;</span>
         }
-<span class="fc" id="L37">    }</span>
+<span class="fc" id="L38">    }</span>
 
     @Override
     public double fastLowerBound(PDPTWState state, Set&lt;Integer&gt; variables) {
-<span class="fc" id="L41">        return fastLowerBound(state, variables.size());</span>
+<span class="fc" id="L42">        return fastLowerBound(state, variables.size());</span>
     }
-
 
     /**
      * Computes a fast lower bound on the remaining cost from the given state.
      *
-     * @param state                  the current state
-     * @param nbUnassignedVariables  the number of variables (nodes) still to visit, including the final return to the depot
+     * &lt;p&gt;The remaining cost is the arrival time at the depot minus the current time. Let {@code m}
+     * be the number of remaining hops, {@code t} the current time, {@code pre[i]} the sum of the
+     * {@code i} smallest incoming edges of the nodes to visit and {@code e(j)} their {@code j}-th
+     * smallest earliest start. The arrival time at the {@code i}-th next node is at least {@code t
+     * + pre[i]}. It is also at least {@code max(t, e(j)) + pre[i - j]} for every {@code j &lt;= i}: at
+     * least {@code i - j + 1} of the first {@code i} visited nodes cannot be served before {@code
+     * e(j)}, the first of them is visited at position {@code j} or before, and at least {@code i -
+     * j} hops follow it.
+     *
+     * &lt;p&gt;On a merged state, the set of nodes to visit may contain more nodes than the number of
+     * remaining hops: the bounds are then computed on all of them, which can only decrease them.
+     *
+     * @param state the current state
+     * @param nbUnassignedVariables the number of variables (nodes) still to visit, including the
+     *     final return to the depot
      * @return the lower bound on the remaining cost, or {@link Double#POSITIVE_INFINITY} if no
-     * feasible completion respecting the time windows exists
+     *     feasible completion respecting the time windows exists
      */
     public double fastLowerBound(PDPTWState state, int nbUnassignedVariables) {
-<span class="fc" id="L54">        BitSet toVisit = state.allToVisit;</span>
+<span class="fc" id="L67">        int[] toVisit = state.allToVisit.stream().toArray();</span>
 
-        // for each unvisited node, we take the smallest incident edge
-<span class="fc" id="L57">        ArrayList&lt;Double&gt; toVisitLB = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
-<span class="fc" id="L58">        toVisitLB.add(leastIncidentEdge[0]); //adding zero for the final come back</span>
-        //TODO use something better based on the actual remaining nodes to reach
-<span class="fc bfc" id="L60" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
-<span class="fc" id="L61">            toVisitLB.add(leastIncidentEdge[i]);</span>
+        // smallest incoming edge of each node to visit, plus the depot for the final hop
+<span class="fc" id="L70">        ArrayList&lt;Double&gt; incoming = new ArrayList&lt;&gt;(toVisit.length + 1);</span>
+<span class="fc" id="L71">        ArrayList&lt;Double&gt; earlyLines = new ArrayList&lt;&gt;(toVisit.length + 1);</span>
+<span class="fc" id="L72">        ArrayList&lt;Double&gt; deadlines = new ArrayList&lt;&gt;(toVisit.length + 1);</span>
+<span class="fc" id="L73">        incoming.add(leastIncidentEdge[0]);</span>
+<span class="fc" id="L74">        earlyLines.add(problem.timeWindows[0].start());</span>
+<span class="fc" id="L75">        deadlines.add(problem.timeWindows[0].end());</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        for (int i : toVisit) {</span>
+<span class="fc" id="L77">            incoming.add(leastIncidentEdge[i]);</span>
+<span class="fc" id="L78">            earlyLines.add(problem.timeWindows[i].start());</span>
+<span class="fc" id="L79">            deadlines.add(problem.timeWindows[i].end());</span>
         }
-<span class="fc" id="L63">        Collections.sort(toVisitLB);</span>
+<span class="fc" id="L81">        Collections.sort(incoming);</span>
+<span class="fc" id="L82">        Collections.sort(earlyLines);</span>
+<span class="fc" id="L83">        Collections.sort(deadlines);</span>
 
-<span class="fc" id="L65">        ArrayList&lt;Double&gt; toVisitEarlyLines = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
-<span class="fc" id="L66">        toVisitEarlyLines.add(problem.timeWindows[0].start()); //one more earlyLine because there is the final hop</span>
-<span class="fc bfc" id="L67" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
-<span class="fc" id="L68">            toVisitEarlyLines.add(problem.timeWindows[i].start());</span>
-        }
-<span class="fc" id="L70">        Collections.sort(toVisitEarlyLines);</span>
-
-<span class="fc" id="L72">        ArrayList&lt;Double&gt; toVisitDeadlines = new ArrayList&lt;&gt;(nbUnassignedVariables);</span>
-<span class="fc" id="L73">        toVisitDeadlines.add(problem.timeWindows[0].end()); //one more deadline because there is the final hop</span>
-<span class="fc bfc" id="L74" title="All 2 branches covered.">        for (int i : toVisit.stream().toArray()) {</span>
-<span class="fc" id="L75">            toVisitDeadlines.add(problem.timeWindows[i].end());</span>
+<span class="fc" id="L85">        int hops = Math.min(nbUnassignedVariables, incoming.size());</span>
+<span class="fc" id="L86">        double[] pre = new double[hops + 1];</span>
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        for (int i = 1; i &lt;= hops; i++) {</span>
+<span class="fc" id="L88">            pre[i] = pre[i - 1] + incoming.get(i - 1);</span>
         }
 
-<span class="fc" id="L78">        Collections.sort(toVisitDeadlines);</span>
-
-        //first iteration, to check for deadline enforcement
-        //We take the min because it will not overprune
-<span class="fc" id="L82">        int offsetForDeadlines = toVisitDeadlines.size() - nbUnassignedVariables;</span>
-<span class="fc" id="L83">        double currentSimulationTime = state.minCurrentTime;</span>
-<span class="fc bfc" id="L84" title="All 2 branches covered.">        for (int i = 0; i &lt; nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back</span>
-<span class="fc" id="L85">            double incomingHop = toVisitLB.get(i);</span>
-<span class="fc" id="L86">            double earlyLine = toVisitEarlyLines.get(i);</span>
-<span class="fc" id="L87">            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);</span>
-<span class="fc" id="L88">            double deadLine = toVisitDeadlines.get(offsetForDeadlines + i);</span>
-<span class="fc bfc" id="L89" title="All 2 branches covered.">            if (currentSimulationTime &gt; deadLine) {</span>
-<span class="fc" id="L90">                return Double.POSITIVE_INFINITY;</span>
+        // On a merged state, only hops nodes among the nodes to visit are visited: the i-th
+        // smallest deadline of these nodes is at least the (offset + i)-th smallest of all of them
+<span class="fc" id="L93">        int offsetForDeadlines = deadlines.size() - hops;</span>
+<span class="fc" id="L94">        double t = state.minCurrentTime;</span>
+<span class="fc" id="L95">        double arrival = t;</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        for (int i = 1; i &lt;= hops; i++) {</span>
+            // lower bound on the arrival time at the i-th next node
+<span class="fc" id="L98">            arrival = t + pre[i];</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            for (int j = 1; j &lt;= i; j++) {</span>
+<span class="fc" id="L100">                arrival = max(arrival, max(t, earlyLines.get(j - 1)) + pre[i - j]);</span>
+            }
+            // the i nodes with the smallest deadlines cannot all be visited in time
+<span class="fc bfc" id="L103" title="All 2 branches covered.">            if (arrival &gt; deadlines.get(offsetForDeadlines + i - 1)) {</span>
+<span class="fc" id="L104">                return Double.POSITIVE_INFINITY;</span>
             }
         }
-
-        //second iteration, to compute actual bound,
-        // we take the max because it under-estimate the remaining cost
-<span class="fc" id="L96">        currentSimulationTime = state.maxCurrentTime;</span>
-<span class="fc bfc" id="L97" title="All 2 branches covered.">        for (int i = 0; i &lt; nbUnassignedVariables - 1; i++) { //variable.size already includes the final come back</span>
-<span class="fc" id="L98">            double incomingHop = toVisitLB.get(i);</span>
-<span class="fc" id="L99">            double earlyLine = toVisitEarlyLines.get(i);</span>
-<span class="fc" id="L100">            currentSimulationTime = max(currentSimulationTime + incomingHop, earlyLine);</span>
-        }
-
-<span class="fc" id="L103">        return currentSimulationTime - state.minCurrentTime;</span>
+        // the transition costs of a merged state are computed from its latest current time
+<span class="fc" id="L108">        return arrival - state.maxCurrentTime;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -20,8 +20,8 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
     Relaxation&lt;T&gt; relaxation();
 
     /**
-     * Returns the ranking function used to order states when width must be reduced.
-     * Higher priority states are kept exact, lower priority states are dropped or merged.
+     * Returns the ranking function used to order states when width must be reduced. Higher priority
+     * states are kept exact, lower priority states are dropped or merged.
      *
      * @return a {@link StateRanking} comparator between states
      */
@@ -75,14 +75,13 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
     }
 
     /**
-     * Indicates whether the generated decision diagram should be exported
-     * to a DOT file (Graphviz format).
+     * Indicates whether the generated decision diagram should be exported to a DOT file (Graphviz
+     * format).
      *
      * @return {@code true} if DOT export is enabled, {@code false} otherwise
      */
     default boolean exportDot() {
 <span class="nc" id="L84">        return false;</span>
     }
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

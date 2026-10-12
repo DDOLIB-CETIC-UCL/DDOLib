@@ -3,28 +3,27 @@
 import java.util.Arrays;
 import java.util.Set;
 
-
 /**
- * Represents a state in the {@link MSCTProblem} (Minimum Sum of Completion Times) scheduling problem.
- * &lt;p&gt;
- * A state captures the current status of the scheduling process:
- * it stores the set of jobs that remain to be scheduled and the
- * current simulation time (i.e., the total time elapsed so far in the partial schedule).
- * &lt;/p&gt;
+ * Represents a state in the {@link MSCTProblem} (Minimum Sum of Completion Times) scheduling
+ * problem.
  *
- * &lt;p&gt;&lt;b&gt;Structure:&lt;/b&gt;&lt;/p&gt;
+ * &lt;p&gt;A state captures the current status of the scheduling process: it stores the set of jobs that
+ * remain to be scheduled and the current simulation time (i.e., the total time elapsed so far in
+ * the partial schedule).
+ *
+ * &lt;p&gt;&lt;b&gt;Structure:&lt;/b&gt;
+ *
  * &lt;ul&gt;
- *   &lt;li&gt;{@code remainingJobs}: the set of jobs that have not yet been scheduled.&lt;/li&gt;
- *   &lt;li&gt;{@code currentTime}: the time at which the next job can start, representing the
- *       accumulated processing time of all scheduled jobs so far.&lt;/li&gt;
+ *   &lt;li&gt;{@code remainingJobs}: the set of jobs that have not yet been scheduled.
+ *   &lt;li&gt;{@code currentTime}: the time at which the next job can start, representing the accumulated
+ *       processing time of all scheduled jobs so far.
  * &lt;/ul&gt;
  *
- * &lt;p&gt;
- * This class is implemented as a Java {@code record}, meaning it is immutable and
- * provides automatically generated implementations for equals, hashCode, and accessors.
- * &lt;/p&gt;
+ * &lt;p&gt;This class is implemented as a Java {@code record}, meaning it is immutable and provides
+ * automatically generated implementations for equals, hashCode, and accessors.
  *
- * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;
+ *
  * &lt;pre&gt;{@code
  * Set&lt;Integer&gt; jobs = Set.of(0, 1, 2);
  * MSCTState state = new MSCTState(jobs, 5);
@@ -33,23 +32,25 @@ import java.util.Set;
  * }&lt;/pre&gt;
  *
  * @param remainingJobs the set of job indices that have not yet been scheduled
- * @param currentTime   the current time (sum of processing times of scheduled jobs)
+ * @param currentTime the current time (sum of processing times of scheduled jobs)
  * @see MSCTProblem
  * @see MSCTRelax
  * @see MSCTRanking
  */
-<span class="fc" id="L41">public record MSCTState(Set&lt;Integer&gt; remainingJobs, int currentTime) {</span>
+<span class="fc" id="L40">public record MSCTState(Set&lt;Integer&gt; remainingJobs, int currentTime) {</span>
     /**
      * Returns a string representation of the state for debugging or logging purposes.
-     * &lt;p&gt;
-     * The output includes the list of remaining jobs and the current simulation time.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;The output includes the list of remaining jobs and the current simulation time.
      *
      * @return a formatted string describing this state
      */
     @Override
     public String toString() {
-<span class="fc" id="L52">        return &quot;RemainingJobs &quot; + Arrays.toString(remainingJobs.toArray()) + &quot; ----&gt; currentTime &quot; + currentTime;</span>
+<span class="fc" id="L50">        return &quot;RemainingJobs &quot;</span>
+<span class="fc" id="L51">                + Arrays.toString(remainingJobs.toArray())</span>
+                + &quot; ----&gt; currentTime &quot;
+                + currentTime;
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -4,8 +4,8 @@ import org.ddolib.nolayer.modeling.FastLowerBound;
 
 /**
  * Fast lower bound for the Maximum Independent Set Problem (MISP), in the no-layer modeling API.
- * &lt;p&gt;
- * The bound sums the weights of all remaining nodes in a state, which is an admissible
+ *
+ * &lt;p&gt;The bound sums the weights of all remaining nodes in a state, which is an admissible
  * (optimistic) estimate since selecting every remaining node ignores adjacency constraints.
  */
 public class MispFlb implements FastLowerBound&lt;MispState&gt; {
@@ -24,10 +24,12 @@ public class MispFlb implements FastLowerBound&lt;MispState&gt; {
     @Override
     public double fastLowerBound(MispState state) {
 <span class="fc" id="L26">        double flb = 0;</span>
-<span class="fc bfc" id="L27" title="All 2 branches covered.">        for (int i = state.remainingNodes().nextSetBit(0); i &gt;= 0; i = state.remainingNodes().nextSetBit(i + 1)) {</span>
-<span class="fc" id="L28">            flb += weight[i];</span>
+<span class="fc" id="L27">        for (int i = state.remainingNodes().nextSetBit(0);</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">                i &gt;= 0;</span>
+<span class="fc" id="L29">                i = state.remainingNodes().nextSetBit(i + 1)) {</span>
+<span class="fc" id="L30">            flb += weight[i];</span>
         }
-<span class="fc" id="L30">        return -flb;</span>
+<span class="fc" id="L32">        return -flb;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

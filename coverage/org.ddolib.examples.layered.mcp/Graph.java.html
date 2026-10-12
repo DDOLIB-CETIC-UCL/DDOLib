@@ -3,58 +3,53 @@
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/**
- * Represents a Graph with adjacency matrix. Used for MCP problem
- */
+/** Represents a Graph with adjacency matrix. Used for MCP problem */
 public class Graph {
 
-    /**
-     * The number of nodes in the graph.
-     */
+    /** The number of nodes in the graph. */
     public final int numNodes;
-    /**
-     * The number of edges in the graph.
-     */
+
+    /** The number of edges in the graph. */
     public final int numEdges;
+
     private final int[][] adjacencyMatrix;
 
     /**
-     * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we suppose that 2 nodes
-     * are not connected if the edge has weight {@code 0}
+     * Given an adjacency matrix instantiate a graph. As these class is only used for MCP, we
+     * suppose that 2 nodes are not connected if the edge has weight {@code 0}
      *
      * @param adjacencyMatrix the adjacency matrix to initialize the graph
      */
-<span class="fc" id="L27">    public Graph(int[][] adjacencyMatrix) {</span>
-<span class="fc" id="L28">        this.adjacencyMatrix = adjacencyMatrix;</span>
-<span class="fc" id="L29">        this.numNodes = adjacencyMatrix.length;</span>
-<span class="fc" id="L30">        this.numEdges = Arrays.stream(adjacencyMatrix)</span>
-<span class="fc" id="L31">                .map(row -&gt; (int) Arrays.stream(row)</span>
-<span class="fc bfc" id="L32" title="All 2 branches covered.">                        .filter(x -&gt; x != 0)</span>
-<span class="fc" id="L33">                        .count()</span>
-                )
-<span class="fc" id="L35">                .reduce(0, Integer::sum) / 2;</span>
-<span class="fc" id="L36">    }</span>
-
+<span class="fc" id="L23">    public Graph(int[][] adjacencyMatrix) {</span>
+<span class="fc" id="L24">        this.adjacencyMatrix = adjacencyMatrix;</span>
+<span class="fc" id="L25">        this.numNodes = adjacencyMatrix.length;</span>
+<span class="fc" id="L26">        this.numEdges =</span>
+<span class="fc" id="L27">                Arrays.stream(adjacencyMatrix)</span>
+<span class="fc bfc" id="L28" title="All 2 branches covered.">                                .map(row -&gt; (int) Arrays.stream(row).filter(x -&gt; x != 0).count())</span>
+<span class="fc" id="L29">                                .reduce(0, Integer::sum)</span>
+                        / 2;
+<span class="fc" id="L31">    }</span>
 
     /**
      * Given two nodes, returns the weight of their edges.
      *
      * @param from the start node of the edge
-     * @param to   the end node of the edges
+     * @param to the end node of the edges
      * @return the weight of the edge
      */
     public int weightOf(int from, int to) {
-<span class="fc" id="L47">        return adjacencyMatrix[from][to];</span>
+<span class="fc" id="L41">        return adjacencyMatrix[from][to];</span>
     }
-
 
     @Override
     public String toString() {
-<span class="nc" id="L53">        return Arrays.stream(adjacencyMatrix)</span>
-<span class="nc" id="L54">                .map(row -&gt; Arrays.stream(row)</span>
-<span class="nc" id="L55">                        .mapToObj(x -&gt; String.format(&quot;%2s&quot;, x))</span>
-<span class="nc" id="L56">                        .collect(Collectors.joining(&quot; &quot;)))</span>
-<span class="nc" id="L57">                .collect(Collectors.joining(&quot;\n&quot;));</span>
+<span class="nc" id="L46">        return Arrays.stream(adjacencyMatrix)</span>
+<span class="nc" id="L47">                .map(</span>
+                        row -&gt;
+<span class="nc" id="L49">                                Arrays.stream(row)</span>
+<span class="nc" id="L50">                                        .mapToObj(x -&gt; String.format(&quot;%2s&quot;, x))</span>
+<span class="nc" id="L51">                                        .collect(Collectors.joining(&quot; &quot;)))</span>
+<span class="nc" id="L52">                .collect(Collectors.joining(&quot;\n&quot;));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

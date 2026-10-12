@@ -3,26 +3,24 @@
 import org.ddolib.layered.modeling.StateRanking;
 
 /**
- * Provides a ranking strategy for {@link MSCTState} objects
- * used in the search process for solving the
- * &lt;b&gt;Maximum Sum of Completion Times (MSCT)&lt;/b&gt; problem.
- * &lt;p&gt;
- * The ranking is based on the current time value of each state.
- * States with a smaller {@code currentTime} are considered
- * more promising and are therefore ranked higher (i.e., explored first).
- * &lt;/p&gt;
+ * Provides a ranking strategy for {@link MSCTState} objects used in the search process for solving
+ * the &lt;b&gt;Maximum Sum of Completion Times (MSCT)&lt;/b&gt; problem.
  *
- * &lt;p&gt;
- * This ranking function is typically used in &lt;b&gt;Decision Diagram Optimization (DDO)&lt;/b&gt;
- * or &lt;b&gt;A*&lt;/b&gt; search algorithms to prioritize states in the frontier,
- * helping the solver guide the exploration towards better solutions faster.
- * &lt;/p&gt;
+ * &lt;p&gt;The ranking is based on the current time value of each state. States with a smaller {@code
+ * currentTime} are considered more promising and are therefore ranked higher (i.e., explored
+ * first).
  *
- * &lt;p&gt;&lt;b&gt;Ranking policy:&lt;/b&gt;&lt;/p&gt;
+ * &lt;p&gt;This ranking function is typically used in &lt;b&gt;Decision Diagram Optimization (DDO)&lt;/b&gt; or
+ * &lt;b&gt;A*&lt;/b&gt; search algorithms to prioritize states in the frontier, helping the solver guide the
+ * exploration towards better solutions faster.
+ *
+ * &lt;p&gt;&lt;b&gt;Ranking policy:&lt;/b&gt;
+ *
  * &lt;ul&gt;
- *   &lt;li&gt;If {@code s1.currentTime() &lt; s2.currentTime()}, then {@code s1} is preferred (ranked first).&lt;/li&gt;
- *   &lt;li&gt;If {@code s1.currentTime() &gt; s2.currentTime()}, then {@code s2} is preferred.&lt;/li&gt;
- *   &lt;li&gt;If both have the same current time, they are considered equivalent in ranking.&lt;/li&gt;
+ *   &lt;li&gt;If {@code s1.currentTime() &lt; s2.currentTime()}, then {@code s1} is preferred (ranked
+ *       first).
+ *   &lt;li&gt;If {@code s1.currentTime() &gt; s2.currentTime()}, then {@code s2} is preferred.
+ *   &lt;li&gt;If both have the same current time, they are considered equivalent in ranking.
  * &lt;/ul&gt;
  *
  * @see MSCTState
@@ -32,27 +30,23 @@ import org.ddolib.layered.modeling.StateRanking;
  */
 public class MSCTRanking implements StateRanking&lt;MSCTState&gt; {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-<span class="fc" id="L38">    public MSCTRanking() {</span>
-<span class="fc" id="L39">    }</span>
+    /** Creates a new instance of this ranking. */
+<span class="fc" id="L34">    public MSCTRanking() {}</span>
 
     /**
      * Compares two scheduling states according to their current completion time.
-     * &lt;p&gt;
-     * The state with the smaller {@code currentTime} is ranked higher (considered better).
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;The state with the smaller {@code currentTime} is ranked higher (considered better).
      *
      * @param s1 the first state to compare
      * @param s2 the second state to compare
-     * @return a negative integer if {@code s1} should be ranked before {@code s2},
-     * zero if both states have the same rank,
-     * or a positive integer if {@code s1} should be ranked after {@code s2}.
+     * @return a negative integer if {@code s1} should be ranked before {@code s2}, zero if both
+     *     states have the same rank, or a positive integer if {@code s1} should be ranked after
+     *     {@code s2}.
      */
     @Override
     public int compare(MSCTState s1, MSCTState s2) {
-<span class="fc" id="L55">        return Integer.compare(s1.currentTime(), s2.currentTime());</span>
+<span class="fc" id="L49">        return Integer.compare(s1.currentTime(), s2.currentTime());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

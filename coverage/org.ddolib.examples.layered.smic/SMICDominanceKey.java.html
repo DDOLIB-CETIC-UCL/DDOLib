@@ -3,21 +3,19 @@
 import java.util.BitSet;
 
 /**
- * A record that represents a dominance key for grouping states in the
- * &lt;b&gt;Single Machine with Inventory Constraint (SMIC)&lt;/b&gt; problem.
- * &lt;p&gt;
- * This key is used to group comparable states that share the same set of
- * remaining jobs. States with the same dominance key can be compared to
- * determine dominance relations, which allows efficient pruning of
- * suboptimal search nodes.
- * &lt;/p&gt;
+ * A record that represents a dominance key for grouping states in the &lt;b&gt;Single Machine with
+ * Inventory Constraint (SMIC)&lt;/b&gt; problem.
  *
- * @param remainingJobs a {@link BitSet} representing the set of jobs
- *                      that still need to be processed
+ * &lt;p&gt;This key is used to group comparable states that share the same set of remaining jobs. States
+ * with the same dominance key can be compared to determine dominance relations, which allows
+ * efficient pruning of suboptimal search nodes.
+ *
+ * @param remainingJobs a {@link BitSet} representing the set of jobs that still need to be
+ *     processed
  * @see SMICDominance
  * @see SMICState
  */
-<span class="fc" id="L20">public record SMICDominanceKey(BitSet remainingJobs) {</span>
+<span class="fc" id="L18">public record SMICDominanceKey(BitSet remainingJobs) {</span>
     /**
      * Returns a string representation of this dominance key.
      *
@@ -25,7 +23,7 @@ import java.util.BitSet;
      */
     @Override
     public String toString() {
-<span class="nc" id="L28">        return &quot;remaining jobs: &quot; + remainingJobs;</span>
+<span class="nc" id="L26">        return &quot;remaining jobs: &quot; + remainingJobs;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

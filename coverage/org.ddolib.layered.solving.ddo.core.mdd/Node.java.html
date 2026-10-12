@@ -5,87 +5,77 @@ import java.util.List;
 
 /**
  * Represents an atomic node in a decision diagram.
- * &lt;p&gt;
- * By itself, a {@code Node} does not hold much interpretable information, but it serves as a building block
- * for constructing decision diagrams. It stores edges, values, and auxiliary information used in
- * dynamic programming, search, or pruning operations.
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;By itself, a {@code Node} does not hold much interpretable information, but it serves as a
+ * building block for constructing decision diagrams. It stores edges, values, and auxiliary
+ * information used in dynamic programming, search, or pruning operations.
  */
-final public class Node {
+public final class Node {
     // Deterministic hash
-<span class="fc" id="L16">    private static int nextHash = 0;</span>
-<span class="fc" id="L17">    private final int hash = nextHash++;</span>
-    /**
-     * The length of the longest path to this node.
-     */
+<span class="fc" id="L15">    private static int nextHash = 0;</span>
+<span class="fc" id="L16">    private final int hash = nextHash++;</span>
+
+    /** The length of the longest path to this node. */
     public double value;
-    /**
-     * The length of the longest suffix of this node (used in local bound calculations).
-     */
+
+    /** The length of the longest suffix of this node (used in local bound calculations). */
     public Double suffix;
-    /**
-     * The edge terminating the longest path to this node.
-     */
+
+    /** The edge terminating the longest path to this node. */
     public Edge best;
-    /**
-     * The list of edges leading to this node.
-     */
+
+    /** The list of edges leading to this node. */
     public List&lt;Edge&gt; edges;
-    /**
-     * The type of this node (e.g., exact, relaxed).
-     */
+
+    /** The type of this node (e.g., exact, relaxed). */
     public NodeType type;
 
     // Fields used if working with a cache
-    /**
-     * Flag indicating if the node is marked.
-     */
+    /** Flag indicating if the node is marked. */
     public boolean isMarked;
-    /**
-     * Overapproximation of the shortest path from this node to a terminal node.
-     */
-<span class="fc" id="L47">    public double flb = Double.NEGATIVE_INFINITY;</span>
-    /**
-     * Flag indicating if the node is in the exact cutset.
-     */
-<span class="fc" id="L51">    public boolean isInExactCutSet = false;</span>
-    /**
-     * Flag indicating if the node is above the exact cutset.
-     */
-<span class="fc" id="L55">    public boolean isAboveExactCutSet = false;</span>
+
+    /** Overapproximation of the shortest path from this node to a terminal node. */
+<span class="fc" id="L38">    public double flb = Double.NEGATIVE_INFINITY;</span>
+
+    /** Flag indicating if the node is in the exact cutset. */
+<span class="fc" id="L41">    public boolean isInExactCutSet = false;</span>
+
+    /** Flag indicating if the node is above the exact cutset. */
+<span class="fc" id="L44">    public boolean isAboveExactCutSet = false;</span>
 
     /**
      * Creates a new {@code Node} with the given value.
-     * &lt;p&gt;
-     * Initializes suffix and best edge to {@code null}, creates an empty list of edges,
-     * sets the type to {@link NodeType#EXACT}, and marks the node as unmarked.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;Initializes suffix and best edge to {@code null}, creates an empty list of edges, sets the
+     * type to {@link NodeType#EXACT}, and marks the node as unmarked.
      *
      * @param value the initial value of the node (length of the longest path to this node)
      */
-<span class="fc" id="L66">    public Node(final double value) {</span>
-<span class="fc" id="L67">        this.value = value;</span>
-<span class="fc" id="L68">        this.suffix = null;</span>
-<span class="fc" id="L69">        this.best = null;</span>
-<span class="fc" id="L70">        this.edges = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L71">        this.type = NodeType.EXACT;</span>
-<span class="fc" id="L72">        this.isMarked = false;</span>
-<span class="fc" id="L73">    }</span>
+<span class="fc" id="L54">    public Node(final double value) {</span>
+<span class="fc" id="L55">        this.value = value;</span>
+<span class="fc" id="L56">        this.suffix = null;</span>
+<span class="fc" id="L57">        this.best = null;</span>
+<span class="fc" id="L58">        this.edges = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L59">        this.type = NodeType.EXACT;</span>
+<span class="fc" id="L60">        this.isMarked = false;</span>
+<span class="fc" id="L61">    }</span>
 
     /**
-     * Returns a string representation of this node, including its value, suffix, best edge, and parent edges.
+     * Returns a string representation of this node, including its value, suffix, best edge, and
+     * parent edges.
      *
      * @return a string describing the node
      */
     @Override
     public String toString() {
-<span class="nc" id="L82">        return String.format(&quot;Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s&quot;,</span>
-<span class="nc" id="L83">                value, suffix, best, edges);</span>
+<span class="nc" id="L71">        return String.format(</span>
+                &quot;Node: value:%.0f - suffix: %s - best edge: %s - parent edges: %s&quot;,
+<span class="nc" id="L73">                value, suffix, best, edges);</span>
     }
 
     @Override
     public int hashCode() {
-<span class="fc" id="L88">        return hash;</span>
+<span class="fc" id="L78">        return hash;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -5,28 +5,21 @@ import org.ddolib.layered.modeling.StateRanking;
 /**
  * Class that defines a ranking between two {@link TSPState} instances.
  *
- * &lt;p&gt;
- * This class implements the {@link StateRanking} interface for TSP states.
- * It is intended to provide a comparison method between states, which can be used
- * to prioritize or order states in search algorithms such as DDO or A*.
- * &lt;/p&gt;
+ * &lt;p&gt;This class implements the {@link StateRanking} interface for TSP states. It is intended to
+ * provide a comparison method between states, which can be used to prioritize or order states in
+ * search algorithms such as DDO or A*.
  *
- * &lt;p&gt;
- * Currently, the {@link #compare(TSPState, TSPState)} method returns 0 for all states,
- * indicating that all states are considered equal in terms of ranking.
- * This can be customized to implement a meaningful heuristic-based ranking.
- * &lt;/p&gt;
+ * &lt;p&gt;Currently, the {@link #compare(TSPState, TSPState)} method returns 0 for all states,
+ * indicating that all states are considered equal in terms of ranking. This can be customized to
+ * implement a meaningful heuristic-based ranking.
  *
  * @see TSPState
  * @see StateRanking
  */
 public class TSPRanking implements StateRanking&lt;TSPState&gt; {
 
-    /**
-     * Creates a new instance of this ranking.
-     */
-<span class="fc" id="L28">    public TSPRanking() {</span>
-<span class="fc" id="L29">    }</span>
+    /** Creates a new instance of this ranking. */
+<span class="fc" id="L22">    public TSPRanking() {}</span>
 
     /**
      * Compares two TSP states.
@@ -37,7 +30,7 @@ public class TSPRanking implements StateRanking&lt;TSPState&gt; {
      */
     @Override
     public int compare(final TSPState o1, final TSPState o2) {
-<span class="fc" id="L40">        return 0;</span>
+<span class="fc" id="L33">        return 0;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -2,29 +2,29 @@
 
 /**
  * Represents a single decision within an optimization problem.
- * &lt;p&gt;
- * A {@code Decision} associates a variable identifier with a specific value.
- * It is an immutable data structure that captures a single assignment performed
- * during the search or compilation of a decision diagram (e.g., in an MDD-based solver).
- * &lt;/p&gt;
  *
- * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;&lt;/p&gt;
+ * &lt;p&gt;A {@code Decision} associates a variable identifier with a specific value. It is an immutable
+ * data structure that captures a single assignment performed during the search or compilation of a
+ * decision diagram (e.g., in an MDD-based solver).
+ *
+ * &lt;p&gt;&lt;b&gt;Example:&lt;/b&gt;
+ *
  * &lt;pre&gt;{@code
  * Decision d = new Decision(2, 5);
  * System.out.println(d); // prints: Decision[variable=4, value=2]
  *
  * }&lt;/pre&gt;
  *
- * &lt;p&gt;&lt;b&gt;Use in DD-based solvers:&lt;/b&gt;&lt;/p&gt;
+ * &lt;p&gt;&lt;b&gt;Use in DD-based solvers:&lt;/b&gt;
+ *
  * &lt;ul&gt;
- *   &lt;li&gt;Encapsulates the assignment of a value to a variable during branching.&lt;/li&gt;
- *   &lt;li&gt;Used to reconstruct solutions from paths in the decision diagram.&lt;/li&gt;
- *   &lt;li&gt;Acts as a key element in comparing or storing decision paths in sets and maps.&lt;/li&gt;
+ *   &lt;li&gt;Encapsulates the assignment of a value to a variable during branching.
+ *   &lt;li&gt;Used to reconstruct solutions from paths in the decision diagram.
+ *   &lt;li&gt;Acts as a key element in comparing or storing decision paths in sets and maps.
  * &lt;/ul&gt;
  *
  * @param variable the index of the variable being assigned
- * @param value    the value assigned to the variable
+ * @param value the value assigned to the variable
  */
-<span class="fc" id="L28">public record Decision(int variable, int value) {</span>
-}
+<span class="fc" id="L29">public record Decision(int variable, int value) {}</span>
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

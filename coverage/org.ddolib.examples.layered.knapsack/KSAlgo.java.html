@@ -2,46 +2,47 @@
 
 import java.util.Arrays;
 
-/**
- * Utility class providing algorithms to solve the Knapsack Problem.
- */
+/** Utility class providing algorithms to solve the Knapsack Problem. */
 public class KSAlgo {
 
-    private KSAlgo() {
-    }
+    private KSAlgo() {}
 
     /**
      * Provides a greedy approximation for the Knapsack Problem.
      *
-     * &lt;p&gt;The algorithm sorts items in descending order of their profit-to-weight ratio
-     * ({@code profit / weight}) and selects items sequentially as long as they fit
-     * within the remaining capacity.&lt;/p&gt;
+     * &lt;p&gt;The algorithm sorts items in descending order of their profit-to-weight ratio ({@code
+     * profit / weight}) and selects items sequentially as long as they fit within the remaining
+     * capacity.
      *
      * @param problem the Knapsack Problem instance to solve
-     * @return the total profit of the selected items, providing a primal bound (lower bound)
-     * on the optimal solution
+     * @return the total profit of the selected items, providing a primal bound (lower bound) on the
+     *     optimal solution
      */
     public static int greedyKS(KSProblem problem) {
-<span class="nc" id="L25">        Integer[] items = new Integer[problem.nbVars()];</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
-<span class="nc" id="L27">            items[i] = i;</span>
+<span class="nc" id="L22">        Integer[] items = new Integer[problem.nbVars()];</span>
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
+<span class="nc" id="L24">            items[i] = i;</span>
         }
 
-<span class="nc" id="L30">        Arrays.sort(items, (o1, o2) -&gt; {</span>
-<span class="nc" id="L31">            double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
-<span class="nc" id="L32">            double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
-<span class="nc" id="L33">            return Double.compare(ratio2, ratio1);</span>
-        });
+<span class="nc" id="L27">        Arrays.sort(</span>
+                items,
+                (o1, o2) -&gt; {
+<span class="nc" id="L30">                    double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
+<span class="nc" id="L31">                    double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
+<span class="nc" id="L32">                    return Double.compare(ratio2, ratio1);</span>
+                });
 
-<span class="nc" id="L36">        int capa = problem.capa;</span>
-<span class="nc" id="L37">        int value = 0;</span>
-<span class="nc bnc" id="L38" title="All 2 branches missed.">        for (Integer i : items) {</span>
-<span class="nc bnc" id="L39" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) continue;</span>
-<span class="nc" id="L40">            value += problem.profit[i];</span>
-<span class="nc" id="L41">            capa -= problem.weight[i];</span>
+<span class="nc" id="L35">        int capa = problem.capa;</span>
+<span class="nc" id="L36">        int value = 0;</span>
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        for (Integer i : items) {</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) {</span>
+<span class="nc" id="L39">                continue;</span>
+            }
+<span class="nc" id="L41">            value += problem.profit[i];</span>
+<span class="nc" id="L42">            capa -= problem.weight[i];</span>
         }
 
-<span class="nc" id="L44">        return value;</span>
+<span class="nc" id="L45">        return value;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

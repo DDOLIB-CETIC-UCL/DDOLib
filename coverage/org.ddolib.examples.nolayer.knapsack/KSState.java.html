@@ -3,13 +3,14 @@
 /**
  * State for the NoLayer formulation of the Knapsack Problem.
  *
- * @param currentItem       the index of the item currently being considered
+ * @param currentItem the index of the item currently being considered
  * @param remainingCapacity the remaining capacity in the knapsack
  */
 <span class="fc" id="L9">public record KSState(int currentItem, int remainingCapacity) {</span>
     @Override
     public String toString() {
-<span class="fc" id="L12">        return String.format(&quot;KSState(currentItem=%d, remainingCapacity=%d)&quot;, currentItem, remainingCapacity);</span>
+<span class="fc" id="L12">        return String.format(</span>
+<span class="fc" id="L13">                &quot;KSState(currentItem=%d, remainingCapacity=%d)&quot;, currentItem, remainingCapacity);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

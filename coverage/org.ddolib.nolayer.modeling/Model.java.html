@@ -4,8 +4,7 @@ import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
- * Defines the core model interface for describing an optimization problem
- * in the NoLayer API.
+ * Defines the core model interface for describing an optimization problem in the NoLayer API.
  *
  * @param &lt;T&gt; the type representing the state space of the problem
  */
@@ -14,19 +13,17 @@ public interface Model&lt;T&gt; {
     /**
      * Returns the optimization problem instance associated with this model.
      *
-     * @return the {@link Problem} defining the structure, transitions,
-     * and objective function
+     * @return the {@link Problem} defining the structure, transitions, and objective function
      */
     Problem&lt;T&gt; problem();
 
     /**
-     * Returns a heuristic that estimates a lower bound on the objective value
-     * for a given state.
+     * Returns a heuristic that estimates a lower bound on the objective value for a given state.
      *
      * @return the {@link FastLowerBound} heuristic
      */
     default FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L29">        return new DefaultFastLowerBound&lt;&gt;();</span>
+<span class="fc" id="L26">        return new DefaultFastLowerBound&lt;&gt;();</span>
     }
 
     /**
@@ -35,7 +32,7 @@ public interface Model&lt;T&gt; {
      * @return a precomputed upper bound on the optimal value
      */
     default double upperBound() {
-<span class="fc" id="L38">        return Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L35">        return Double.POSITIVE_INFINITY;</span>
     }
 
     /**
@@ -44,7 +41,7 @@ public interface Model&lt;T&gt; {
      * @return the {@link NoLayerDominanceChecker} used for dominance testing
      */
     default NoLayerDominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L47">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
+<span class="fc" id="L44">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
     }
 
     /**
@@ -53,7 +50,7 @@ public interface Model&lt;T&gt; {
      * @return the desired {@link VerbosityLevel}
      */
     default VerbosityLevel verbosityLevel() {
-<span class="fc" id="L56">        return VerbosityLevel.SILENT;</span>
+<span class="fc" id="L53">        return VerbosityLevel.SILENT;</span>
     }
 
     /**
@@ -62,7 +59,7 @@ public interface Model&lt;T&gt; {
      * @return the {@link DebugLevel} controlling debug behavior
      */
     default DebugLevel debugMode() {
-<span class="fc" id="L65">        return DebugLevel.OFF;</span>
+<span class="fc" id="L62">        return DebugLevel.OFF;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

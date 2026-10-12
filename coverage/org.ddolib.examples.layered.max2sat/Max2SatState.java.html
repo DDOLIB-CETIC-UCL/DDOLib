@@ -3,21 +3,21 @@
 import java.util.ArrayList;
 
 /**
- * Class to contain data for the Max2Sat sate. The state contains its depth in the associated MDD and a list of net
- * benefits.&lt;br&gt;
- * &lt;p&gt;
- * This list contains:
+ * Class to contain data for the Max2Sat sate. The state contains its depth in the associated MDD
+ * and a list of net benefits.&lt;br&gt;
+ *
+ * &lt;p&gt;This list contains:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt; for each {@code k &gt;= depth}, the net benefits by setting the variable {@code K} to
- *     {@code true} knowing the assignment of the previous variables (a negative value is the net
- *     benefit to assign the variable to &lt;code&gt;false&lt;/code&gt;);
- *     &lt;/li&gt;
- *     &lt;li&gt;for each {@code k &lt; depth}, {@code 0}, modeling that these variables have been
- *     assigned in previous layer and cannot influence the objective anymore.&lt;/li&gt;
+ *   &lt;li&gt;for each {@code k &gt;= depth}, the net benefits by setting the variable {@code K} to {@code
+ *       true} knowing the assignment of the previous variables (a negative value is the net benefit
+ *       to assign the variable to &lt;code&gt;false&lt;/code&gt;);
+ *   &lt;li&gt;for each {@code k &lt; depth}, {@code 0}, modeling that these variables have been assigned in
+ *       previous layer and cannot influence the objective anymore.
  * &lt;/ul&gt;
  *
  * @param netBenefit the net benefits by setting the variable
- * @param depth      the depth of the DD
+ * @param depth the depth of the DD
  */
 <span class="fc" id="L22">public record Max2SatState(ArrayList&lt;Integer&gt; netBenefit, int depth) {</span>
 

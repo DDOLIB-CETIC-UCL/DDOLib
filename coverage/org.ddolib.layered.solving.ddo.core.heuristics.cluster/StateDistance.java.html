@@ -3,19 +3,18 @@
 import org.ddolib.layered.solving.ddo.core.mdd.NodeSubProblem;
 
 /**
- * Interface defining a distance function between states, used to form clusters
- * when deciding which nodes on a layer of a decision diagram should be merged.
+ * Interface defining a distance function between states, used to form clusters when deciding which
+ * nodes on a layer of a decision diagram should be merged.
  *
- * &lt;p&gt;
- * The distance function must satisfy the following properties:
+ * &lt;p&gt;The distance function must satisfy the following properties:
+ *
  * &lt;ul&gt;
- *   &lt;li&gt;Non-negative: distance(a, b) ≥ 0&lt;/li&gt;
- *   &lt;li&gt;Symmetric: distance(a, b) = distance(b, a)&lt;/li&gt;
- *   &lt;li&gt;Triangle inequality: distance(a, c) ≤ distance(a, b) + distance(b, c)&lt;/li&gt;
+ *   &lt;li&gt;Non-negative: distance(a, b) ≥ 0
+ *   &lt;li&gt;Symmetric: distance(a, b) = distance(b, a)
+ *   &lt;li&gt;Triangle inequality: distance(a, c) ≤ distance(a, b) + distance(b, c)
  * &lt;/ul&gt;
  *
- * &lt;p&gt;
- * Type parameter {@code T} denotes the type of the states being compared.
+ * &lt;p&gt;Type parameter {@code T} denotes the type of the states being compared.
  *
  * @param &lt;T&gt; the type of states
  */
@@ -33,29 +32,26 @@ public interface StateDistance&lt;T&gt; {
     /**
      * Computes the distance between two nodes of a subproblem.
      *
-     * &lt;p&gt;
-     * By default, returns 0. Can be overridden for more precise node-level distances.
+     * &lt;p&gt;By default, returns 0. Can be overridden for more precise node-level distances.
      *
      * @param a the first node
      * @param b the second node
      * @return the distance between the nodes
      */
     default double distance(NodeSubProblem&lt;T&gt; a, NodeSubProblem&lt;T&gt; b) {
-<span class="nc" id="L44">        return 0;</span>
+<span class="nc" id="L42">        return 0;</span>
     }
 
     /**
      * Computes the distance between a state and the root of the search/tree.
      *
-     * &lt;p&gt;
-     * By default, returns 0. Can be overridden for root-distance computations.
+     * &lt;p&gt;By default, returns 0. Can be overridden for root-distance computations.
      *
      * @param state the state to measure
      * @return the distance to the root
      */
     default double distanceWithRoot(T state) {
-<span class="nc" id="L57">        return 0;</span>
+<span class="nc" id="L54">        return 0;</span>
     }
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

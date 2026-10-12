@@ -5,31 +5,30 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A subproblem used in the AStarSolver.
- * Represents a node in the A* search tree.
+ * A subproblem used in the AStarSolver. Represents a node in the A* search tree.
  *
  * @param &lt;T&gt; the type of the state
  */
 public class SubProblem&lt;T&gt; {
     private final T state;
-    private final double g; // path cost
-    private final double h; // heuristic cost to target
+    private final double pathCost; // path cost
+    private final double heuristicCost; // heuristic cost to target
     private final List&lt;Integer&gt; path; // sequence of labels applied
 
     /**
      * Creates a new subproblem.
      *
      * @param state the state of this subproblem
-     * @param g     the cost of the path from the initial state to this state
-     * @param h     the fast lower bound estimating the cost from this state to a target state
-     * @param path  the sequence of labels applied from the initial state to reach this state
+     * @param g the cost of the path from the initial state to this state
+     * @param h the fast lower bound estimating the cost from this state to a target state
+     * @param path the sequence of labels applied from the initial state to reach this state
      */
-<span class="fc" id="L27">    public SubProblem(T state, double g, double h, List&lt;Integer&gt; path) {</span>
-<span class="fc" id="L28">        this.state = state;</span>
-<span class="fc" id="L29">        this.g = g;</span>
-<span class="fc" id="L30">        this.h = h;</span>
-<span class="fc" id="L31">        this.path = path;</span>
-<span class="fc" id="L32">    }</span>
+<span class="fc" id="L26">    public SubProblem(T state, double g, double h, List&lt;Integer&gt; path) {</span>
+<span class="fc" id="L27">        this.state = state;</span>
+<span class="fc" id="L28">        this.pathCost = g;</span>
+<span class="fc" id="L29">        this.heuristicCost = h;</span>
+<span class="fc" id="L30">        this.path = path;</span>
+<span class="fc" id="L31">    }</span>
 
     /**
      * Returns the state of this subproblem.
@@ -37,7 +36,7 @@ public class SubProblem&lt;T&gt; {
      * @return the state of this subproblem
      */
     public T getState() {
-<span class="fc" id="L40">        return state;</span>
+<span class="fc" id="L39">        return state;</span>
     }
 
     /**
@@ -46,7 +45,7 @@ public class SubProblem&lt;T&gt; {
      * @return the cost of the path from the initial state to this state
      */
     public double getValue() {
-<span class="fc" id="L49">        return g;</span>
+<span class="fc" id="L48">        return pathCost;</span>
     }
 
     /**
@@ -55,7 +54,7 @@ public class SubProblem&lt;T&gt; {
      * @return the fast lower bound estimating the cost from this state to a target state
      */
     public double getLowerBound() {
-<span class="fc" id="L58">        return h;</span>
+<span class="fc" id="L57">        return heuristicCost;</span>
     }
 
     /**
@@ -63,8 +62,9 @@ public class SubProblem&lt;T&gt; {
      *
      * @return the {@code f = g + h} value of this subproblem
      */
+    @SuppressWarnings(&quot;checkstyle:MethodName&quot;) // public API
     public double f() {
-<span class="fc" id="L67">        return g + h;</span>
+<span class="fc" id="L67">        return pathCost + heuristicCost;</span>
     }
 
     /**
@@ -78,13 +78,13 @@ public class SubProblem&lt;T&gt; {
 
     @Override
     public String toString() {
-<span class="nc" id="L81">        return &quot;%s - g: %f - h: %f&quot;.formatted(state, g, h);</span>
+<span class="nc" id="L81">        return &quot;%s - g: %f - h: %f&quot;.formatted(state, pathCost, heuristicCost);</span>
     }
 
     /**
-     * Two subproblems are considered equal if they share the same state. Solvers rely on this
-     * to keep at most one entry per state in their priority queues (e.g. when a better path to
-     * an already open state replaces the stale entry).
+     * Two subproblems are considered equal if they share the same state. Solvers rely on this to
+     * keep at most one entry per state in their priority queues (e.g. when a better path to an
+     * already open state replaces the stale entry).
      *
      * @param obj the object to compare with
      * @return {@code true} if both subproblems have the same state, {@code false} otherwise

@@ -1,249 +1,279 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PDPTWProblem.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.pdptw</a> &gt; <span class="el_source">PDPTWProblem.java</span></div><h1>PDPTWProblem.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.pdptw;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.BitSet;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.IntStream;
+import org.ddolib.common.util.InvalidSolutionException;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solving.ddo.core.Decision;
-import org.ddolib.common.util.InvalidSolutionException;
-
-import java.io.*;
-import java.util.*;
-import java.util.stream.IntStream;
 
 /**
  * Represents a Pickup and Delivery Problem (PDP) instance with a single vehicle.
- * &lt;p&gt;
- * In this problem:
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;In this problem:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt;Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before its associated delivery node.&lt;/li&gt;
- *     &lt;li&gt;There may also be unrelated nodes that are not part of any pair.&lt;/li&gt;
- *     &lt;li&gt;The vehicle has a capacity limit that restricts how many pickups can be carried simultaneously.&lt;/li&gt;
- *     &lt;li&gt;The problem is represented as a TSP-like graph with distances between nodes.&lt;/li&gt;
+ *   &lt;li&gt;Nodes may be grouped into pickup-delivery pairs, where a pickup node must be visited before
+ *       its associated delivery node.
+ *   &lt;li&gt;There may also be unrelated nodes that are not part of any pair.
+ *   &lt;li&gt;The vehicle has a capacity limit that restricts how many pickups can be carried
+ *       simultaneously.
+ *   &lt;li&gt;The problem is represented as a TSP-like graph with distances between nodes.
  * &lt;/ul&gt;
  *
- * &lt;p&gt;The class implements the {@link Problem} interface, providing methods for:&lt;/p&gt;
+ * &lt;p&gt;The class implements the {@link Problem} interface, providing methods for:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt;Number of variables {@link #nbVars()}&lt;/li&gt;
- *     &lt;li&gt;Initial state {@link #initialState()}&lt;/li&gt;
- *     &lt;li&gt;Transition function {@link #transition(PDPTWState, Decision)}&lt;/li&gt;
- *     &lt;li&gt;Transition cost {@link #transitionCost(PDPTWState, Decision)}&lt;/li&gt;
- *     &lt;li&gt;Domain of possible decisions {@link #domain(PDPTWState, int)}&lt;/li&gt;
+ *   &lt;li&gt;Number of variables {@link #nbVars()}
+ *   &lt;li&gt;Initial state {@link #initialState()}
+ *   &lt;li&gt;Transition function {@link #transition(PDPTWState, Decision)}
+ *   &lt;li&gt;Transition cost {@link #transitionCost(PDPTWState, Decision)}
+ *   &lt;li&gt;Domain of possible decisions {@link #domain(PDPTWState, int)}
  * &lt;/ul&gt;
  *
+ * &lt;p&gt;States are represented by {@link PDPTWState}, including:
  *
- * &lt;p&gt;States are represented by {@link PDPTWState}, including:&lt;/p&gt;
  * &lt;ul&gt;
- *     &lt;li&gt;The set of currently visited nodes&lt;/li&gt;
- *     &lt;li&gt;The set of nodes still to visit&lt;/li&gt;
- *     &lt;li&gt;The current vehicle load&lt;/li&gt;
+ *   &lt;li&gt;The set of currently visited nodes
+ *   &lt;li&gt;The set of nodes still to visit
+ *   &lt;li&gt;The current vehicle load
  * &lt;/ul&gt;
  */
 public class PDPTWProblem implements Problem&lt;PDPTWState&gt; {
 
-    /**
-     * Number of nodes in the problem.
-     */
+    /** Number of nodes in the problem. */
+    @SuppressWarnings(&quot;checkstyle:MemberName&quot;) // public API
     public final int n;
 
-    /**
-     * Distance matrix between all nodes.
-     */
+    /** Distance matrix between all nodes. */
     public final double[][] timeMatrix;
 
-    /**
-     * Maximum capacity of the vehicle.
-     */
+    /** Maximum capacity of the vehicle. */
     public final int maxCapa;
 
-    /**
-     * Map of pickup nodes to their associated delivery nodes.
-     */
+    /** Map of pickup nodes to their associated delivery nodes. */
     public final HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery;
 
-    /**
-     * Map of delivery nodes to their associated pickup nodes.
-     */
+    /** Map of delivery nodes to their associated pickup nodes. */
     public final HashMap&lt;Integer, Integer&gt; deliveryToAssociatedPickup;
 
-    /**
-     * Set of nodes that are not part of any pickup-delivery pair.
-     */
+    /** Set of nodes that are not part of any pickup-delivery pair. */
     public final Set&lt;Integer&gt; unrelatedNodes;
 
-    /**
-     * Time window associated to each node.
-     */
+    /** Time window associated to each node. */
     public final TimeWindow[] timeWindows;
 
-    /**
-     * Optional: a known solution of the problem.
-     */
-    private final Optional&lt;Double&gt; aKnownSolutionValue;
-<span class="pc" id="L81">    PDPTWFastLowerBound myBoundCalculator = null;</span>
-    /**
-     * Optional name of the instance to ease readability in tests.
-     */
-<span class="pc" id="L85">    private Optional&lt;String&gt; name = Optional.empty();</span>
+    /** Optional: a known solution of the problem. */
+    private final Optional&lt;Double&gt; knownSolutionValue;
+
+<span class="fc" id="L81">    PDPTWFastLowerBound myBoundCalculator = null;</span>
+
+    /** Optional name of the instance to ease readability in tests. */
+<span class="fc" id="L84">    private Optional&lt;String&gt; name = Optional.empty();</span>
 
     /**
-     * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a maximum vehicle capacity.
+     * Constructs a PDPTWProblem from a distance matrix, a map of pickup-delivery pairs, and a
+     * maximum vehicle capacity.
      *
-     * @param timeMatrix                 distance matrix between all nodes
+     * @param timeMatrix distance matrix between all nodes
      * @param pickupToAssociatedDelivery mapping from pickup nodes to delivery nodes
-     * @param maxCapa                    maximum capacity of the vehicle
-     * @param timeWindows                the time window associated to each node
-     * @param aKnownSolutionValue        an optional known solution value of the instance
-     * @param strengthenTimeWindows      whether the time windows should be strengthened at construction time
+     * @param maxCapa maximum capacity of the vehicle
+     * @param timeWindows the time window associated to each node
+     * @param knownSolutionValue an optional known solution value of the instance
+     * @param strengthenTimeWindows whether the time windows should be strengthened at construction
+     *     time
      */
-    public PDPTWProblem(final double[][] timeMatrix,
-                        HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery,
-                        int maxCapa,
-                        TimeWindow[] timeWindows,
-                        Optional&lt;Double&gt; aKnownSolutionValue,
-<span class="nc" id="L102">                        Boolean strengthenTimeWindows) {</span>
+    public PDPTWProblem(
+            final double[][] timeMatrix,
+            HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery,
+            int maxCapa,
+            TimeWindow[] timeWindows,
+            Optional&lt;Double&gt; knownSolutionValue,
+<span class="fc" id="L104">            Boolean strengthenTimeWindows) {</span>
 
-<span class="nc" id="L104">        this.timeMatrix = timeMatrix;</span>
-<span class="nc" id="L105">        this.n = timeMatrix.length;</span>
-<span class="nc" id="L106">        this.timeWindows = timeWindows;</span>
-<span class="nc" id="L107">        this.maxCapa = maxCapa;</span>
-<span class="nc" id="L108">        this.aKnownSolutionValue = aKnownSolutionValue;</span>
+<span class="fc" id="L106">        this.timeMatrix = timeMatrix;</span>
+<span class="fc" id="L107">        this.n = timeMatrix.length;</span>
+<span class="fc" id="L108">        this.timeWindows = timeWindows;</span>
+<span class="fc" id="L109">        this.maxCapa = maxCapa;</span>
+<span class="fc" id="L110">        this.knownSolutionValue = knownSolutionValue;</span>
 
-<span class="nc" id="L110">        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;</span>
-<span class="nc" id="L111">        this.unrelatedNodes = new HashSet&lt;Integer&gt;(IntStream.range(0, n).boxed().toList());</span>
+<span class="fc" id="L112">        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;</span>
+<span class="fc" id="L113">        this.unrelatedNodes = new HashSet&lt;Integer&gt;(IntStream.range(0, n).boxed().toList());</span>
 
-<span class="nc" id="L113">        deliveryToAssociatedPickup = new HashMap&lt;&gt;();</span>
-<span class="nc bnc" id="L114" title="All 2 branches missed.">        for (int p : pickupToAssociatedDelivery.keySet()) {</span>
-<span class="nc" id="L115">            int d = pickupToAssociatedDelivery.get(p);</span>
-<span class="nc" id="L116">            unrelatedNodes.remove(p);</span>
-<span class="nc" id="L117">            unrelatedNodes.remove(d);</span>
-<span class="nc" id="L118">            deliveryToAssociatedPickup.put(d, p);</span>
-<span class="nc" id="L119">        }</span>
-<span class="nc bnc" id="L120" title="All 2 branches missed.">        if (strengthenTimeWindows) {</span>
-<span class="nc" id="L121">            strengthenTimeWindows();</span>
+<span class="fc" id="L115">        deliveryToAssociatedPickup = new HashMap&lt;&gt;();</span>
+<span class="pc bpc" id="L116" title="1 of 2 branches missed.">        for (int p : pickupToAssociatedDelivery.keySet()) {</span>
+<span class="nc" id="L117">            int d = pickupToAssociatedDelivery.get(p);</span>
+<span class="nc" id="L118">            unrelatedNodes.remove(p);</span>
+<span class="nc" id="L119">            unrelatedNodes.remove(d);</span>
+<span class="nc" id="L120">            deliveryToAssociatedPickup.put(d, p);</span>
+<span class="nc" id="L121">        }</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        if (strengthenTimeWindows) {</span>
+<span class="nc" id="L123">            strengthenTimeWindows();</span>
         }
-<span class="nc" id="L123">        myBoundCalculator = new PDPTWFastLowerBound(this);</span>
-<span class="nc" id="L124">    }</span>
+<span class="fc" id="L125">        myBoundCalculator = new PDPTWFastLowerBound(this);</span>
+<span class="fc" id="L126">    }</span>
 
     /**
      * Constructs a PDPProblem by reading an instance from a file.
-     * &lt;p&gt;
-     * The file format should include:
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;The file format should include:
+     *
      * &lt;ul&gt;
-     *     &lt;li&gt;The number of nodes and optionally the optimal value.&lt;/li&gt;
-     *     &lt;li&gt;The distance matrix between nodes.&lt;/li&gt;
-     *     &lt;li&gt;The pickup-delivery pairs.&lt;/li&gt;
+     *   &lt;li&gt;The number of nodes and optionally the optimal value.
+     *   &lt;li&gt;The distance matrix between nodes.
+     *   &lt;li&gt;The pickup-delivery pairs.
      * &lt;/ul&gt;
      *
      * @param fname path to the instance file
      * @throws IOException if the file cannot be read
      */
-<span class="fc" id="L140">    public PDPTWProblem(String fname) throws IOException {</span>
-<span class="fc" id="L141">        int numNodes = -1;</span>
-<span class="fc" id="L142">        double[][] matrix = null;</span>
-<span class="fc" id="L143">        Optional&lt;Double&gt; opti = Optional.empty();</span>
-<span class="fc" id="L144">        HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L145">        TimeWindow[] tw = null;</span>
-<span class="fc" id="L146">        int maxCapa = -1;</span>
-<span class="fc" id="L147">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
-<span class="fc" id="L148">            int linesCount = 0;</span>
+<span class="fc" id="L142">    public PDPTWProblem(String fname) throws IOException {</span>
+<span class="fc" id="L143">        int numNodes = -1;</span>
+<span class="fc" id="L144">        double[][] matrix = null;</span>
+<span class="fc" id="L145">        Optional&lt;Double&gt; opti = Optional.empty();</span>
+<span class="fc" id="L146">        HashMap&lt;Integer, Integer&gt; pickupToAssociatedDelivery = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L147">        TimeWindow[] tw = null;</span>
+<span class="fc" id="L148">        int maxCapa = -1;</span>
+<span class="fc" id="L149">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L150">            int linesCount = 0;</span>
 
             String line;
-<span class="fc bfc" id="L151" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
-<span class="fc bfc" id="L152" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
-<span class="fc" id="L153">                    linesCount--;</span>
-<span class="fc bfc" id="L154" title="All 2 branches covered.">                } else if (linesCount == 0) { // read num nodes and optimal value</span>
-<span class="fc" id="L155">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc" id="L156">                    numNodes = Integer.parseInt(tokens[0]);</span>
-<span class="fc" id="L157">                    matrix = new double[numNodes][numNodes];</span>
-<span class="fc" id="L158">                    tw = new TimeWindow[numNodes];</span>
-<span class="pc bpc" id="L159" title="1 of 2 branches missed.">                    if (tokens.length &gt;= 2) {</span>
-<span class="fc" id="L160">                        opti = Optional.of(Double.parseDouble(tokens[1]));</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+<span class="fc bfc" id="L154" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
+<span class="fc" id="L155">                    linesCount--;</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">                } else if (linesCount == 0) { // read num nodes and optimal value</span>
+<span class="fc" id="L157">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L158">                    numNodes = Integer.parseInt(tokens[0]);</span>
+<span class="fc" id="L159">                    matrix = new double[numNodes][numNodes];</span>
+<span class="fc" id="L160">                    tw = new TimeWindow[numNodes];</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">                    if (tokens.length &gt;= 2) {</span>
+<span class="fc" id="L162">                        opti = Optional.of(Double.parseDouble(tokens[1]));</span>
                     }
-<span class="fc bfc" id="L162" title="All 2 branches covered.">                } else if (linesCount == 1) { // read max capa</span>
-<span class="fc" id="L163">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc" id="L164">                    maxCapa = Integer.parseInt(tokens[0]);</span>
+<span class="fc bfc" id="L164" title="All 2 branches covered.">                } else if (linesCount == 1) { // read max capa</span>
+<span class="fc" id="L165">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L166">                    maxCapa = Integer.parseInt(tokens[0]);</span>
 
-<span class="fc bfc" id="L166" title="All 2 branches covered.">                } else if (linesCount &lt;= numNodes + 1) { // read distance matrix</span>
-<span class="fc" id="L167">                    int node = linesCount - 2;</span>
-<span class="fc" id="L168">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc" id="L169">                    double[] row =</span>
-<span class="pc bpc" id="L170" title="1 of 2 branches missed.">                            Arrays.stream(tokens).filter(s -&gt; !s.isEmpty()).mapToDouble(Double::parseDouble).toArray();</span>
-<span class="fc" id="L171">                    matrix[node] = row;</span>
-<span class="fc bfc" id="L172" title="All 2 branches covered.">                } else if (linesCount &lt;= numNodes * 2 + 1) { //read timeWindow</span>
-<span class="fc" id="L173">                    int node = linesCount - numNodes - 2;</span>
-<span class="fc" id="L174">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc" id="L175">                    tw[node] = new TimeWindow(Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]));</span>
-<span class="fc" id="L176">                } else { // read pick-up and delivery pairs</span>
-<span class="fc" id="L177">                    String[] tokens = line.split(&quot; -&gt; &quot;);</span>
-<span class="fc" id="L178">                    pickupToAssociatedDelivery.put(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">                } else if (linesCount &lt;= numNodes + 1) { // read distance matrix</span>
+<span class="fc" id="L169">                    int node = linesCount - 2;</span>
+<span class="fc" id="L170">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L171">                    double[] row =</span>
+<span class="fc" id="L172">                            Arrays.stream(tokens)</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">                                    .filter(s -&gt; !s.isEmpty())</span>
+<span class="fc" id="L174">                                    .mapToDouble(Double::parseDouble)</span>
+<span class="fc" id="L175">                                    .toArray();</span>
+<span class="fc" id="L176">                    matrix[node] = row;</span>
+<span class="fc bfc" id="L177" title="All 2 branches covered.">                } else if (linesCount &lt;= numNodes * 2 + 1) { // read timeWindow</span>
+<span class="fc" id="L178">                    int node = linesCount - numNodes - 2;</span>
+<span class="fc" id="L179">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
+<span class="fc" id="L180">                    tw[node] =</span>
+                            new TimeWindow(
+<span class="fc" id="L182">                                    Double.parseDouble(tokens[0]), Double.parseDouble(tokens[1]));</span>
+<span class="fc" id="L183">                } else { // read pick-up and delivery pairs</span>
+<span class="fc" id="L184">                    String[] tokens = line.split(&quot; -&gt; &quot;);</span>
+<span class="fc" id="L185">                    pickupToAssociatedDelivery.put(</span>
+<span class="fc" id="L186">                            Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]));</span>
                 }
 
-<span class="fc" id="L181">                linesCount++;</span>
+<span class="fc" id="L189">                linesCount++;</span>
             }
         }
 
-<span class="fc" id="L185">        this.timeMatrix = matrix;</span>
-<span class="fc" id="L186">        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;</span>
-<span class="fc" id="L187">        this.timeWindows = tw;</span>
-<span class="fc" id="L188">        this.n = timeMatrix.length;</span>
-<span class="fc" id="L189">        this.aKnownSolutionValue = opti;</span>
-<span class="fc" id="L190">        this.maxCapa = maxCapa;</span>
+<span class="fc" id="L193">        this.timeMatrix = matrix;</span>
+<span class="fc" id="L194">        this.pickupToAssociatedDelivery = pickupToAssociatedDelivery;</span>
+<span class="fc" id="L195">        this.timeWindows = tw;</span>
+<span class="fc" id="L196">        this.n = timeMatrix.length;</span>
+<span class="fc" id="L197">        this.knownSolutionValue = opti;</span>
+<span class="fc" id="L198">        this.maxCapa = maxCapa;</span>
 
-<span class="fc" id="L192">        this.unrelatedNodes = new HashSet&lt;&gt;(IntStream.range(0, n).boxed().toList());</span>
-<span class="fc" id="L193">        deliveryToAssociatedPickup = new HashMap&lt;&gt;();</span>
-<span class="fc bfc" id="L194" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, Integer&gt; entry : pickupToAssociatedDelivery.entrySet()) {</span>
-<span class="fc" id="L195">            int p = entry.getKey();</span>
-<span class="fc" id="L196">            int d = entry.getValue();</span>
-<span class="fc" id="L197">            unrelatedNodes.remove(p);</span>
-<span class="fc" id="L198">            unrelatedNodes.remove(d);</span>
-<span class="fc" id="L199">            deliveryToAssociatedPickup.put(d, p);</span>
-<span class="fc" id="L200">        }</span>
+<span class="fc" id="L200">        this.unrelatedNodes = new HashSet&lt;&gt;(IntStream.range(0, n).boxed().toList());</span>
+<span class="fc" id="L201">        deliveryToAssociatedPickup = new HashMap&lt;&gt;();</span>
+<span class="fc bfc" id="L202" title="All 2 branches covered.">        for (Map.Entry&lt;Integer, Integer&gt; entry : pickupToAssociatedDelivery.entrySet()) {</span>
+<span class="fc" id="L203">            int p = entry.getKey();</span>
+<span class="fc" id="L204">            int d = entry.getValue();</span>
+<span class="fc" id="L205">            unrelatedNodes.remove(p);</span>
+<span class="fc" id="L206">            unrelatedNodes.remove(d);</span>
+<span class="fc" id="L207">            deliveryToAssociatedPickup.put(d, p);</span>
+<span class="fc" id="L208">        }</span>
 
-<span class="fc" id="L202">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L210">        this.name = Optional.of(fname);</span>
 
-<span class="fc" id="L204">        strengthenTimeWindows();</span>
-<span class="fc" id="L205">        myBoundCalculator = new PDPTWFastLowerBound(this);</span>
-<span class="fc" id="L206">    }</span>
+<span class="fc" id="L212">        strengthenTimeWindows();</span>
+<span class="fc" id="L213">        myBoundCalculator = new PDPTWFastLowerBound(this);</span>
+<span class="fc" id="L214">    }</span>
 
     /**
-     * Strengthens the time windows of pickup and delivery nodes using the precedence
-     * and travel time relations between each pickup and its associated delivery.
+     * Strengthens the time windows of pickup and delivery nodes using the precedence and travel
+     * time relations between each pickup and its associated delivery.
      */
     public void strengthenTimeWindows() {
 
-<span class="fc" id="L214">        int deadlineStrengthen = 0;</span>
-<span class="fc" id="L215">        int earlyLineStrengthen = 0;</span>
-<span class="fc" id="L216">        String toReturn = &quot;&quot;;</span>
-<span class="fc bfc" id="L217" title="All 2 branches covered.">        for (int pickup : pickupToAssociatedDelivery.keySet()) {</span>
-<span class="fc" id="L218">            int delivery = pickupToAssociatedDelivery.get(pickup);</span>
+<span class="fc" id="L222">        int deadlineStrengthen = 0;</span>
+<span class="fc" id="L223">        int earlyLineStrengthen = 0;</span>
+<span class="fc" id="L224">        String toReturn = &quot;&quot;;</span>
+<span class="fc bfc" id="L225" title="All 2 branches covered.">        for (int pickup : pickupToAssociatedDelivery.keySet()) {</span>
+<span class="fc" id="L226">            int delivery = pickupToAssociatedDelivery.get(pickup);</span>
 
-            //delivery.earlyLine = max(delivry.earlyLine,pickUp.ealyLine + travelTime(pickup,delivery)
-<span class="fc" id="L221">            double newEarlyLine = timeWindows[pickup].start() + timeMatrix[pickup][delivery];</span>
-<span class="fc bfc" id="L222" title="All 2 branches covered.">            if (newEarlyLine &gt; timeWindows[delivery].start()) {</span>
-<span class="fc" id="L223">                deadlineStrengthen++;</span>
-<span class="fc" id="L224">                TimeWindow oldTW = timeWindows[delivery];</span>
-<span class="fc" id="L225">                TimeWindow newTW = new TimeWindow(newEarlyLine, timeWindows[delivery].end());</span>
-                //Strengthening the earlyLine is not about this one delivery node.
-                //it is about exposing other earlylines in the FLB heuristics
-                //and to do that we must shift as many early lines as possible to the latest time they are actually relevant
-<span class="fc" id="L229">                toReturn += &quot;\n\tearlyLineStrengthening &quot; + pickup + &quot;-&gt;*&quot; + delivery + &quot;*\n\t\tOLD:&quot; + oldTW + &quot;\n\t\tNEW:&quot; + newTW;</span>
-<span class="fc" id="L230">                timeWindows[delivery] = newTW;</span>
+            // delivery.earlyLine = max(delivry.earlyLine,pickUp.ealyLine +
+            // travelTime(pickup,delivery)
+<span class="fc" id="L230">            double newEarlyLine = timeWindows[pickup].start() + timeMatrix[pickup][delivery];</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">            if (newEarlyLine &gt; timeWindows[delivery].start()) {</span>
+<span class="fc" id="L232">                deadlineStrengthen++;</span>
+<span class="fc" id="L233">                TimeWindow oldTW = timeWindows[delivery];</span>
+<span class="fc" id="L234">                TimeWindow newTW = new TimeWindow(newEarlyLine, timeWindows[delivery].end());</span>
+                // Strengthening the earlyLine is not about this one delivery node.
+                // it is about exposing other earlylines in the FLB heuristics
+                // and to do that we must shift as many early lines as possible to the latest time
+                // they are actually relevant
+<span class="fc" id="L239">                toReturn +=</span>
+                        &quot;\n\tearlyLineStrengthening &quot;
+                                + pickup
+                                + &quot;-&gt;*&quot;
+                                + delivery
+                                + &quot;*\n\t\tOLD:&quot;
+                                + oldTW
+                                + &quot;\n\t\tNEW:&quot;
+                                + newTW;
+<span class="fc" id="L248">                timeWindows[delivery] = newTW;</span>
             }
 
             // pickup.deadline = min(pickup.deadline,delivery.deadline - travelTime(pickup,delivery)
-<span class="fc" id="L234">            double newDeadline = timeWindows[delivery].end() - timeMatrix[pickup][delivery];</span>
-<span class="fc bfc" id="L235" title="All 2 branches covered.">            if (newDeadline &lt; timeWindows[pickup].end()) {</span>
-<span class="fc" id="L236">                earlyLineStrengthen++;</span>
-<span class="fc" id="L237">                TimeWindow oldTW = timeWindows[pickup];</span>
-<span class="fc" id="L238">                TimeWindow newTW = new TimeWindow(timeWindows[pickup].start(), timeWindows[delivery].end() - timeMatrix[pickup][delivery]);</span>
-                //strengthening the deadline of pickup sill enable the solver to quicker identify
+<span class="fc" id="L252">            double newDeadline = timeWindows[delivery].end() - timeMatrix[pickup][delivery];</span>
+<span class="fc bfc" id="L253" title="All 2 branches covered.">            if (newDeadline &lt; timeWindows[pickup].end()) {</span>
+<span class="fc" id="L254">                earlyLineStrengthen++;</span>
+<span class="fc" id="L255">                TimeWindow oldTW = timeWindows[pickup];</span>
+<span class="fc" id="L256">                TimeWindow newTW =</span>
+                        new TimeWindow(
+<span class="fc" id="L258">                                timeWindows[pickup].start(),</span>
+<span class="fc" id="L259">                                timeWindows[delivery].end() - timeMatrix[pickup][delivery]);</span>
+                // strengthening the deadline of pickup sill enable the solver to quicker identify
                 // that a prefix does not lead to a feasible solution
-<span class="fc" id="L241">                toReturn += &quot;\n\tdeadlineStrengthen *&quot; + pickup + &quot;*-&gt;&quot; + delivery + &quot;\n\t\tOLD:&quot; + oldTW + &quot; \n\t\tNEW:&quot; + newTW;</span>
-<span class="fc" id="L242">                timeWindows[pickup] = newTW;</span>
+<span class="fc" id="L262">                toReturn +=</span>
+                        &quot;\n\tdeadlineStrengthen *&quot;
+                                + pickup
+                                + &quot;*-&gt;&quot;
+                                + delivery
+                                + &quot;\n\t\tOLD:&quot;
+                                + oldTW
+                                + &quot; \n\t\tNEW:&quot;
+                                + newTW;
+<span class="fc" id="L271">                timeWindows[pickup] = newTW;</span>
             }
-<span class="fc" id="L244">        }</span>
-        //System.out.println(&quot;earlyLineStrengthen: &quot; + earlyLineStrengthen + &quot; deadlineStrengthen: &quot; + deadlineStrengthen + toReturn);
-<span class="fc" id="L246">    }</span>
+<span class="fc" id="L273">        }</span>
+        // System.out.println(&quot;earlyLineStrengthen: &quot; + earlyLineStrengthen + &quot; deadlineStrengthen:
+        // &quot; + deadlineStrengthen + toReturn);
+<span class="fc" id="L276">    }</span>
 
     /**
      * Saves this PDPTW instance to a file in the format expected by {@link #PDPTWProblem(String)}.
@@ -253,72 +283,78 @@ public class PDPTWProblem implements Problem&lt;PDPTWState&gt; {
      */
     public void saveToFile(String fname) throws IOException {
 
-<span class="nc" id="L256">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fname))) {</span>
+<span class="nc" id="L286">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fname))) {</span>
 
-            //the number of nodes
-<span class="nc" id="L259">            bw.write(&quot;&quot; + this.n);</span>
-<span class="nc" id="L260">            aKnownSolutionValue.ifPresent(val -&gt; {</span>
-                try {
-<span class="nc" id="L262">                    bw.write(&quot; &quot; + val);</span>
-<span class="nc" id="L263">                } catch (IOException e) {</span>
-<span class="nc" id="L264">                    throw new RuntimeException(e);</span>
-<span class="nc" id="L265">                }</span>
-<span class="nc" id="L266">            });</span>
-<span class="nc" id="L267">            bw.write(&quot;\n\n&quot;);</span>
+            // the number of nodes
+<span class="nc" id="L289">            bw.write(&quot;&quot; + this.n);</span>
+<span class="nc" id="L290">            knownSolutionValue.ifPresent(</span>
+                    val -&gt; {
+                        try {
+<span class="nc" id="L293">                            bw.write(&quot; &quot; + val);</span>
+<span class="nc" id="L294">                        } catch (IOException e) {</span>
+<span class="nc" id="L295">                            throw new RuntimeException(e);</span>
+<span class="nc" id="L296">                        }</span>
+<span class="nc" id="L297">                    });</span>
+<span class="nc" id="L298">            bw.write(&quot;\n\n&quot;);</span>
 
-            //the max capa
-<span class="nc" id="L270">            bw.write(&quot;&quot; + this.maxCapa);</span>
-<span class="nc" id="L271">            bw.write(&quot;\n\n&quot;);</span>
+            // the max capa
+<span class="nc" id="L301">            bw.write(&quot;&quot; + this.maxCapa);</span>
+<span class="nc" id="L302">            bw.write(&quot;\n\n&quot;);</span>
 
-            //the time matrix
-<span class="nc bnc" id="L274" title="All 2 branches missed.">            for (double[] line : timeMatrix) {</span>
-<span class="nc bnc" id="L275" title="All 2 branches missed.">                for (double value : line) {</span>
-<span class="nc" id="L276">                    bw.write(value + &quot; &quot;);</span>
+            // the time matrix
+<span class="nc bnc" id="L305" title="All 2 branches missed.">            for (double[] line : timeMatrix) {</span>
+<span class="nc bnc" id="L306" title="All 2 branches missed.">                for (double value : line) {</span>
+<span class="nc" id="L307">                    bw.write(value + &quot; &quot;);</span>
                 }
-<span class="nc" id="L278">                bw.write(&quot;\n&quot;);</span>
+<span class="nc" id="L309">                bw.write(&quot;\n&quot;);</span>
             }
-<span class="nc" id="L280">            bw.write(&quot;\n&quot;);</span>
+<span class="nc" id="L311">            bw.write(&quot;\n&quot;);</span>
 
-            //time window
-<span class="nc bnc" id="L283" title="All 2 branches missed.">            for (TimeWindow tw : timeWindows) {</span>
-<span class="nc" id="L284">                bw.write(tw.start() + &quot;  &quot; + tw.end() + &quot;\n&quot;);</span>
+            // time window
+<span class="nc bnc" id="L314" title="All 2 branches missed.">            for (TimeWindow tw : timeWindows) {</span>
+<span class="nc" id="L315">                bw.write(tw.start() + &quot;  &quot; + tw.end() + &quot;\n&quot;);</span>
             }
-<span class="nc" id="L286">            bw.write(&quot;\n&quot;);</span>
+<span class="nc" id="L317">            bw.write(&quot;\n&quot;);</span>
 
             // read pick-up and delivery pairs
-<span class="nc bnc" id="L289" title="All 2 branches missed.">            for (int pickup : pickupToAssociatedDelivery.keySet()) {</span>
-<span class="nc" id="L290">                bw.write(pickup + &quot; -&gt; &quot; + pickupToAssociatedDelivery.get(pickup) + &quot;\n&quot;);</span>
-<span class="nc" id="L291">            }</span>
+<span class="nc bnc" id="L320" title="All 2 branches missed.">            for (int pickup : pickupToAssociatedDelivery.keySet()) {</span>
+<span class="nc" id="L321">                bw.write(pickup + &quot; -&gt; &quot; + pickupToAssociatedDelivery.get(pickup) + &quot;\n&quot;);</span>
+<span class="nc" id="L322">            }</span>
         }
-<span class="nc" id="L293">    }</span>
+<span class="nc" id="L324">    }</span>
 
     /**
      * Returns the number of variables (decisions) in the problem.
-     * &lt;p&gt;
-     * Note: the last decision corresponds to returning to the depot (node 0).
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;Note: the last decision corresponds to returning to the depot (node 0).
      *
      * @return number of variables
      */
     @Override
     public int nbVars() {
-<span class="fc" id="L305">        return n; //the last decision will be to come back to point zero</span>
+<span class="fc" id="L335">        return n; // the last decision will be to come back to point zero</span>
     }
 
     @Override
     public PDPTWState initialState() {
-<span class="fc" id="L310">        BitSet openToVisit = new BitSet(n);</span>
-<span class="fc" id="L311">        openToVisit.set(1, n);</span>
+<span class="fc" id="L340">        BitSet openToVisit = new BitSet(n);</span>
+<span class="fc" id="L341">        openToVisit.set(1, n);</span>
 
-<span class="fc bfc" id="L313" title="All 2 branches covered.">        for (int d : deliveryToAssociatedPickup.keySet()) {</span>
-<span class="fc" id="L314">            openToVisit.clear(d);</span>
-<span class="fc" id="L315">        }</span>
+<span class="fc bfc" id="L343" title="All 2 branches covered.">        for (int d : deliveryToAssociatedPickup.keySet()) {</span>
+<span class="fc" id="L344">            openToVisit.clear(d);</span>
+<span class="fc" id="L345">        }</span>
 
-<span class="fc" id="L317">        BitSet allToVisit = new BitSet(n);</span>
-<span class="fc" id="L318">        allToVisit.set(1, n);</span>
+<span class="fc" id="L347">        BitSet allToVisit = new BitSet(n);</span>
+<span class="fc" id="L348">        allToVisit.set(1, n);</span>
 
-<span class="fc" id="L320">        return new PDPTWState(singleton(0), openToVisit, allToVisit, 0, 0,</span>
-<span class="fc" id="L321">                timeWindows[0].start(), timeWindows[0].start());</span>
+<span class="fc" id="L350">        return new PDPTWState(</span>
+<span class="fc" id="L351">                singleton(0),</span>
+                openToVisit,
+                allToVisit,
+                0,
+                0,
+<span class="fc" id="L356">                timeWindows[0].start(),</span>
+<span class="fc" id="L357">                timeWindows[0].start());</span>
     }
 
     /**
@@ -328,118 +364,166 @@ public class PDPTWProblem implements Problem&lt;PDPTWState&gt; {
      * @return a new {@link BitSet} with only {@code singletonValue} set
      */
     public BitSet singleton(int singletonValue) {
-<span class="fc" id="L331">        BitSet toReturn = new BitSet(n);</span>
-<span class="fc" id="L332">        toReturn.set(singletonValue);</span>
-<span class="fc" id="L333">        return toReturn;</span>
+<span class="fc" id="L367">        BitSet toReturn = new BitSet(n);</span>
+<span class="fc" id="L368">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L369">        return toReturn;</span>
     }
 
     @Override
     public double initialValue() {
-<span class="fc" id="L338">        return 0;</span>
+<span class="fc" id="L374">        return 0;</span>
     }
 
     @Override
     public Optional&lt;Double&gt; optimalValue() {
-<span class="fc" id="L343">        return aKnownSolutionValue;</span>
+<span class="fc" id="L379">        return knownSolutionValue;</span>
     }
 
     @Override
     public Iterator&lt;Integer&gt; domain(PDPTWState state, int var) {
-<span class="fc bfc" id="L348" title="All 2 branches covered.">        if (var == n - 1) {</span>
-            //the final decision is to come back to node zero
-            //it is only possible  if we are before the deadline of node0
-<span class="fc" id="L351">            if (state.minCurrentTime</span>
-<span class="fc" id="L352">                    + state.current.stream().mapToDouble(from -&gt; timeMatrix[from][0]).min().getAsDouble()</span>
-<span class="pc bpc" id="L353" title="1 of 2 branches missed.">                    &gt; timeWindows[0].end()) {</span>
-<span class="nc" id="L354">                return Collections.emptyIterator();</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">        if (var == n - 1) {</span>
+            // the final decision is to come back to node zero
+            // it is only possible  if we are before the deadline of node0
+<span class="fc" id="L387">            if (state.minCurrentTime</span>
+<span class="fc" id="L388">                            + state.current.stream()</span>
+<span class="fc" id="L389">                                    .mapToDouble(from -&gt; timeMatrix[from][0])</span>
+<span class="fc" id="L390">                                    .min()</span>
+<span class="fc" id="L391">                                    .getAsDouble()</span>
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">                    &gt; timeWindows[0].end()) {</span>
+<span class="nc" id="L393">                return Collections.emptyIterator();</span>
             } else {
-<span class="fc" id="L356">                return singleton(0).stream().iterator();</span>
+<span class="fc" id="L395">                return singleton(0).stream().iterator();</span>
             }
         } else {
-<span class="fc bfc" id="L359" title="All 2 branches covered.">            boolean canIncludePickups = state.minContent &lt; maxCapa;</span>
-<span class="fc bfc" id="L360" title="All 2 branches covered.">            boolean canIncludeDeliveries = state.maxContent != 0;</span>
+<span class="fc bfc" id="L398" title="All 2 branches covered.">            boolean canIncludePickups = state.minContent &lt; maxCapa;</span>
+<span class="fc bfc" id="L399" title="All 2 branches covered.">            boolean canIncludeDeliveries = state.maxContent != 0;</span>
 
-            //how many we need to visit from now on?
-<span class="fc" id="L363">            int howManyToVisit = n - 1 - var;</span>
+            // how many we need to visit from now on?
+<span class="fc" id="L402">            int howManyToVisit = n - 1 - var;</span>
 
-            //check that all states that must be visited can still be visited given the currentTime,
+            // check that all states that must be visited can still be visited given the
+            // currentTime,
             // otherwise, there is no successor at all.
-            //this assumes that we have triangular inequality
-<span class="fc" id="L368">            long nbStillReachablePoints = state.allToVisit.stream().filter(point -&gt;</span>
-<span class="fc" id="L369">                    (state.minCurrentTime + (state.current.stream().mapToDouble(</span>
-<span class="fc bfc" id="L370" title="All 2 branches covered.">                            from -&gt; timeMatrix[from][point])).min().getAsDouble()) &lt;= timeWindows[point].end()</span>
-<span class="fc" id="L371">            ).count();</span>
+            // this assumes that we have triangular inequality
+<span class="fc" id="L408">            long nbStillReachablePoints =</span>
+<span class="fc" id="L409">                    state.allToVisit.stream()</span>
+<span class="fc" id="L410">                            .filter(</span>
+                                    point -&gt; {
+<span class="fc" id="L412">                                        double minTravelTime =</span>
+<span class="fc" id="L413">                                                state.current.stream()</span>
+<span class="fc" id="L414">                                                        .mapToDouble(</span>
+<span class="fc" id="L415">                                                                from -&gt; timeMatrix[from][point])</span>
+<span class="fc" id="L416">                                                        .min()</span>
+<span class="fc" id="L417">                                                        .getAsDouble();</span>
+<span class="fc" id="L418">                                        return state.minCurrentTime + minTravelTime</span>
+<span class="fc bfc" id="L419" title="All 2 branches covered.">                                                &lt;= timeWindows[point].end();</span>
+                                    })
+<span class="fc" id="L421">                            .count();</span>
 
-<span class="fc bfc" id="L373" title="All 2 branches covered.">            if (nbStillReachablePoints &lt; howManyToVisit) return Collections.emptyIterator();</span>
+<span class="fc bfc" id="L423" title="All 2 branches covered.">            if (nbStillReachablePoints &lt; howManyToVisit) {</span>
+<span class="fc" id="L424">                return Collections.emptyIterator();</span>
+            }
 
-<span class="fc" id="L375">            IntStream choices = state.openToVisit.stream()</span>
-<span class="fc" id="L376">                    .filter(point -&gt;</span>
-<span class="fc bfc" id="L377" title="All 4 branches covered.">                            ((canIncludePickups | !pickupToAssociatedDelivery.containsKey(point))</span>
-<span class="pc bpc" id="L378" title="1 of 4 branches missed.">                                    &amp;&amp; (canIncludeDeliveries | !deliveryToAssociatedPickup.containsKey(point))));</span>
+<span class="fc" id="L427">            IntStream choices =</span>
+<span class="fc" id="L428">                    state.openToVisit.stream()</span>
+<span class="fc" id="L429">                            .filter(</span>
+                                    point -&gt;
+<span class="fc" id="L431">                                            ((canIncludePickups</span>
+                                                            | !pickupToAssociatedDelivery
+<span class="fc bfc" id="L433" title="All 4 branches covered.">                                                                    .containsKey(point))</span>
+                                                    &amp;&amp; (canIncludeDeliveries
+                                                            | !deliveryToAssociatedPickup
+<span class="pc bpc" id="L436" title="1 of 4 branches missed.">                                                                    .containsKey(point))));</span>
 
-            //TODO: can we re-use this instead of throwing it away?
-<span class="fc" id="L381">            IntStream choices2 = choices.filter(choice -&gt; {</span>
-<span class="pc bpc" id="L382" title="1 of 2 branches missed.">                if (!state.openToVisit.get(choice)) throw new Error(&quot;error&quot;);</span>
-<span class="pc bpc" id="L383" title="1 of 2 branches missed.">                if (var &gt;= n - 1) return true;</span>
-<span class="fc" id="L384">                PDPTWState potentialNext = transition(state, new Decision(var, choice));</span>
-<span class="fc bfc" id="L385" title="All 2 branches covered.">                return (myBoundCalculator.fastLowerBound(potentialNext, n - var - 2) &lt; Double.MAX_VALUE);</span>
-            });
+            // TODO: can we re-use this instead of throwing it away?
+<span class="fc" id="L439">            IntStream choices2 =</span>
+<span class="fc" id="L440">                    choices.filter(</span>
+                            choice -&gt; {
+<span class="pc bpc" id="L442" title="1 of 2 branches missed.">                                if (!state.openToVisit.get(choice)) {</span>
+<span class="nc" id="L443">                                    throw new Error(&quot;error&quot;);</span>
+                                }
+<span class="pc bpc" id="L445" title="1 of 2 branches missed.">                                if (var &gt;= n - 1) {</span>
+<span class="nc" id="L446">                                    return true;</span>
+                                }
+<span class="fc" id="L448">                                PDPTWState potentialNext =</span>
+<span class="fc" id="L449">                                        transition(state, new Decision(var, choice));</span>
+<span class="fc bfc" id="L450" title="All 2 branches covered.">                                return (myBoundCalculator.fastLowerBound(potentialNext, n - var - 2)</span>
+                                        &lt; Double.MAX_VALUE);
+                            });
 
-            //IntStream choices2 = choices;
-<span class="fc" id="L389">            return choices2.boxed().iterator();</span>
+            // IntStream choices2 = choices;
+<span class="fc" id="L455">            return choices2.boxed().iterator();</span>
         }
     }
 
     @Override
     public PDPTWState transition(PDPTWState state, Decision decision) {
-<span class="fc" id="L395">        int node = decision.value();</span>
-<span class="fc" id="L396">        BitSet newOpenToVisit = (BitSet) state.openToVisit.clone();</span>
-<span class="fc" id="L397">        newOpenToVisit.clear(node);</span>
+<span class="fc" id="L461">        int node = decision.value();</span>
+<span class="fc" id="L462">        BitSet newOpenToVisit = (BitSet) state.openToVisit.clone();</span>
+<span class="fc" id="L463">        newOpenToVisit.clear(node);</span>
 
-<span class="fc" id="L399">        BitSet newAllToVisit = (BitSet) state.allToVisit.clone();</span>
-<span class="fc" id="L400">        newAllToVisit.clear(node);</span>
+<span class="fc" id="L465">        BitSet newAllToVisit = (BitSet) state.allToVisit.clone();</span>
+<span class="fc" id="L466">        newAllToVisit.clear(node);</span>
 
-<span class="fc" id="L402">        int newMinContent = state.minContent;</span>
-<span class="fc" id="L403">        int newMaxContent = state.maxContent;</span>
-<span class="fc bfc" id="L404" title="All 2 branches covered.">        if (pickupToAssociatedDelivery.containsKey(node)) {</span>
-<span class="fc" id="L405">            newOpenToVisit.set(pickupToAssociatedDelivery.get(node));</span>
-<span class="fc" id="L406">            newMinContent += 1;</span>
-<span class="fc" id="L407">            newMaxContent += 1;</span>
+<span class="fc" id="L468">        int newMinContent = state.minContent;</span>
+<span class="fc" id="L469">        int newMaxContent = state.maxContent;</span>
+<span class="fc bfc" id="L470" title="All 2 branches covered.">        if (pickupToAssociatedDelivery.containsKey(node)) {</span>
+<span class="fc" id="L471">            newOpenToVisit.set(pickupToAssociatedDelivery.get(node));</span>
+<span class="fc" id="L472">            newMinContent += 1;</span>
+<span class="fc" id="L473">            newMaxContent += 1;</span>
         }
 
-<span class="fc bfc" id="L410" title="All 2 branches covered.">        if (deliveryToAssociatedPickup.containsKey(node)) {</span>
-<span class="fc" id="L411">            int p = deliveryToAssociatedPickup.get(node);</span>
-<span class="pc bpc" id="L412" title="1 of 2 branches missed.">            if (newOpenToVisit.get(p)) {</span>
-<span class="nc" id="L413">                newOpenToVisit.clear(p);</span>
+<span class="fc bfc" id="L476" title="All 2 branches covered.">        if (deliveryToAssociatedPickup.containsKey(node)) {</span>
+<span class="fc" id="L477">            int p = deliveryToAssociatedPickup.get(node);</span>
+<span class="pc bpc" id="L478" title="1 of 2 branches missed.">            if (newOpenToVisit.get(p)) {</span>
+<span class="nc" id="L479">                newOpenToVisit.clear(p);</span>
             }
-<span class="fc" id="L415">            newMinContent -= 1;</span>
-<span class="fc" id="L416">            newMaxContent -= 1;</span>
+<span class="fc" id="L481">            newMinContent -= 1;</span>
+<span class="fc" id="L482">            newMaxContent -= 1;</span>
         }
 
-<span class="pc bpc" id="L419" title="1 of 2 branches missed.">        if (newMinContent &lt; 0) newMinContent = 0;</span>
-<span class="pc bpc" id="L420" title="1 of 2 branches missed.">        if (newMaxContent &gt; maxCapa) newMaxContent = maxCapa;</span>
-
-<span class="pc bpc" id="L422" title="1 of 2 branches missed.">        if (newMinContent &gt; maxCapa) throw new Error(&quot;error&quot;);</span>
-<span class="pc bpc" id="L423" title="1 of 2 branches missed.">        if (newMaxContent &lt; 0) throw new Error(&quot;error&quot;);</span>
-
-<span class="fc" id="L425">        double minArrivalTime = state.minCurrentTime + state.current.stream()</span>
-<span class="fc" id="L426">                .mapToDouble(possibleCurrentNode -&gt; timeMatrix[possibleCurrentNode][decision.value()])</span>
-<span class="fc" id="L427">                .min().getAsDouble();</span>
-
-<span class="fc bfc" id="L429" title="All 2 branches covered.">        if (minArrivalTime &lt; timeWindows[node].start()) {</span>
-<span class="fc" id="L430">            minArrivalTime = timeWindows[node].start();</span>
+<span class="pc bpc" id="L485" title="1 of 2 branches missed.">        if (newMinContent &lt; 0) {</span>
+<span class="nc" id="L486">            newMinContent = 0;</span>
+        }
+<span class="pc bpc" id="L488" title="1 of 2 branches missed.">        if (newMaxContent &gt; maxCapa) {</span>
+<span class="nc" id="L489">            newMaxContent = maxCapa;</span>
         }
 
-<span class="fc" id="L433">        double maxArrivalTime = state.minCurrentTime + state.current.stream()</span>
-<span class="fc" id="L434">                .mapToDouble(possibleCurrentNode -&gt; timeMatrix[possibleCurrentNode][decision.value()])</span>
-<span class="fc" id="L435">                .min().getAsDouble();</span>
-
-<span class="fc bfc" id="L437" title="All 2 branches covered.">        if (maxArrivalTime &lt; timeWindows[node].start()) {</span>
-<span class="fc" id="L438">            maxArrivalTime = timeWindows[node].start();</span>
+<span class="pc bpc" id="L492" title="1 of 2 branches missed.">        if (newMinContent &gt; maxCapa) {</span>
+<span class="nc" id="L493">            throw new Error(&quot;error&quot;);</span>
+        }
+<span class="pc bpc" id="L495" title="1 of 2 branches missed.">        if (newMaxContent &lt; 0) {</span>
+<span class="nc" id="L496">            throw new Error(&quot;error&quot;);</span>
         }
 
-<span class="fc" id="L441">        return new PDPTWState(</span>
-<span class="fc" id="L442">                state.singleton(node),</span>
+<span class="fc" id="L499">        double minArrivalTime =</span>
+                state.minCurrentTime
+<span class="fc" id="L501">                        + state.current.stream()</span>
+<span class="fc" id="L502">                                .mapToDouble(</span>
+                                        possibleCurrentNode -&gt;
+<span class="fc" id="L504">                                                timeMatrix[possibleCurrentNode][decision.value()])</span>
+<span class="fc" id="L505">                                .min()</span>
+<span class="fc" id="L506">                                .getAsDouble();</span>
+
+<span class="fc bfc" id="L508" title="All 2 branches covered.">        if (minArrivalTime &lt; timeWindows[node].start()) {</span>
+<span class="fc" id="L509">            minArrivalTime = timeWindows[node].start();</span>
+        }
+
+<span class="fc" id="L512">        double maxArrivalTime =</span>
+                state.minCurrentTime
+<span class="fc" id="L514">                        + state.current.stream()</span>
+<span class="fc" id="L515">                                .mapToDouble(</span>
+                                        possibleCurrentNode -&gt;
+<span class="fc" id="L517">                                                timeMatrix[possibleCurrentNode][decision.value()])</span>
+<span class="fc" id="L518">                                .min()</span>
+<span class="fc" id="L519">                                .getAsDouble();</span>
+
+<span class="fc bfc" id="L521" title="All 2 branches covered.">        if (maxArrivalTime &lt; timeWindows[node].start()) {</span>
+<span class="fc" id="L522">            maxArrivalTime = timeWindows[node].start();</span>
+        }
+
+<span class="fc" id="L525">        return new PDPTWState(</span>
+<span class="fc" id="L526">                state.singleton(node),</span>
                 newOpenToVisit,
                 newAllToVisit,
                 newMinContent,
@@ -450,68 +534,89 @@ public class PDPTWProblem implements Problem&lt;PDPTWState&gt; {
 
     @Override
     public double transitionCost(PDPTWState state, Decision decision) {
-<span class="fc" id="L453">        double travelTime = state.current.stream()</span>
-<span class="pc bpc" id="L454" title="1 of 2 branches missed.">                .filter(possibleCurrentNode -&gt; possibleCurrentNode != decision.value())</span>
-<span class="fc" id="L455">                .mapToDouble(</span>
-<span class="fc" id="L456">                        possibleCurrentNode -&gt; timeMatrix[possibleCurrentNode][decision.value()])</span>
-<span class="fc" id="L457">                .min()</span>
-<span class="fc" id="L458">                .getAsDouble();</span>
+<span class="fc" id="L537">        double travelTime =</span>
+<span class="fc" id="L538">                state.current.stream()</span>
+<span class="pc bpc" id="L539" title="1 of 2 branches missed.">                        .filter(possibleCurrentNode -&gt; possibleCurrentNode != decision.value())</span>
+<span class="fc" id="L540">                        .mapToDouble(</span>
+                                possibleCurrentNode -&gt;
+<span class="fc" id="L542">                                        timeMatrix[possibleCurrentNode][decision.value()])</span>
+<span class="fc" id="L543">                        .min()</span>
+<span class="fc" id="L544">                        .getAsDouble();</span>
 
-        //the final decision is to come back to node zero.
+        // the final decision is to come back to node zero.
         // The earlyLine has a different semantics for that node.
-        // However, since we started from it, we come back after its earlyLine anyway so we can use the same formula as the other nodes
+        // However, since we started from it, we come back after its earlyLine anyway so we can use
+        // the same formula as the other nodes
 
-<span class="fc" id="L464">        double waitTime = timeWindows[decision.value()].waitTime(state.maxCurrentTime + travelTime);</span>
-<span class="fc" id="L465">        return travelTime + waitTime;</span>
+<span class="fc" id="L551">        double waitTime = timeWindows[decision.value()].waitTime(state.maxCurrentTime + travelTime);</span>
+<span class="fc" id="L552">        return travelTime + waitTime;</span>
     }
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
-<span class="fc" id="L470">        int vehicleContent = 0;</span>
-<span class="fc" id="L471">        double currentTime = timeWindows[0].start();</span>
-<span class="fc" id="L472">        int prevNode = 0;</span>
-<span class="fc bfc" id="L473" title="All 2 branches covered.">        for (int i = 0; i &lt; solution.length - 1; i++) { //zero is in the solution as well</span>
-<span class="fc bfc" id="L474" title="All 2 branches covered.">            if (pickupToAssociatedDelivery.containsKey(solution[i])) {</span>
-<span class="fc" id="L475">                vehicleContent += 1;</span>
-<span class="fc bfc" id="L476" title="All 2 branches covered.">            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {</span>
-<span class="fc" id="L477">                vehicleContent -= 1;</span>
+<span class="fc" id="L557">        int vehicleContent = 0;</span>
+<span class="fc" id="L558">        double currentTime = timeWindows[0].start();</span>
+<span class="fc" id="L559">        int prevNode = 0;</span>
+<span class="fc bfc" id="L560" title="All 2 branches covered.">        for (int i = 0; i &lt; solution.length - 1; i++) { // zero is in the solution as well</span>
+<span class="fc bfc" id="L561" title="All 2 branches covered.">            if (pickupToAssociatedDelivery.containsKey(solution[i])) {</span>
+<span class="fc" id="L562">                vehicleContent += 1;</span>
+<span class="fc bfc" id="L563" title="All 2 branches covered.">            } else if (deliveryToAssociatedPickup.containsKey(solution[i])) {</span>
+<span class="fc" id="L564">                vehicleContent -= 1;</span>
             }
-<span class="pc bpc" id="L479" title="1 of 2 branches missed.">            if (vehicleContent &gt; maxCapa) {</span>
-<span class="nc" id="L480">                throw new InvalidSolutionException(&quot;vehicleContent &gt; maxCapa&quot;);</span>
+<span class="pc bpc" id="L566" title="1 of 2 branches missed.">            if (vehicleContent &gt; maxCapa) {</span>
+<span class="nc" id="L567">                throw new InvalidSolutionException(&quot;vehicleContent &gt; maxCapa&quot;);</span>
             }
-<span class="fc" id="L482">            TimeWindow window = timeWindows[solution[i]];</span>
-<span class="fc" id="L483">            currentTime += timeMatrix[prevNode][solution[i]];</span>
-<span class="pc bpc" id="L484" title="1 of 2 branches missed.">            if (currentTime &gt; window.end()) {</span>
-<span class="nc" id="L485">                System.out.println(&quot;currentTime:&quot; + currentTime + &quot; node:&quot; + solution[i] + &quot; trw:&quot; + window);</span>
-<span class="nc" id="L486">                throw new InvalidSolutionException(&quot;after deadline&quot;);</span>
+<span class="fc" id="L569">            TimeWindow window = timeWindows[solution[i]];</span>
+<span class="fc" id="L570">            currentTime += timeMatrix[prevNode][solution[i]];</span>
+<span class="pc bpc" id="L571" title="1 of 2 branches missed.">            if (currentTime &gt; window.end()) {</span>
+<span class="nc" id="L572">                System.out.println(</span>
+                        &quot;currentTime:&quot; + currentTime + &quot; node:&quot; + solution[i] + &quot; trw:&quot; + window);
+<span class="nc" id="L574">                throw new InvalidSolutionException(&quot;after deadline&quot;);</span>
             }
-<span class="fc bfc" id="L488" title="All 2 branches covered.">            if (currentTime &lt;= window.start()) {</span>
-<span class="fc" id="L489">                currentTime = window.start();</span>
+<span class="fc bfc" id="L576" title="All 2 branches covered.">            if (currentTime &lt;= window.start()) {</span>
+<span class="fc" id="L577">                currentTime = window.start();</span>
             }
-<span class="fc" id="L491">            prevNode = solution[i];</span>
+<span class="fc" id="L579">            prevNode = solution[i];</span>
         }
-<span class="fc" id="L493">        currentTime += timeMatrix[solution[solution.length - 2]][0]; //final come back</span>
-<span class="pc bpc" id="L494" title="1 of 2 branches missed.">        if (currentTime &gt; timeWindows[0].end()) {</span>
-<span class="nc" id="L495">            System.out.println(&quot;currentTime:&quot; + currentTime + &quot; come back ToZero trw:&quot; + timeWindows[0]);</span>
-<span class="nc" id="L496">            throw new InvalidSolutionException(&quot;comes back after deadline&quot;);</span>
+<span class="fc" id="L581">        currentTime += timeMatrix[solution[solution.length - 2]][0]; // final come back</span>
+<span class="pc bpc" id="L582" title="1 of 2 branches missed.">        if (currentTime &gt; timeWindows[0].end()) {</span>
+<span class="nc" id="L583">            System.out.println(</span>
+                    &quot;currentTime:&quot; + currentTime + &quot; come back ToZero trw:&quot; + timeWindows[0]);
+<span class="nc" id="L585">            throw new InvalidSolutionException(&quot;comes back after deadline&quot;);</span>
         }
-<span class="pc bpc" id="L498" title="1 of 2 branches missed.">        if (vehicleContent != 0) {</span>
-<span class="nc" id="L499">            throw new InvalidSolutionException(&quot;non empty at the end&quot;);</span>
+<span class="pc bpc" id="L587" title="1 of 2 branches missed.">        if (vehicleContent != 0) {</span>
+<span class="nc" id="L588">            throw new InvalidSolutionException(&quot;non empty at the end&quot;);</span>
         }
-<span class="fc" id="L501">        return currentTime;</span>
+<span class="fc" id="L590">        return currentTime;</span>
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L506">        String str = &quot;PDPTWProblem(\n\tn:&quot; + n + &quot;\n&quot; +</span>
-                &quot;\taKnownSolutionValue:&quot; + aKnownSolutionValue + &quot;\n&quot; +
-<span class="fc" id="L508">                &quot;\tpdp:&quot; + pickupToAssociatedDelivery.keySet().stream().map(p -&gt; p + &quot;-&gt;&quot; + pickupToAssociatedDelivery.get(p)).toList() + &quot;\n&quot; +</span>
-                &quot;\tmaxCapa:&quot; + maxCapa + &quot;\n&quot; +
-<span class="fc" id="L510">                &quot;\tunrelated:&quot; + unrelatedNodes.stream().toList() + &quot;\n&quot; +</span>
-<span class="fc" id="L511">                &quot;\ttimeWindows&quot; + Arrays.stream(timeWindows).map(l -&gt; &quot;\n\t &quot; + l).toList() + &quot;\n&quot; +</span>
-<span class="fc" id="L512">                &quot;\t&quot; + Arrays.stream(timeMatrix).map(l -&gt; &quot;\n\t &quot; + Arrays.toString(l)).toList();</span>
+<span class="fc" id="L595">        String str =</span>
+                &quot;PDPTWProblem(\n\tn:&quot;
+                        + n
+                        + &quot;\n&quot;
+                        + &quot;\taKnownSolutionValue:&quot;
+                        + knownSolutionValue
+                        + &quot;\n&quot;
+                        + &quot;\tpdp:&quot;
+<span class="fc" id="L603">                        + pickupToAssociatedDelivery.keySet().stream()</span>
+<span class="fc" id="L604">                                .map(p -&gt; p + &quot;-&gt;&quot; + pickupToAssociatedDelivery.get(p))</span>
+<span class="fc" id="L605">                                .toList()</span>
+                        + &quot;\n&quot;
+                        + &quot;\tmaxCapa:&quot;
+                        + maxCapa
+                        + &quot;\n&quot;
+                        + &quot;\tunrelated:&quot;
+<span class="fc" id="L611">                        + unrelatedNodes.stream().toList()</span>
+                        + &quot;\n&quot;
+                        + &quot;\ttimeWindows&quot;
+<span class="fc" id="L614">                        + Arrays.stream(timeWindows).map(l -&gt; &quot;\n\t &quot; + l).toList()</span>
+                        + &quot;\n&quot;
+                        + &quot;\t&quot;
+<span class="fc" id="L617">                        + Arrays.stream(timeMatrix).map(l -&gt; &quot;\n\t &quot; + Arrays.toString(l)).toList();</span>
 
-<span class="fc" id="L514">        return name.orElse(str);</span>
+<span class="fc" id="L619">        return name.orElse(str);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

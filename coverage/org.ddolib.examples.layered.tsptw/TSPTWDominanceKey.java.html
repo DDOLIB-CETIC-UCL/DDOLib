@@ -5,27 +5,20 @@ import java.util.BitSet;
 /**
  * Key used for dominance checking in the Traveling Salesman Problem with Time Windows (TSPTW).
  *
- * &lt;p&gt;
- * A {@link TSPTWDominanceKey} uniquely identifies a group of states that share the same
- * current position {@code p} and the same set of locations that still must be visited
- * ({@code mustVisit}). It is used by {@link TSPTWDominance} to determine which states
- * can be compared for dominance.
- * &lt;/p&gt;
+ * &lt;p&gt;A {@link TSPTWDominanceKey} uniquely identifies a group of states that share the same current
+ * position {@code p} and the same set of locations that still must be visited ({@code mustVisit}).
+ * It is used by {@link TSPTWDominance} to determine which states can be compared for dominance.
  *
- * &lt;p&gt;
- * Two states with the same dominance key are comparable: the state with the lower
- * current time dominates the other, allowing pruning in the search.
- * &lt;/p&gt;
+ * &lt;p&gt;Two states with the same dominance key are comparable: the state with the lower current time
+ * dominates the other, allowing pruning in the search.
  *
- * @param p         the current position in the tour
+ * @param p the current position in the tour
  * @param mustVisit the set of locations that must still be visited
  */
-<span class="fc" id="L23">public record TSPTWDominanceKey(Position p, BitSet mustVisit) {</span>
+<span class="fc" id="L18">public record TSPTWDominanceKey(Position p, BitSet mustVisit) {</span>
     @Override
     public String toString() {
-<span class="nc" id="L26">        return String.format(&quot;position: %s - must visit: %s&quot;,</span>
-                p,
-                mustVisit);
+<span class="nc" id="L21">        return String.format(&quot;position: %s - must visit: %s&quot;, p, mustVisit);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

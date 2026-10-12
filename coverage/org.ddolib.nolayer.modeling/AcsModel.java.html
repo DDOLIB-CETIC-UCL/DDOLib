@@ -4,26 +4,25 @@ import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
- * Defines the structure of an optimization model solved using the
- * &lt;b&gt;Anytime Column Search (ACS)&lt;/b&gt; algorithm within the
- * Decision Diagram Optimization (DDO) framework using the NoLayer API.
+ * Defines the structure of an optimization model solved using the &lt;b&gt;Anytime Column Search
+ * (ACS)&lt;/b&gt; algorithm within the Decision Diagram Optimization (DDO) framework using the NoLayer
+ * API.
  *
  * @param &lt;T&gt; the type representing the state of the problem
  */
 public interface AcsModel&lt;T&gt; extends Model&lt;T&gt; {
 
     /**
-     * Returns the default column width used for formatted output during
-     * the Anytime Column Search process.
-     * &lt;p&gt;
-     * This parameter is primarily used for visual alignment of
-     * intermediate results or search statistics in console or file outputs.
-     * &lt;/p&gt;
+     * Returns the default column width used for formatted output during the Anytime Column Search
+     * process.
+     *
+     * &lt;p&gt;This parameter is primarily used for visual alignment of intermediate results or search
+     * statistics in console or file outputs.
      *
      * @return the default column width, in characters (default is {@code 5})
      */
     default int columnWidth() {
-<span class="fc" id="L26">        return 5;</span>
+<span class="fc" id="L25">        return 5;</span>
     }
 
     /**
@@ -33,7 +32,7 @@ public interface AcsModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a copy of this model but with another column width
      */
     default AcsModel&lt;T&gt; setColumnWidth(int width) {
-<span class="nc" id="L36">        return new AcsModel&lt;T&gt;() {</span>
+<span class="nc" id="L35">        return new AcsModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return AcsModel.this.problem();

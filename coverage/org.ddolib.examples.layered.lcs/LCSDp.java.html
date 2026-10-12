@@ -3,8 +3,8 @@
 import java.util.Arrays;
 
 /**
- * Naive DP solver the 2-strings longest common subsequence problem, used
- * to build a heuristic for the m-strings problem.
+ * Naive DP solver the 2-strings longest common subsequence problem, used to build a heuristic for
+ * the m-strings problem.
  */
 public class LCSDp {
     int charNb;
@@ -18,8 +18,8 @@ public class LCSDp {
 <span class="fc" id="L18">    }</span>
 
     /**
-     * Solves the 2-strings LCS problem using a naive DP method.
-     * Initiates the matrix and calls the heuristic.
+     * Solves the 2-strings LCS problem using a naive DP method. Initiates the matrix and calls the
+     * heuristic.
      *
      * @return a Matrix containing the remaining LCS length based on the position in the strings
      */
@@ -39,20 +39,21 @@ public class LCSDp {
 <span class="fc bfc" id="L39" title="All 2 branches covered.">        for (int j = 0; j &lt;= s2.length; j++) {</span>
 <span class="fc" id="L40">            table[s1.length][j] = 0;</span>
         }
-<span class="fc" id="L42">        _solve(table, 0, 0);</span>
+<span class="fc" id="L42">        solveFrom(table, 0, 0);</span>
 <span class="fc" id="L43">        return table;</span>
     }
 
-    int _solve(int[][] table, int i, int j) {
-<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (table[i][j] != -1) return table[i][j];</span>
-
+    int solveFrom(int[][] table, int i, int j) {
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        if (table[i][j] != -1) {</span>
+<span class="fc" id="L48">            return table[i][j];</span>
+        }
 
         // Max of (below, right, current + 1 (if same id))
-<span class="fc" id="L51">        table[i][j] =</span>
-<span class="fc" id="L52">                Math.max(</span>
-<span class="fc" id="L53">                        Math.max(_solve(table, i + 1, j), _solve(table, i, j + 1)),</span>
-<span class="fc bfc" id="L54" title="All 2 branches covered.">                        _solve(table, i + 1, j + 1) + ((s1[i] == s2[j]) ? 1 : 0));</span>
-<span class="fc" id="L55">        return table[i][j];</span>
+<span class="fc" id="L52">        table[i][j] =</span>
+<span class="fc" id="L53">                Math.max(</span>
+<span class="fc" id="L54">                        Math.max(solveFrom(table, i + 1, j), solveFrom(table, i, j + 1)),</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                        solveFrom(table, i + 1, j + 1) + ((s1[i] == s2[j]) ? 1 : 0));</span>
+<span class="fc" id="L56">        return table[i][j];</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

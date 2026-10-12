@@ -3,24 +3,23 @@
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 
 /**
- * Defines the abstraction of a &lt;b&gt;frontier&lt;/b&gt; (or &lt;em&gt;open list&lt;/em&gt;) used by solvers
- * to manage and prioritize the remaining subproblems that must be explored.
- * &lt;p&gt;
- * In a Decision Diagram (DD) or branch-and-bound framework, the frontier represents
- * the set of &lt;em&gt;active subproblems&lt;/em&gt;—those that have been generated but not yet
- * expanded or solved. Each subproblem corresponds to a node in the search or DD
- * exploration tree.
- * &lt;/p&gt;
+ * Defines the abstraction of a &lt;b&gt;frontier&lt;/b&gt; (or &lt;em&gt;open list&lt;/em&gt;) used by solvers to manage
+ * and prioritize the remaining subproblems that must be explored.
  *
- * &lt;p&gt;Implementations of this interface define how the solver selects the next node to explore.
- * The typical behavior is to always extract the most promising node (the one with the
- * highest bound on the objective function) to maximize pruning efficiency.&lt;/p&gt;
+ * &lt;p&gt;In a Decision Diagram (DD) or branch-and-bound framework, the frontier represents the set of
+ * &lt;em&gt;active subproblems&lt;/em&gt;—those that have been generated but not yet expanded or solved. Each
+ * subproblem corresponds to a node in the search or DD exploration tree.
+ *
+ * &lt;p&gt;Implementations of this interface define how the solver selects the next node to explore. The
+ * typical behavior is to always extract the most promising node (the one with the highest bound on
+ * the objective function) to maximize pruning efficiency.
  *
  * &lt;h2&gt;Contract:&lt;/h2&gt;
+ *
  * &lt;ul&gt;
- *   &lt;li&gt;Nodes (&lt;em&gt;subproblems&lt;/em&gt;) are pushed into the frontier using {@link #push(SubProblem)}.&lt;/li&gt;
- *   &lt;li&gt;Nodes are extracted in &lt;b&gt;descending order of upper bound value&lt;/b&gt; using {@link #pop()}.&lt;/li&gt;
- *   &lt;li&gt;Implementations must maintain this priority invariant to ensure correct solver behavior.&lt;/li&gt;
+ *   &lt;li&gt;Nodes (&lt;em&gt;subproblems&lt;/em&gt;) are pushed into the frontier using {@link #push(SubProblem)}.
+ *   &lt;li&gt;Nodes are extracted in &lt;b&gt;descending order of upper bound value&lt;/b&gt; using {@link #pop()}.
+ *   &lt;li&gt;Implementations must maintain this priority invariant to ensure correct solver behavior.
  * &lt;/ul&gt;
  *
  * @param &lt;T&gt; the type representing the problem state stored in each {@link SubProblem}
@@ -30,10 +29,9 @@ import org.ddolib.layered.solving.ddo.core.SubProblem;
 public interface Frontier&lt;T&gt; {
     /**
      * Adds a new subproblem to the frontier for future exploration.
-     * &lt;p&gt;
-     * This method inserts a node into the internal priority structure of the frontier
-     * (e.g., a priority queue ordered by the subproblem’s upper bound or heuristic value).
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;This method inserts a node into the internal priority structure of the frontier (e.g., a
+     * priority queue ordered by the subproblem’s upper bound or heuristic value).
      *
      * @param sub the subproblem to be added to the frontier
      */
@@ -41,12 +39,11 @@ public interface Frontier&lt;T&gt; {
 
     /**
      * Extracts and returns the most promising subproblem from the frontier.
-     * &lt;p&gt;
-     * The solver assumes that subproblems are popped in &lt;b&gt;descending order of upper bound&lt;/b&gt;,
-     * i.e., the node with the best potential objective value should be returned first.
-     * &lt;/p&gt;
      *
-     * &lt;p&gt;If the frontier is empty, this method may return {@code null}.&lt;/p&gt;
+     * &lt;p&gt;The solver assumes that subproblems are popped in &lt;b&gt;descending order of upper bound&lt;/b&gt;,
+     * i.e., the node with the best potential objective value should be returned first.
+     *
+     * &lt;p&gt;If the frontier is empty, this method may return {@code null}.
      *
      * @return the subproblem with the highest priority in the frontier, or {@code null} if empty
      */
@@ -54,10 +51,9 @@ public interface Frontier&lt;T&gt; {
 
     /**
      * Removes all subproblems currently stored in the frontier.
-     * &lt;p&gt;
-     * This operation resets the internal structure and is typically used when restarting
-     * a search or reinitializing the solver.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;This operation resets the internal structure and is typically used when restarting a
+     * search or reinitializing the solver.
      */
     void clear();
 
@@ -70,12 +66,10 @@ public interface Frontier&lt;T&gt; {
 
     /**
      * Returns the type of cut set associated with this frontier.
-     * &lt;p&gt;
-     * The cut set type determines the strategy used to define which nodes belong
-     * to the frontier (e.g., {@link CutSetType#LastExactLayer} or
-     * {@link CutSetType#Frontier}). This affects how the solver manages layers
-     * during compilation.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;The cut set type determines the strategy used to define which nodes belong to the frontier
+     * (e.g., {@link CutSetType#LastExactLayer} or {@link CutSetType#Frontier}). This affects how
+     * the solver manages layers during compilation.
      *
      * @return the {@link CutSetType} representing the frontier strategy
      */
@@ -83,26 +77,24 @@ public interface Frontier&lt;T&gt; {
 
     /**
      * Checks whether the frontier is empty.
-     * &lt;p&gt;
-     * This default implementation returns {@code true} if {@link #size()} is zero.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;This default implementation returns {@code true} if {@link #size()} is zero.
      *
      * @return {@code true} if the frontier contains no subproblems; {@code false} otherwise
      */
     default boolean isEmpty() {
-<span class="fc bfc" id="L93" title="All 2 branches covered.">        return size() == 0;</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        return size() == 0;</span>
     }
 
     /**
      * Returns the current &lt;b&gt;best upper bound&lt;/b&gt; among all subproblems stored in the frontier.
-     * &lt;p&gt;
-     * The &quot;best&quot; bound depends on the problem type (e.g., maximum upper bound for minimization
-     * problems). This method is generally used by the solver to monitor convergence or
-     * update global bounds.
-     * &lt;/p&gt;
      *
-     * &lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; Implementations should throw an exception if this method is called
-     * when the frontier is empty.&lt;/p&gt;
+     * &lt;p&gt;The &quot;best&quot; bound depends on the problem type (e.g., maximum upper bound for minimization
+     * problems). This method is generally used by the solver to monitor convergence or update
+     * global bounds.
+     *
+     * &lt;p&gt;&lt;b&gt;Note:&lt;/b&gt; Implementations should throw an exception if this method is called when the
+     * frontier is empty.
      *
      * @return the best upper bound value among subproblems in the frontier
      * @throws IllegalStateException if the frontier is empty

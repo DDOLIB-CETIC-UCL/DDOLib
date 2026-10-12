@@ -3,22 +3,17 @@
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 
 /**
- * Heuristic for computing the width of a layer in the dynamic programming model
- * for the Traveling Salesman Problem with Time Windows (TSPTW).
- * &lt;p&gt;
- * The width represents the maximum number of states to keep at a given layer.
- * It is computed based on the number of variables, the current depth, and a user-defined factor.
- * &lt;/p&gt;
+ * Heuristic for computing the width of a layer in the dynamic programming model for the Traveling
+ * Salesman Problem with Time Windows (TSPTW).
+ *
+ * &lt;p&gt;The width represents the maximum number of states to keep at a given layer. It is computed
+ * based on the number of variables, the current depth, and a user-defined factor.
  */
 public class TSPTWWidth implements WidthHeuristic&lt;TSPTWState&gt; {
-    /**
-     * Number of variables/nodes in the TSPTW problem.
-     */
+    /** Number of variables/nodes in the TSPTW problem. */
     private final int nbVars;
 
-    /**
-     * Factor to scale the width.
-     */
+    /** Factor to scale the width. */
     private final int factor;
 
     /**
@@ -27,24 +22,23 @@ public class TSPTWWidth implements WidthHeuristic&lt;TSPTWState&gt; {
      * @param nbVars the number of variables/nodes in the problem
      * @param factor a scaling factor for the width calculation
      */
-<span class="nc" id="L30">    public TSPTWWidth(int nbVars, int factor) {</span>
-<span class="nc" id="L31">        this.nbVars = nbVars;</span>
-<span class="nc" id="L32">        this.factor = factor;</span>
-<span class="nc" id="L33">    }</span>
+<span class="nc" id="L25">    public TSPTWWidth(int nbVars, int factor) {</span>
+<span class="nc" id="L26">        this.nbVars = nbVars;</span>
+<span class="nc" id="L27">        this.factor = factor;</span>
+<span class="nc" id="L28">    }</span>
 
     /**
      * Computes the maximum width of a layer based on the current state.
-     * &lt;p&gt;
-     * The width is calculated as: (depth + 1) * nbVars * factor.
-     * This allows the width to grow with the depth of the state in the DP model.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;The width is calculated as: (depth + 1) * nbVars * factor. This allows the width to grow
+     * with the depth of the state in the DP model.
      *
      * @param state the state for which to compute the layer width
      * @return the maximum number of states to keep at this layer
      */
     @Override
     public int maximumWidth(TSPTWState state) {
-<span class="nc" id="L47">        return (state.depth() + 1) * nbVars * factor;</span>
+<span class="nc" id="L41">        return (state.depth() + 1) * nbVars * factor;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

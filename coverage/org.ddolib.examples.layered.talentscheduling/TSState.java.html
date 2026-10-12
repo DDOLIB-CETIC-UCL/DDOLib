@@ -5,37 +5,36 @@ import java.util.BitSet;
 /**
  * Represents a state in the Talent Scheduling Problem (TalentSched).
  *
- * &lt;p&gt;
- * A state keeps track of:
- * &lt;/p&gt;
+ * &lt;p&gt;A state keeps track of:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt;{@code remainingScenes} — a {@link BitSet} containing all scenes that still need to be scheduled.&lt;/li&gt;
- *     &lt;li&gt;{@code maybeScenes} — a {@link BitSet} used in merged or relaxed states, containing scenes that may need to be scheduled in some merged branches but have already been scheduled in others.&lt;/li&gt;
- *     &lt;li&gt;{@code onLocationActors} — a {@link BitSet} representing which actors are currently on location.&lt;/li&gt;
+ *   &lt;li&gt;{@code remainingScenes} — a {@link BitSet} containing all scenes that still need to be
+ *       scheduled.
+ *   &lt;li&gt;{@code maybeScenes} — a {@link BitSet} used in merged or relaxed states, containing scenes
+ *       that may need to be scheduled in some merged branches but have already been scheduled in
+ *       others.
+ *   &lt;li&gt;{@code onLocationActors} — a {@link BitSet} representing which actors are currently on
+ *       location.
  * &lt;/ul&gt;
  *
+ * &lt;p&gt;The combination of {@code remainingScenes} and {@code maybeScenes} allows the solver to
+ * represent both definite and potential scheduling decisions in relaxed or merged states. The
+ * {@code onLocationActors} field helps track actor availability for scene scheduling.
  *
- * &lt;p&gt;
- * The combination of {@code remainingScenes} and {@code maybeScenes} allows the solver
- * to represent both definite and potential scheduling decisions in relaxed or merged states.
- * The {@code onLocationActors} field helps track actor availability for scene scheduling.
- * &lt;/p&gt;
- *
- * &lt;p&gt;
- * This record is typically used in decision diagram-based solvers, branch-and-bound, or
+ * &lt;p&gt;This record is typically used in decision diagram-based solvers, branch-and-bound, or
  * relaxation algorithms for the TSP.
- * &lt;/p&gt;
  *
- * @param remainingScenes  scenes that must still be scheduled
- * @param maybeScenes      scenes that may still be scheduled due to state merging
+ * @param remainingScenes scenes that must still be scheduled
+ * @param maybeScenes scenes that may still be scheduled due to state merging
  * @param onLocationActors actors currently available on location
  */
-<span class="fc" id="L33">public record TSState(BitSet remainingScenes, BitSet maybeScenes, BitSet onLocationActors) {</span>
-
+<span class="fc" id="L31">public record TSState(BitSet remainingScenes, BitSet maybeScenes, BitSet onLocationActors) {</span>
 
     @Override
     public String toString() {
-<span class="fc" id="L38">        return String.format(&quot;Remaining: %s - Maybe: %s - On location actors: %s&quot;, remainingScenes.toString(), maybeScenes.toString(), onLocationActors.toString());</span>
+<span class="fc" id="L35">        return String.format(</span>
+                &quot;Remaining: %s - Maybe: %s - On location actors: %s&quot;,
+<span class="fc" id="L37">                remainingScenes.toString(), maybeScenes.toString(), onLocationActors.toString());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

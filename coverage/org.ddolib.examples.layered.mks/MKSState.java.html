@@ -3,17 +3,14 @@
 import java.util.Arrays;
 
 /**
- * Represents the state of a multi-dimensional Knapsack problem (MKS) in terms of
- * the remaining capacities of each knapsack dimension.
+ * Represents the state of a multi-dimensional Knapsack problem (MKS) in terms of the remaining
+ * capacities of each knapsack dimension.
  *
- * &lt;p&gt;
- * This class encapsulates the capacities as a double array and provides standard
- * methods for cloning, equality checking, and string representation.
+ * &lt;p&gt;This class encapsulates the capacities as a double array and provides standard methods for
+ * cloning, equality checking, and string representation.
  */
-<span class="fc" id="L13">public class MKSState {</span>
-    /**
-     * Remaining capacities of each knapsack dimension.
-     */
+<span class="fc" id="L12">public class MKSState {</span>
+    /** Remaining capacities of each knapsack dimension. */
     double[] capacities;
 
     /**
@@ -21,9 +18,9 @@ import java.util.Arrays;
      *
      * @param capacities an array representing the remaining capacities of each knapsack dimension
      */
-<span class="fc" id="L24">    public MKSState(double[] capacities) {</span>
-<span class="fc" id="L25">        this.capacities = capacities;</span>
-<span class="fc" id="L26">    }</span>
+<span class="fc" id="L21">    public MKSState(double[] capacities) {</span>
+<span class="fc" id="L22">        this.capacities = capacities;</span>
+<span class="fc" id="L23">    }</span>
 
     /**
      * Creates a deep copy of this state.
@@ -32,7 +29,7 @@ import java.util.Arrays;
      */
     @Override
     public MKSState clone() {
-<span class="nc" id="L35">        return new MKSState(capacities.clone());</span>
+<span class="nc" id="L32">        return new MKSState(capacities.clone());</span>
     }
 
     /**
@@ -42,7 +39,7 @@ import java.util.Arrays;
      */
     @Override
     public String toString() {
-<span class="fc" id="L45">        return Arrays.toString(capacities);</span>
+<span class="fc" id="L42">        return Arrays.toString(capacities);</span>
     }
 
     /**
@@ -52,20 +49,20 @@ import java.util.Arrays;
      */
     @Override
     public int hashCode() {
-<span class="fc" id="L55">        return Arrays.hashCode(capacities);</span>
+<span class="fc" id="L52">        return Arrays.hashCode(capacities);</span>
     }
 
     /**
      * Compares this state to another object for equality.
      *
      * @param o the object to compare with
-     * @return {@code true} if {@code o} is an MKSState and has identical capacities; {@code false} otherwise
+     * @return {@code true} if {@code o} is an MKSState and has identical capacities; {@code false}
+     *     otherwise
      */
     @Override
     public boolean equals(Object o) {
-<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        assert o instanceof MKSState;</span>
-<span class="fc" id="L67">        return Arrays.equals(capacities, ((MKSState) o).capacities);</span>
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        assert o instanceof MKSState;</span>
+<span class="fc" id="L65">        return Arrays.equals(capacities, ((MKSState) o).capacities);</span>
     }
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

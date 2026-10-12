@@ -4,27 +4,24 @@ import org.ddolib.layered.modeling.Dominance;
 
 /**
  * Dominance relation for the Knapsack Problem (KS).
- * &lt;p&gt;
- * This dominance checker is used to prune the search space in a decision diagram or
- * other solver by identifying states that are dominated and can therefore be discarded.
- * &lt;/p&gt;
- * &lt;p&gt;
- * In this implementation:
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;This dominance checker is used to prune the search space in a decision diagram or other solver
+ * by identifying states that are dominated and can therefore be discarded.
+ *
+ * &lt;p&gt;In this implementation:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt;{@link #getKey(Integer)} always returns 0, indicating a single dominance key for all states.&lt;/li&gt;
- *     &lt;li&gt;{@link #isDominatedOrEqual(Integer, Integer)} considers a state {@code capa1} dominated
- *     by {@code capa2} if {@code capa1 &lt;= capa2}, i.e., a knapsack state with less or equal remaining capacity
- *     is dominated by one with more remaining capacity.&lt;/li&gt;
+ *   &lt;li&gt;{@link #getKey(Integer)} always returns 0, indicating a single dominance key for all
+ *       states.
+ *   &lt;li&gt;{@link #isDominatedOrEqual(Integer, Integer)} considers a state {@code capa1} dominated by
+ *       {@code capa2} if {@code capa1 &lt;= capa2}, i.e., a knapsack state with less or equal
+ *       remaining capacity is dominated by one with more remaining capacity.
  * &lt;/ul&gt;
  */
 public class KSDominance implements Dominance&lt;Integer&gt; {
 
-    /**
-     * Creates a new instance of this dominance rule.
-     */
-<span class="fc" id="L26">    public KSDominance() {</span>
-<span class="fc" id="L27">    }</span>
+    /** Creates a new instance of this dominance rule. */
+<span class="fc" id="L24">    public KSDominance() {}</span>
 
     /**
      * Returns the key used for grouping states in the dominance checker.
@@ -34,7 +31,7 @@ public class KSDominance implements Dominance&lt;Integer&gt; {
      */
     @Override
     public Integer getKey(Integer capa) {
-<span class="fc" id="L37">        return 0;</span>
+<span class="fc" id="L34">        return 0;</span>
     }
 
     /**
@@ -46,7 +43,7 @@ public class KSDominance implements Dominance&lt;Integer&gt; {
      */
     @Override
     public boolean isDominatedOrEqual(Integer capa1, Integer capa2) {
-<span class="fc bfc" id="L49" title="All 2 branches covered.">        return capa1 &lt;= capa2;</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">        return capa1 &lt;= capa2;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

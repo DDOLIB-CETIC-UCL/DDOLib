@@ -4,12 +4,12 @@ import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 
 /**
- * Defines the structure of an optimization model solved using the
- * &lt;b&gt;Anytime Weighted A* (AWA*)&lt;/b&gt; algorithm within the no-layer framework.
- * &lt;p&gt;
- * The Anytime Weighted A* algorithm is derived from the A* algorithm. By adding a weight to
- * the heuristic function, it speeds up reaching a feasible solution, then incrementally
- * improves the best solution found.
+ * Defines the structure of an optimization model solved using the &lt;b&gt;Anytime Weighted A* (AWA*)&lt;/b&gt;
+ * algorithm within the no-layer framework.
+ *
+ * &lt;p&gt;The Anytime Weighted A* algorithm is derived from the A* algorithm. By adding a weight to the
+ * heuristic function, it speeds up reaching a feasible solution, then incrementally improves the
+ * best solution found.
  *
  * @param &lt;T&gt; the type of states in the problem
  */
@@ -46,7 +46,6 @@ public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
             public NoLayerDominanceChecker&lt;T&gt; dominance() {
                 return AwAstarModel.this.dominance();
             }
-
 
             @Override
             public VerbosityLevel verbosityLevel() {

@@ -17,10 +17,9 @@ public interface NoLayerDominanceChecker&lt;T&gt; {
     boolean updateDominance(T state, double value);
 
     /**
-     * Clears the internally cached states used for dominance checking.
-     * This is useful to reset the checker's state between solver iterations.
+     * Clears the internally cached states used for dominance checking. This is useful to reset the
+     * checker's state between solver iterations.
      */
-    default void clear() {
-<span class="fc" id="L24">    }</span>
+<span class="fc" id="L23">    default void clear() {}</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

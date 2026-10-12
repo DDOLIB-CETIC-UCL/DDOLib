@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DistanceUtil.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.util</a> &gt; <span class="el_source">DistanceUtil.java</span></div><h1>DistanceUtil.java</h1><pre class="source lang-java linenums">package org.ddolib.common.util;
 
+import static java.lang.Math.max;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 import java.util.BitSet;
 
-import static java.lang.Math.*;
-
-/**
- * Utility methods for common distance metrics used by clustering and heuristics.
- */
+/** Utility methods for common distance metrics used by clustering and heuristics. */
 public class DistanceUtil {
 
     private DistanceUtil() {
@@ -36,8 +36,8 @@ public class DistanceUtil {
     /**
      * Computes the weighted Jaccard Distance between the two given sets.
      *
-     * @param a       the first set
-     * @param b       the second set
+     * @param a the first set
+     * @param b the second set
      * @param weights the weight of each element in a and b
      * @return the weighted Jaccard Distance between a and b
      */
@@ -78,7 +78,7 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the Euclidean Distance between the two given arrays of coordinates
+     * Computes the Euclidean Distance between the two given arrays of coordinates.
      *
      * @param a the first array
      * @param b the second array
@@ -95,7 +95,7 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the size of the symmetric difference between a and b
+     * Computes the size of the symmetric difference between a and b.
      *
      * @param a the first set
      * @param b the second set
@@ -108,10 +108,10 @@ public class DistanceUtil {
     }
 
     /**
-     * Computes the weighted symmetric difference between a and b
+     * Computes the weighted symmetric difference between a and b.
      *
-     * @param a       the first set
-     * @param b       the second set
+     * @param a the first set
+     * @param b the second set
      * @param weights the weight of each element in a and b
      * @return the weighted symmetric difference between a and b
      */

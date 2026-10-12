@@ -3,18 +3,12 @@
 import java.util.BitSet;
 import java.util.Objects;
 
-/**
- * Represents a state in the Traveling Salesman Problem (TSP) for nolayer models.
- */
+/** Represents a state in the Traveling Salesman Problem (TSP) for nolayer models. */
 public class TSPState {
-    /**
-     * Set of nodes that have not been visited yet.
-     */
+    /** Set of nodes that have not been visited yet. */
     public BitSet toVisit;
 
-    /**
-     * Current node(s). Usually a singleton, but can be multiple in merged states.
-     */
+    /** Current node(s). Usually a singleton, but can be multiple in merged states. */
     public BitSet current;
 
     /**
@@ -23,21 +17,25 @@ public class TSPState {
      * @param current the current node(s)
      * @param toVisit the nodes that have not yet been visited
      */
-<span class="fc" id="L26">    public TSPState(BitSet current, BitSet toVisit) {</span>
-<span class="fc" id="L27">        this.toVisit = toVisit;</span>
-<span class="fc" id="L28">        this.current = current;</span>
-<span class="fc" id="L29">    }</span>
+<span class="fc" id="L20">    public TSPState(BitSet current, BitSet toVisit) {</span>
+<span class="fc" id="L21">        this.toVisit = toVisit;</span>
+<span class="fc" id="L22">        this.current = current;</span>
+<span class="fc" id="L23">    }</span>
 
     @Override
     public int hashCode() {
-<span class="fc" id="L33">        return Objects.hash(toVisit, current);</span>
+<span class="fc" id="L27">        return Objects.hash(toVisit, current);</span>
     }
 
     @Override
     public boolean equals(Object obj) {
-<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if (this == obj) return true;</span>
-<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (!(obj instanceof TSPState that)) return false;</span>
-<span class="fc bfc" id="L40" title="All 4 branches covered.">        return (this.current.equals(that.current)) &amp;&amp; this.toVisit.equals(that.toVisit);</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        if (this == obj) {</span>
+<span class="nc" id="L33">            return true;</span>
+        }
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        if (!(obj instanceof TSPState that)) {</span>
+<span class="nc" id="L36">            return false;</span>
+        }
+<span class="fc bfc" id="L38" title="All 4 branches covered.">        return (this.current.equals(that.current)) &amp;&amp; this.toVisit.equals(that.toVisit);</span>
     }
 
     /**
@@ -47,17 +45,17 @@ public class TSPState {
      * @return a BitSet with a single bit set
      */
     public BitSet singleton(int singletonValue) {
-<span class="nc" id="L50">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
-<span class="nc" id="L51">        toReturn.set(singletonValue);</span>
-<span class="nc" id="L52">        return toReturn;</span>
+<span class="nc" id="L48">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="nc" id="L49">        toReturn.set(singletonValue);</span>
+<span class="nc" id="L50">        return toReturn;</span>
     }
 
     @Override
     public String toString() {
-<span class="pc bpc" id="L57" title="1 of 2 branches missed.">        if (current.cardinality() != 1) {</span>
-<span class="nc" id="L58">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">        if (current.cardinality() != 1) {</span>
+<span class="nc" id="L56">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
         } else {
-<span class="fc" id="L60">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+<span class="fc" id="L58">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
         }
     }
 }

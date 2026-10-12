@@ -6,13 +6,13 @@ import java.util.BitSet;
  * State for the NoLayer formulation of the Traveling Salesman Problem with Time Windows.
  *
  * @param currentCity the index of the current city the vehicle is located at
- * @param time        the current arrival time at the current city
- * @param mustVisit   the set of remaining cities that must be visited
+ * @param time the current arrival time at the current city
+ * @param mustVisit the set of remaining cities that must be visited
  */
 public record TSPTWState(int currentCity, int time, BitSet mustVisit) {
     /**
-     * Defensively copies {@code mustVisit} so the state cannot be mutated through a
-     * reference held outside the record.
+     * Defensively copies {@code mustVisit} so the state cannot be mutated through a reference held
+     * outside the record.
      */
 <span class="fc" id="L17">    public TSPTWState {</span>
 <span class="fc" id="L18">        mustVisit = (BitSet) mustVisit.clone();</span>
@@ -20,7 +20,8 @@ public record TSPTWState(int currentCity, int time, BitSet mustVisit) {
 
     @Override
     public String toString() {
-<span class="fc" id="L23">        return String.format(&quot;TSPTWState(currentCity=%d, time=%d, mustVisit=%s)&quot;, currentCity, time, mustVisit);</span>
+<span class="fc" id="L23">        return String.format(</span>
+<span class="fc" id="L24">                &quot;TSPTWState(currentCity=%d, time=%d, mustVisit=%s)&quot;, currentCity, time, mustVisit);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

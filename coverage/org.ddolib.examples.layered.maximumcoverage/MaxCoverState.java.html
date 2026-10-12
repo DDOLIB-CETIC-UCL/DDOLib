@@ -5,19 +5,17 @@ import java.util.BitSet;
 /**
  * Represents a state in the Maximum Coverage (MaxCover) problem.
  *
- * &lt;p&gt;
- * Each state tracks which items have been covered so far using a {@link BitSet}.
- * This is used in Decision Diagram Optimization (DDO) and other search or
- * combinatorial algorithms to evaluate partial solutions.
+ * &lt;p&gt;Each state tracks which items have been covered so far using a {@link BitSet}. This is used in
+ * Decision Diagram Optimization (DDO) and other search or combinatorial algorithms to evaluate
+ * partial solutions.
  *
- * &lt;p&gt;
- * The record is immutable: the set of covered items cannot be changed once
- * the state is created. Use state transitions in {@link MaxCoverProblem} to
- * generate new states with additional items covered.
+ * &lt;p&gt;The record is immutable: the set of covered items cannot be changed once the state is created.
+ * Use state transitions in {@link MaxCoverProblem} to generate new states with additional items
+ * covered.
  *
  * @param coveredItems a BitSet representing the items that are covered in this state
  */
-<span class="fc" id="L20">public record MaxCoverState(BitSet coveredItems) {</span>
+<span class="fc" id="L18">public record MaxCoverState(BitSet coveredItems) {</span>
     /**
      * Returns a string representation of the state.
      *
@@ -25,7 +23,7 @@ import java.util.BitSet;
      */
     @Override
     public String toString() {
-<span class="fc" id="L28">        return &quot;covered items &quot; + this.coveredItems();</span>
+<span class="fc" id="L26">        return &quot;covered items &quot; + this.coveredItems();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

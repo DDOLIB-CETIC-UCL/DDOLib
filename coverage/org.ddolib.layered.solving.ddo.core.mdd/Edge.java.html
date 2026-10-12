@@ -4,37 +4,32 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Represents an edge in a decision diagram that connects two nodes.
- * &lt;p&gt;
- * Each edge has a source node, an associated decision, and a weight.
- * It is used to represent transitions between nodes in a decision diagram.
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;Each edge has a source node, an associated decision, and a weight. It is used to represent
+ * transitions between nodes in a decision diagram.
  */
 public final class Edge {
-    /**
-     * The source node of this edge.
-     */
+    /** The source node of this edge. */
     public final Node origin;
-    /**
-     * The decision associated with this edge.
-     */
+
+    /** The decision associated with this edge. */
     public final Decision decision;
-    /**
-     * The weight of the edge.
-     */
+
+    /** The weight of the edge. */
     public double weight;
 
     /**
      * Creates a new edge connecting a source node with a decision and a weight.
      *
      * @param src the source node of the edge
-     * @param d   the decision taken to traverse this edge
-     * @param w   the weight of the edge
+     * @param d the decision taken to traverse this edge
+     * @param w the weight of the edge
      */
-<span class="fc" id="L33">    public Edge(final Node src, final Decision d, final double w) {</span>
-<span class="fc" id="L34">        this.origin = src;</span>
-<span class="fc" id="L35">        this.decision = d;</span>
-<span class="fc" id="L36">        this.weight = w;</span>
-<span class="fc" id="L37">    }</span>
+<span class="fc" id="L28">    public Edge(final Node src, final Decision d, final double w) {</span>
+<span class="fc" id="L29">        this.origin = src;</span>
+<span class="fc" id="L30">        this.decision = d;</span>
+<span class="fc" id="L31">        this.weight = w;</span>
+<span class="fc" id="L32">    }</span>
 
     /**
      * Returns a string representation of this edge, including origin, decision, and weight.
@@ -43,7 +38,7 @@ public final class Edge {
      */
     @Override
     public String toString() {
-<span class="nc" id="L46">        return String.format(&quot;Origin:%s\n\t Decision:%s\n\t Weight:%s &quot;, origin, decision, weight);</span>
+<span class="nc" id="L41">        return String.format(&quot;Origin:%s\n\t Decision:%s\n\t Weight:%s &quot;, origin, decision, weight);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -3,13 +3,12 @@
 import org.ddolib.nolayer.modeling.FastLowerBound;
 
 /**
- * Fast lower bound for the Traveling Salesman Problem with Time Windows (TSPTW), using
- * the no-layer modeling API.
- * &lt;p&gt;
- * The bound sums, for each city that still must be visited (plus the return to the origin),
- * the least-cost edge incident to that city. It ignores time windows and is therefore a
- * relaxation of the true remaining cost.
- * &lt;/p&gt;
+ * Fast lower bound for the Traveling Salesman Problem with Time Windows (TSPTW), using the no-layer
+ * modeling API.
+ *
+ * &lt;p&gt;The bound sums, for each city that still must be visited (plus the return to the origin), the
+ * least-cost edge incident to that city. It ignores time windows and is therefore a relaxation of
+ * the true remaining cost.
  */
 public class TSPTWFlb implements FastLowerBound&lt;TSPTWState&gt; {
 
@@ -20,31 +19,31 @@ public class TSPTWFlb implements FastLowerBound&lt;TSPTWState&gt; {
      *
      * @param problem the TSPTW instance to bound
      */
-<span class="nc" id="L23">    public TSPTWFlb(TSPTWProblem problem) {</span>
-<span class="nc" id="L24">        final int n = problem.nbVars;</span>
-<span class="nc" id="L25">        leastIncidentEdge = new double[n];</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
-<span class="nc" id="L27">            double min = Double.POSITIVE_INFINITY;</span>
-<span class="nc bnc" id="L28" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
-<span class="nc bnc" id="L29" title="All 2 branches missed.">                if (i != j) {</span>
-<span class="nc" id="L30">                    min = Math.min(min, problem.distance[i][j]);</span>
+<span class="nc" id="L22">    public TSPTWFlb(TSPTWProblem problem) {</span>
+<span class="nc" id="L23">        final int n = problem.nbVars;</span>
+<span class="nc" id="L24">        leastIncidentEdge = new double[n];</span>
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L26">            double min = Double.POSITIVE_INFINITY;</span>
+<span class="nc bnc" id="L27" title="All 2 branches missed.">            for (int j = 0; j &lt; n; j++) {</span>
+<span class="nc bnc" id="L28" title="All 2 branches missed.">                if (i != j) {</span>
+<span class="nc" id="L29">                    min = Math.min(min, problem.distance[i][j]);</span>
                 }
             }
-<span class="nc" id="L33">            leastIncidentEdge[i] = min;</span>
+<span class="nc" id="L32">            leastIncidentEdge[i] = min;</span>
         }
-<span class="nc" id="L35">    }</span>
+<span class="nc" id="L34">    }</span>
 
     @Override
     public double fastLowerBound(TSPTWState state) {
-<span class="nc bnc" id="L39" title="All 4 branches missed.">        if (state.mustVisit().isEmpty() &amp;&amp; state.currentCity() == 0) {</span>
-<span class="nc" id="L40">            return 0.0;</span>
+<span class="nc bnc" id="L38" title="All 4 branches missed.">        if (state.mustVisit().isEmpty() &amp;&amp; state.currentCity() == 0) {</span>
+<span class="nc" id="L39">            return 0.0;</span>
         }
-<span class="nc" id="L42">        var toVisit = state.mustVisit();</span>
-<span class="nc" id="L43">        double lb = leastIncidentEdge[0]; // for returning to origin</span>
-<span class="nc bnc" id="L44" title="All 2 branches missed.">        for (int i = toVisit.nextSetBit(0); i &gt;= 0; i = toVisit.nextSetBit(i + 1)) {</span>
-<span class="nc" id="L45">            lb += leastIncidentEdge[i];</span>
+<span class="nc" id="L41">        var toVisit = state.mustVisit();</span>
+<span class="nc" id="L42">        double lb = leastIncidentEdge[0]; // for returning to origin</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        for (int i = toVisit.nextSetBit(0); i &gt;= 0; i = toVisit.nextSetBit(i + 1)) {</span>
+<span class="nc" id="L44">            lb += leastIncidentEdge[i];</span>
         }
-<span class="nc" id="L47">        return lb;</span>
+<span class="nc" id="L46">        return lb;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -3,84 +3,104 @@
 import java.util.BitSet;
 import java.util.Objects;
 
-/**
- * State representation for the Pickup and Delivery Problem with Time Windows (PDPTW).
- */
+/** State representation for the Pickup and Delivery Problem with Time Windows (PDPTW). */
 public class PDPTWState {
 
     /**
      * Nodes that can currently be visited.
-     * &lt;p&gt;
-     * Includes all unvisited pickup nodes and all unvisited delivery nodes whose
-     * corresponding pickup node has already been visited.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;Includes all unvisited pickup nodes and all unvisited delivery nodes whose corresponding
+     * pickup node has already been visited.
      */
     BitSet openToVisit;
 
     /**
-     * All nodes that have not yet been visited, including those that cannot
-     * currently be visited due to pickup-delivery constraints.
+     * All nodes that have not yet been visited, including those that cannot currently be visited
+     * due to pickup-delivery constraints.
      */
     BitSet allToVisit;
 
     /**
      * The current node(s) of the vehicle.
-     * &lt;p&gt;
-     * Typically a singleton. In case of merged states (relaxation), it can contain multiple nodes.
-     * &lt;/p&gt;
+     *
+     * &lt;p&gt;Typically a singleton. In case of merged states (relaxation), it can contain multiple
+     * nodes.
      */
     BitSet current;
-    /**
-     * The minimum possible vehicle content (number of items) at this state.
-     */
+
+    /** The minimum possible vehicle content (number of items) at this state. */
     int minContent;
-    /**
-     * The maximum possible vehicle content (number of items) at this state.
-     */
+
+    /** The maximum possible vehicle content (number of items) at this state. */
     int maxContent;
 
-    /**
-     * The current time at this state, or earlier in case of fusion
-     */
+    /** The current time at this state, or earlier in case of fusion. */
     double minCurrentTime;
+
     double maxCurrentTime;
 
     /**
      * Builds a PDPTW state with interval-valued content/time information.
      *
-     * @param current        current node(s)
-     * @param openToVisit    currently reachable unvisited nodes
-     * @param allToVisit     all remaining unvisited nodes
-     * @param minContent     lower bound on vehicle load
-     * @param maxContent     upper bound on vehicle load
+     * @param current current node(s)
+     * @param openToVisit currently reachable unvisited nodes
+     * @param allToVisit all remaining unvisited nodes
+     * @param minContent lower bound on vehicle load
+     * @param maxContent upper bound on vehicle load
      * @param minCurrentTime lower bound on current time
      * @param maxCurrentTime upper bound on current time
      */
-<span class="fc" id="L59">    public PDPTWState(BitSet current, BitSet openToVisit, BitSet allToVisit, int minContent, int maxContent, double minCurrentTime, double maxCurrentTime) {</span>
-<span class="fc" id="L60">        this.openToVisit = openToVisit;</span>
-<span class="fc" id="L61">        this.allToVisit = allToVisit;</span>
-<span class="fc" id="L62">        this.current = current;</span>
-<span class="fc" id="L63">        this.minContent = minContent;</span>
-<span class="fc" id="L64">        this.maxContent = maxContent;</span>
-<span class="fc" id="L65">        this.minCurrentTime = minCurrentTime;</span>
-<span class="fc" id="L66">        this.maxCurrentTime = maxCurrentTime;</span>
-<span class="fc" id="L67">    }</span>
+    public PDPTWState(
+            BitSet current,
+            BitSet openToVisit,
+            BitSet allToVisit,
+            int minContent,
+            int maxContent,
+            double minCurrentTime,
+<span class="fc" id="L60">            double maxCurrentTime) {</span>
+<span class="fc" id="L61">        this.openToVisit = openToVisit;</span>
+<span class="fc" id="L62">        this.allToVisit = allToVisit;</span>
+<span class="fc" id="L63">        this.current = current;</span>
+<span class="fc" id="L64">        this.minContent = minContent;</span>
+<span class="fc" id="L65">        this.maxContent = maxContent;</span>
+<span class="fc" id="L66">        this.minCurrentTime = minCurrentTime;</span>
+<span class="fc" id="L67">        this.maxCurrentTime = maxCurrentTime;</span>
+<span class="fc" id="L68">    }</span>
 
+    @Override
     public int hashCode() {
-<span class="fc" id="L70">        return Objects.hash(openToVisit, allToVisit,</span>
-<span class="fc" id="L71">                current, minContent, maxContent, minCurrentTime, maxCurrentTime);</span>
+<span class="fc" id="L72">        return Objects.hash(</span>
+                openToVisit,
+                allToVisit,
+                current,
+<span class="fc" id="L76">                minContent,</span>
+<span class="fc" id="L77">                maxContent,</span>
+<span class="fc" id="L78">                minCurrentTime,</span>
+<span class="fc" id="L79">                maxCurrentTime);</span>
     }
 
     @Override
     public boolean equals(Object obj) {
-<span class="fc" id="L76">        PDPTWState that = (PDPTWState) obj;</span>
-<span class="fc bfc" id="L77" title="All 2 branches covered.">        if (this.minContent != that.minContent) return false;</span>
-<span class="pc bpc" id="L78" title="1 of 2 branches missed.">        if (this.maxContent != that.maxContent) return false;</span>
-<span class="fc bfc" id="L79" title="All 2 branches covered.">        if (this.minCurrentTime != that.minCurrentTime) return false;</span>
-<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (this.maxCurrentTime != that.maxCurrentTime) return false;</span>
-<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        if (!that.current.equals(this.current)) return false;</span>
-<span class="pc bpc" id="L82" title="1 of 2 branches missed.">        if (!that.openToVisit.equals(this.openToVisit)) return false;</span>
-<span class="fc" id="L83">        return (that.allToVisit.equals(this.allToVisit));</span>
+<span class="fc" id="L84">        PDPTWState that = (PDPTWState) obj;</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">        if (this.minContent != that.minContent) {</span>
+<span class="fc" id="L86">            return false;</span>
+        }
+<span class="pc bpc" id="L88" title="1 of 2 branches missed.">        if (this.maxContent != that.maxContent) {</span>
+<span class="nc" id="L89">            return false;</span>
+        }
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (this.minCurrentTime != that.minCurrentTime) {</span>
+<span class="fc" id="L92">            return false;</span>
+        }
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (this.maxCurrentTime != that.maxCurrentTime) {</span>
+<span class="nc" id="L95">            return false;</span>
+        }
+<span class="pc bpc" id="L97" title="1 of 2 branches missed.">        if (!that.current.equals(this.current)) {</span>
+<span class="nc" id="L98">            return false;</span>
+        }
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">        if (!that.openToVisit.equals(this.openToVisit)) {</span>
+<span class="nc" id="L101">            return false;</span>
+        }
+<span class="fc" id="L103">        return (that.allToVisit.equals(this.allToVisit));</span>
     }
 
     /**
@@ -90,44 +110,60 @@ public class PDPTWState {
      * @return a new {@link BitSet} with only {@code singletonValue} set
      */
     public BitSet singleton(int singletonValue) {
-<span class="fc" id="L93">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
-<span class="fc" id="L94">        toReturn.set(singletonValue);</span>
-<span class="fc" id="L95">        return toReturn;</span>
+<span class="fc" id="L113">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="fc" id="L114">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L115">        return toReturn;</span>
     }
 
     /**
-     * Formats a possibly imprecise value as either a single number, when {@code min}
-     * and {@code max} are equal, or as an interval {@code [min;max]} otherwise.
+     * Formats a possibly imprecise value as either a single number, when {@code min} and {@code
+     * max} are equal, or as an interval {@code [min;max]} otherwise.
      *
      * @param min the lower bound of the value
      * @param max the upper bound of the value
      * @return the formatted value
      */
     public String printInterval(double min, double max) {
-<span class="pc bpc" id="L107" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
-<span class="nc" id="L108">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">        if (min == max) {</span>
+<span class="fc" id="L128">            return &quot;&quot; + min;</span>
+        } else {
+<span class="nc" id="L130">            return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+        }
     }
 
     /**
-     * Formats a possibly imprecise value as either a single number, when {@code min}
-     * and {@code max} are equal, or as an interval {@code [min;max]} otherwise.
+     * Formats a possibly imprecise value as either a single number, when {@code min} and {@code
+     * max} are equal, or as an interval {@code [min;max]} otherwise.
      *
      * @param min the lower bound of the value
      * @param max the upper bound of the value
      * @return the formatted value
      */
     public String printInterval(int min, int max) {
-<span class="pc bpc" id="L120" title="1 of 2 branches missed.">        if (min == max) return &quot;&quot; + min;</span>
-<span class="nc" id="L121">        else return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+<span class="pc bpc" id="L143" title="1 of 2 branches missed.">        if (min == max) {</span>
+<span class="fc" id="L144">            return &quot;&quot; + min;</span>
+        } else {
+<span class="nc" id="L146">            return &quot;[&quot; + min + &quot;;&quot; + max + &quot;]&quot;;</span>
+        }
     }
 
     @Override
     public String toString() {
-<span class="fc" id="L126">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
-<span class="fc" id="L127">        closedToVisit.xor(openToVisit);</span>
-<span class="fc" id="L128">        return &quot;PDState(current:&quot; + current + &quot; currentTime:&quot; + printInterval(minCurrentTime, maxCurrentTime)</span>
-                + &quot; openToVisit:&quot; + openToVisit + &quot; closedToVisit:&quot; + closedToVisit + &quot; allToVisit:&quot; + allToVisit
-<span class="fc" id="L130">                + &quot; content:&quot; + printInterval(minContent, maxContent) + &quot;)&quot;;</span>
+<span class="fc" id="L152">        BitSet closedToVisit = (BitSet) allToVisit.clone();</span>
+<span class="fc" id="L153">        closedToVisit.xor(openToVisit);</span>
+<span class="fc" id="L154">        return &quot;PDState(current:&quot;</span>
+                + current
+                + &quot; currentTime:&quot;
+<span class="fc" id="L157">                + printInterval(minCurrentTime, maxCurrentTime)</span>
+                + &quot; openToVisit:&quot;
+                + openToVisit
+                + &quot; closedToVisit:&quot;
+                + closedToVisit
+                + &quot; allToVisit:&quot;
+                + allToVisit
+                + &quot; content:&quot;
+<span class="fc" id="L165">                + printInterval(minContent, maxContent)</span>
+                + &quot;)&quot;;
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

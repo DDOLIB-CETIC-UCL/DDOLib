@@ -6,32 +6,26 @@ import java.util.Objects;
 /**
  * Represents a state in the Traveling Salesman Problem (TSP).
  *
- * &lt;p&gt;
- * A {@code TSPState} captures the current situation of the tour:
- * &lt;/p&gt;
+ * &lt;p&gt;A {@code TSPState} captures the current situation of the tour:
+ *
  * &lt;ul&gt;
- *     &lt;li&gt;{@code current} – the set of nodes currently being considered as the current location.
- *         In most cases, this is a singleton, but during state merging (relaxation), it may contain multiple nodes.&lt;/li&gt;
- *     &lt;li&gt;{@code toVisit} – the set of nodes that have not yet been visited.&lt;/li&gt;
+ *   &lt;li&gt;{@code current} – the set of nodes currently being considered as the current location. In
+ *       most cases, this is a singleton, but during state merging (relaxation), it may contain
+ *       multiple nodes.
+ *   &lt;li&gt;{@code toVisit} – the set of nodes that have not yet been visited.
  * &lt;/ul&gt;
  *
- * &lt;p&gt;
- * This class provides methods to handle singleton nodes, and overrides {@code equals}, {@code hashCode},
- * and {@code toString} for proper use in collections and debugging.
- * &lt;/p&gt;
+ * &lt;p&gt;This class provides methods to handle singleton nodes, and overrides {@code equals}, {@code
+ * hashCode}, and {@code toString} for proper use in collections and debugging.
  *
  * @see TSPProblem
  * @see TSPRelax
  */
 public class TSPState {
-    /**
-     * Set of nodes that have not been visited yet.
-     */
+    /** Set of nodes that have not been visited yet. */
     public BitSet toVisit;
 
-    /**
-     * Current node(s). Usually a singleton, but can be multiple in merged states.
-     */
+    /** Current node(s). Usually a singleton, but can be multiple in merged states. */
     public BitSet current;
 
     /**
@@ -40,21 +34,20 @@ public class TSPState {
      * @param current the current node(s)
      * @param toVisit the nodes that have not yet been visited
      */
-<span class="fc" id="L43">    public TSPState(BitSet current, BitSet toVisit) {</span>
-<span class="fc" id="L44">        this.toVisit = toVisit;</span>
-<span class="fc" id="L45">        this.current = current;</span>
-<span class="fc" id="L46">    }</span>
+<span class="fc" id="L37">    public TSPState(BitSet current, BitSet toVisit) {</span>
+<span class="fc" id="L38">        this.toVisit = toVisit;</span>
+<span class="fc" id="L39">        this.current = current;</span>
+<span class="fc" id="L40">    }</span>
 
     @Override
     public int hashCode() {
-<span class="fc" id="L50">        return Objects.hash(toVisit, current);</span>
+<span class="fc" id="L44">        return Objects.hash(toVisit, current);</span>
     }
 
     @Override
     public boolean equals(Object obj) {
-<span class="fc" id="L55">        TSPState that = (TSPState) obj;</span>
-<span class="fc bfc" id="L56" title="All 2 branches covered.">        return (this.current.equals(that.current))</span>
-<span class="fc bfc" id="L57" title="All 2 branches covered.">                &amp;&amp; this.toVisit.equals(that.toVisit);</span>
+<span class="fc" id="L49">        TSPState that = (TSPState) obj;</span>
+<span class="fc bfc" id="L50" title="All 4 branches covered.">        return (this.current.equals(that.current)) &amp;&amp; this.toVisit.equals(that.toVisit);</span>
     }
 
     /**
@@ -64,17 +57,17 @@ public class TSPState {
      * @return a BitSet with a single bit set
      */
     public BitSet singleton(int singletonValue) {
-<span class="fc" id="L67">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
-<span class="fc" id="L68">        toReturn.set(singletonValue);</span>
-<span class="fc" id="L69">        return toReturn;</span>
+<span class="fc" id="L60">        BitSet toReturn = new BitSet(singletonValue + 1);</span>
+<span class="fc" id="L61">        toReturn.set(singletonValue);</span>
+<span class="fc" id="L62">        return toReturn;</span>
     }
 
     @Override
     public String toString() {
-<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (current.cardinality() != 1) {</span>
-<span class="fc" id="L75">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (current.cardinality() != 1) {</span>
+<span class="fc" id="L68">            return &quot;TSPState(possibleCurrent:&quot; + current + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
         } else {
-<span class="fc" id="L77">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
+<span class="fc" id="L70">            return &quot;TSPState(current:&quot; + current.nextSetBit(0) + &quot; toVisit:&quot; + toVisit + &quot;)&quot;;</span>
         }
     }
 }

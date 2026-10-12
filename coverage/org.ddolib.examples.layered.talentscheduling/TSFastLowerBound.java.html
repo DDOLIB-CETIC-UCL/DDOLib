@@ -1,40 +1,36 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TSFastLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.talentscheduling</a> &gt; <span class="el_source">TSFastLowerBound.java</span></div><h1>TSFastLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.talentscheduling;
 
-import org.ddolib.layered.modeling.FastLowerBound;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Set;
+import org.ddolib.layered.modeling.FastLowerBound;
 
 /**
  * Implementation of a fast lower bound for the Talent Scheduling Problem (TSP).
- * &lt;p&gt;
- * This class computes a heuristic lower bound on the total cost of a partially scheduled solution,
- * based on the method described in
- * &lt;a href=&quot;https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378&quot;&gt;Garcia et al.&lt;/a&gt;.
- * It takes into account both the duration of scenes and the actor costs for scenes that are not yet scheduled.
- * &lt;/p&gt;
  *
- * &lt;p&gt;
- * The bound is computed in two main steps:
- * &lt;/p&gt;
+ * &lt;p&gt;This class computes a heuristic lower bound on the total cost of a partially scheduled
+ * solution, based on the method described in &lt;a
+ * href=&quot;https://pubsonline.informs.org/doi/abs/10.1287/ijoc.1090.0378&quot;&gt;Garcia et al.&lt;/a&gt;. It takes
+ * into account both the duration of scenes and the actor costs for scenes that are not yet
+ * scheduled.
+ *
+ * &lt;p&gt;The bound is computed in two main steps:
+ *
  * &lt;ol&gt;
- *     &lt;li&gt;Compute a contribution for each unscheduled scene based on actors present and their costs.&lt;/li&gt;
- *     &lt;li&gt;Adjust for cumulative actor contributions using ratios and sort actors to estimate the remaining cost.&lt;/li&gt;
+ *   &lt;li&gt;Compute a contribution for each unscheduled scene based on actors present and their costs.
+ *   &lt;li&gt;Adjust for cumulative actor contributions using ratios and sort actors to estimate the
+ *       remaining cost.
  * &lt;/ol&gt;
- * The result is rounded up to handle floating-point errors.
  *
- * &lt;p&gt;
- * This lower bound is intended for use with search algorithms (e.g., ACS, A*, DDO)
- * to prune suboptimal branches efficiently.
- * &lt;/p&gt;
+ * &lt;p&gt;The result is rounded up to handle floating-point errors.
+ *
+ * &lt;p&gt;This lower bound is intended for use with search algorithms (e.g., ACS, A*, DDO) to prune
+ * suboptimal branches efficiently.
  */
 public class TSFastLowerBound implements FastLowerBound&lt;TSState&gt; {
-    /**
-     * The TSP instance associated with this lower bound computation.
-     */
+    /** The TSP instance associated with this lower bound computation. */
     private final TSProblem problem;
 
     /**
@@ -42,43 +38,47 @@ public class TSFastLowerBound implements FastLowerBound&lt;TSState&gt; {
      *
      * @param problem the Talent Scheduling Problem instance
      */
-
-<span class="fc" id="L46">    public TSFastLowerBound(TSProblem problem) {</span>
-<span class="fc" id="L47">        this.problem = problem;</span>
-<span class="fc" id="L48">    }</span>
+<span class="fc" id="L41">    public TSFastLowerBound(TSProblem problem) {</span>
+<span class="fc" id="L42">        this.problem = problem;</span>
+<span class="fc" id="L43">    }</span>
 
     /**
      * Computes a fast lower bound on the total cost from the given partial state.
      *
-     * @param state     the current state of the scheduling problem
+     * @param state the current state of the scheduling problem
      * @param variables the set of variables (scenes) still to be scheduled
      * @return the computed lower bound on the total cost, rounded up
      */
     @Override
     public double fastLowerBound(TSState state, Set&lt;Integer&gt; variables) {
-<span class="fc" id="L59">        double lb = 0.0;</span>
+<span class="fc" id="L54">        double lb = 0.0;</span>
 
-<span class="fc" id="L61">        BitSet presentActors = problem.onLocationActors(state);</span>
-<span class="fc" id="L62">        RatioAndActor[] ratios = new RatioAndActor[problem.nbActors];</span>
-<span class="fc bfc" id="L63" title="All 2 branches covered.">        for (int i = 0; i &lt; ratios.length; i++) {</span>
-<span class="fc" id="L64">            ratios[i] = new RatioAndActor(0.0, i);</span>
+<span class="fc" id="L56">        BitSet presentActors = problem.onLocationActors(state);</span>
+<span class="fc" id="L57">        RatioAndActor[] ratios = new RatioAndActor[problem.nbActors];</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        for (int i = 0; i &lt; ratios.length; i++) {</span>
+<span class="fc" id="L59">            ratios[i] = new RatioAndActor(0.0, i);</span>
         }
 
-<span class="fc bfc" id="L67" title="All 2 branches covered.">        for (int scene = state.remainingScenes().nextSetBit(0); scene &gt;= 0; scene = state.remainingScenes().nextSetBit(scene + 1)) {</span>
-<span class="fc" id="L68">            BitSet actorsOnLocation = (BitSet) problem.actors[scene].clone();</span>
-<span class="fc" id="L69">            actorsOnLocation.and(presentActors);</span>
-<span class="fc bfc" id="L70" title="All 2 branches covered.">            if (actorsOnLocation.cardinality() != 0) {</span>
-<span class="fc" id="L71">                double totalCost = 0.0;</span>
-<span class="fc" id="L72">                double squaredCost = 0.0;</span>
+<span class="fc" id="L62">        for (int scene = state.remainingScenes().nextSetBit(0);</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">                scene &gt;= 0;</span>
+<span class="fc" id="L64">                scene = state.remainingScenes().nextSetBit(scene + 1)) {</span>
+<span class="fc" id="L65">            BitSet actorsOnLocation = (BitSet) problem.actors[scene].clone();</span>
+<span class="fc" id="L66">            actorsOnLocation.and(presentActors);</span>
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            if (actorsOnLocation.cardinality() != 0) {</span>
+<span class="fc" id="L68">                double totalCost = 0.0;</span>
+<span class="fc" id="L69">                double squaredCost = 0.0;</span>
 
-
-<span class="fc bfc" id="L75" title="All 2 branches covered.">                for (int actor = actorsOnLocation.nextSetBit(0); actor &gt;= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {</span>
-<span class="fc" id="L76">                    int cost = problem.costs[actor];</span>
-<span class="fc" id="L77">                    totalCost += cost;</span>
-<span class="fc" id="L78">                    squaredCost += cost * cost;</span>
+<span class="fc" id="L71">                for (int actor = actorsOnLocation.nextSetBit(0);</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">                        actor &gt;= 0;</span>
+<span class="fc" id="L73">                        actor = actorsOnLocation.nextSetBit(actor + 1)) {</span>
+<span class="fc" id="L74">                    int cost = problem.costs[actor];</span>
+<span class="fc" id="L75">                    totalCost += cost;</span>
+<span class="fc" id="L76">                    squaredCost += cost * cost;</span>
                 }
 
-<span class="fc bfc" id="L81" title="All 2 branches covered.">                for (int actor = actorsOnLocation.nextSetBit(0); actor &gt;= 0; actor = actorsOnLocation.nextSetBit(actor + 1)) {</span>
+<span class="fc" id="L79">                for (int actor = actorsOnLocation.nextSetBit(0);</span>
+<span class="fc bfc" id="L80" title="All 2 branches covered.">                        actor &gt;= 0;</span>
+<span class="fc" id="L81">                        actor = actorsOnLocation.nextSetBit(actor + 1)) {</span>
 <span class="fc" id="L82">                    ratios[actor].ratio += problem.duration[scene] / totalCost;</span>
                 }
 
@@ -97,43 +97,40 @@ public class TSFastLowerBound implements FastLowerBound&lt;TSState&gt; {
             }
         }
 
-        //To manage rounding errors
+        // To manage rounding errors
 <span class="fc" id="L101">        BigDecimal bd = new BigDecimal(lb).setScale(10, RoundingMode.HALF_UP);</span>
 <span class="fc" id="L102">        return Math.ceil(bd.doubleValue());</span>
     }
 
     /**
-     * Helper class that stores a ratio and the corresponding actor index.
-     * Used for sorting actors when computing the lower bound.
+     * Helper class that stores a ratio and the corresponding actor index. Used for sorting actors
+     * when computing the lower bound.
      */
     private static class RatioAndActor implements Comparable&lt;RatioAndActor&gt; {
-        /**
-         * The ratio associated with this actor.
-         */
+        /** The ratio associated with this actor. */
         public double ratio;
-        /**
-         * The index of the actor.
-         */
+
+        /** The index of the actor. */
         public int actor;
 
-<span class="fc" id="L119">        public RatioAndActor(double ratio, int actor) {</span>
-<span class="fc" id="L120">            this.ratio = ratio;</span>
-<span class="fc" id="L121">            this.actor = actor;</span>
-<span class="fc" id="L122">        }</span>
+<span class="fc" id="L116">        public RatioAndActor(double ratio, int actor) {</span>
+<span class="fc" id="L117">            this.ratio = ratio;</span>
+<span class="fc" id="L118">            this.actor = actor;</span>
+<span class="fc" id="L119">        }</span>
 
         @Override
         public int compareTo(RatioAndActor o) {
-<span class="fc" id="L126">            int cmp = Double.compare(ratio, o.ratio);</span>
-<span class="fc bfc" id="L127" title="All 2 branches covered.">            if (cmp == 0) {</span>
-<span class="fc" id="L128">                return Integer.compare(actor, o.actor);</span>
+<span class="fc" id="L123">            int cmp = Double.compare(ratio, o.ratio);</span>
+<span class="fc bfc" id="L124" title="All 2 branches covered.">            if (cmp == 0) {</span>
+<span class="fc" id="L125">                return Integer.compare(actor, o.actor);</span>
             } else {
-<span class="fc" id="L130">                return cmp;</span>
+<span class="fc" id="L127">                return cmp;</span>
             }
         }
 
         @Override
         public String toString() {
-<span class="nc" id="L136">            return &quot;(ratio: &quot; + ratio + &quot;, actor: &quot; + actor + &quot;)&quot;;</span>
+<span class="nc" id="L133">            return &quot;(ratio: &quot; + ratio + &quot;, actor: &quot; + actor + &quot;)&quot;;</span>
         }
     }
 }

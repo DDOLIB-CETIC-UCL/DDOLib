@@ -6,10 +6,9 @@ import org.ddolib.nolayer.modeling.Problem;
 
 /**
  * Base model for the Knapsack Problem (KS), using the no-layer modeling API.
- * &lt;p&gt;
- * Bundles a {@link KSProblem} instance together with the {@link KSFlb} fast lower bound
- * used to guide and prune the search.
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;Bundles a {@link KSProblem} instance together with the {@link KSFlb} fast lower bound used to
+ * guide and prune the search.
  */
 public class KSModel implements Model&lt;KSState&gt; {
 
@@ -21,19 +20,19 @@ public class KSModel implements Model&lt;KSState&gt; {
      *
      * @param problem the knapsack instance to solve
      */
-<span class="fc" id="L24">    public KSModel(KSProblem problem) {</span>
-<span class="fc" id="L25">        this.problem = problem;</span>
-<span class="fc" id="L26">        this.lowerBound = new KSFlb(problem);</span>
-<span class="fc" id="L27">    }</span>
+<span class="fc" id="L23">    public KSModel(KSProblem problem) {</span>
+<span class="fc" id="L24">        this.problem = problem;</span>
+<span class="fc" id="L25">        this.lowerBound = new KSFlb(problem);</span>
+<span class="fc" id="L26">    }</span>
 
     @Override
     public Problem&lt;KSState&gt; problem() {
-<span class="fc" id="L31">        return problem;</span>
+<span class="fc" id="L30">        return problem;</span>
     }
 
     @Override
     public FastLowerBound&lt;KSState&gt; lowerBound() {
-<span class="fc" id="L36">        return lowerBound;</span>
+<span class="fc" id="L35">        return lowerBound;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

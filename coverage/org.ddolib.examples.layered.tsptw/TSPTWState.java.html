@@ -3,34 +3,35 @@
 import java.util.BitSet;
 
 /**
- * Represents a state in the dynamic programming model for the Traveling Salesman Problem with Time Windows (TSPTW).
- * &lt;p&gt;
- * Each state encapsulates the current information about the vehicle's position, the set of nodes yet to visit,
- * and timing information. This record is used both for individual states and for relaxed/merged states.
- * &lt;/p&gt;
+ * Represents a state in the dynamic programming model for the Traveling Salesman Problem with Time
+ * Windows (TSPTW).
  *
- * @param position      the current last position of the vehicle. Usually unique and represented by {@link TSPNode}.
- *                      In merged states, the vehicle can be &quot;at any position at the same time,&quot; represented by {@link VirtualNodes}.
- * @param time          the arrival time of the vehicle at the current position
- * @param mustVisit     a {@link BitSet} representing all nodes that must still be visited
- * @param possiblyVisit a {@link BitSet} representing nodes that might have been visited or not in merged states
- * @param depth         the depth of the layer containing this state in the dynamic programming model
+ * &lt;p&gt;Each state encapsulates the current information about the vehicle's position, the set of nodes
+ * yet to visit, and timing information. This record is used both for individual states and for
+ * relaxed/merged states.
+ *
+ * @param position the current last position of the vehicle. Usually unique and represented by
+ *     {@link TSPNode}. In merged states, the vehicle can be &quot;at any position at the same time,&quot;
+ *     represented by {@link VirtualNodes}.
+ * @param time the arrival time of the vehicle at the current position
+ * @param mustVisit a {@link BitSet} representing all nodes that must still be visited
+ * @param possiblyVisit a {@link BitSet} representing nodes that might have been visited or not in
+ *     merged states
+ * @param depth the depth of the layer containing this state in the dynamic programming model
  */
-<span class="fc" id="L19">public record TSPTWState(Position position, int time, BitSet mustVisit, BitSet possiblyVisit,</span>
-                         int depth) {
+<span class="fc" id="L22">public record TSPTWState(</span>
+        Position position, int time, BitSet mustVisit, BitSet possiblyVisit, int depth) {
     /**
-     * Returns a string representation of this TSPTW state, including position, time, must-visit and possibly-visit nodes, and depth.
+     * Returns a string representation of this TSPTW state, including position, time, must-visit and
+     * possibly-visit nodes, and depth.
      *
      * @return a formatted string describing the state
      */
     @Override
     public String toString() {
-<span class="fc" id="L28">        return String.format(&quot;position: %s - time: %d - must visit: %s - possibly visit: %s - depth: %d&quot;,</span>
-                position,
-<span class="fc" id="L30">                time,</span>
-                mustVisit,
-                possiblyVisit,
-<span class="fc" id="L33">                depth);</span>
+<span class="fc" id="L32">        return String.format(</span>
+                &quot;position: %s - time: %d - must visit: %s - possibly visit: %s - depth: %d&quot;,
+<span class="fc" id="L34">                position, time, mustVisit, possiblyVisit, depth);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

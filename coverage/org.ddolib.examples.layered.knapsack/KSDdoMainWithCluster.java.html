@@ -1,56 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSDdoMainWithCluster.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSDdoMainWithCluster.java</span></div><h1>KSDdoMainWithCluster.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
 
+import java.io.IOException;
+import java.nio.file.Path;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.frontier.SimpleFrontier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
-import org.ddolib.layered.modeling.*;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DdoModel;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.FastLowerBound;
+import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.Relaxation;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.GHP;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
-import org.ddolib.common.util.io.SolutionPrinter;
-import org.ddolib.common.util.verbosity.VerbosityLevel;
-
-import java.io.IOException;
-import java.nio.file.Path;
 
 /**
  * Knapsack Problem (KS) with Ddo.
- * &lt;p&gt;
- * This class demonstrates how to solve an instance of the bounded Knapsack Problem (BKP)
- * using a Decision Diagram Optimization (DDO) algorithm.
- * &lt;/p&gt;
- * &lt;p&gt;
- * The program performs the following steps:
- * &lt;/p&gt;
+ *
+ * &lt;p&gt;This class demonstrates how to solve an instance of the bounded Knapsack Problem (BKP) using a
+ * Decision Diagram Optimization (DDO) algorithm.
+ *
+ * &lt;p&gt;The program performs the following steps:
+ *
  * &lt;ol&gt;
- *     &lt;li&gt;Loads a knapsack instance from a data file.&lt;/li&gt;
- *     &lt;li&gt;Defines a {@link DdoModel} with:
- *         &lt;ul&gt;
- *             &lt;li&gt;A relaxation function for merging states ({@link KSRelax}).&lt;/li&gt;
- *             &lt;li&gt;A state ranking heuristic ({@link KSRanking}).&lt;/li&gt;
- *             &lt;li&gt;A fast lower bound heuristic ({@link KSFastLowerBound}).&lt;/li&gt;
- *             &lt;li&gt;A dominance checker ({@link KSDominance}).&lt;/li&gt;
- *             &lt;li&gt;A frontier of type {@link CutSetType#Frontier} ({@link SimpleFrontier}).&lt;/li&gt;
- *             &lt;li&gt;A width heuristic ({@link FixedWidth}) and cache usage.&lt;/li&gt;
- *             &lt;li&gt;Verbose output level ({@link VerbosityLevel}).&lt;/li&gt;
- *         &lt;/ul&gt;
- *     &lt;/li&gt;
- *     &lt;li&gt;Creates a {@link Solvers} and runs the DDO algorithm.&lt;/li&gt;
- *     &lt;li&gt;Prints updates when a new incumbent solution is found and stops after 10 seconds of runtime.&lt;/li&gt;
- *     &lt;li&gt;Outputs the final search statistics.&lt;/li&gt;
+ *   &lt;li&gt;Loads a knapsack instance from a data file.
+ *   &lt;li&gt;Defines a {@link DdoModel} with:
+ *       &lt;ul&gt;
+ *         &lt;li&gt;A relaxation function for merging states ({@link KSRelax}).
+ *         &lt;li&gt;A state ranking heuristic ({@link KSRanking}).
+ *         &lt;li&gt;A fast lower bound heuristic ({@link KSFastLowerBound}).
+ *         &lt;li&gt;A dominance checker ({@link KSDominance}).
+ *         &lt;li&gt;A frontier of type {@link CutSetType#Frontier} ({@link SimpleFrontier}).
+ *         &lt;li&gt;A width heuristic ({@link FixedWidth}) and cache usage.
+ *         &lt;li&gt;Verbose output level ({@link VerbosityLevel}).
+ *       &lt;/ul&gt;
+ *   &lt;li&gt;Creates a {@link Solvers} and runs the DDO algorithm.
+ *   &lt;li&gt;Prints updates when a new incumbent solution is found and stops after 10 seconds of
+ *       runtime.
+ *   &lt;li&gt;Outputs the final search statistics.
  * &lt;/ol&gt;
  *
- * &lt;p&gt;
- * The DDO solver leverages relaxed decision diagrams, caching, and state ranking to
- * efficiently explore the search space for high-quality solutions.
- * &lt;/p&gt;
+ * &lt;p&gt;The DDO solver leverages relaxed decision diagrams, caching, and state ranking to efficiently
+ * explore the search space for high-quality solutions.
  */
 public class KSDdoMainWithCluster {
 
-    private KSDdoMainWithCluster() {
-    }
+    private KSDdoMainWithCluster() {}
 
     /**
      * Entry point of the DDO demonstration for the Knapsack Problem.
@@ -59,77 +60,86 @@ public class KSDdoMainWithCluster {
      * @throws IOException if the instance file cannot be read
      */
     public static void main(final String[] args) throws IOException {
-<span class="nc bnc" id="L62" title="All 2 branches missed.">        final String instance = args.length == 0 ? Path.of(&quot;data&quot;, &quot;Knapsack&quot;, &quot;instance_n1000_c1000_10_5_10_5_0&quot;).toString() : args[0];</span>
-<span class="nc" id="L63">        final KSProblem problem = new KSProblem(instance);</span>
-<span class="nc" id="L64">        final DdoModel&lt;Integer&gt; model = new DdoModel&lt;&gt;() {</span>
-            @Override
-            public Problem&lt;Integer&gt; problem() {
-<span class="nc" id="L67">                return problem;</span>
-            }
+        final String instance =
+<span class="nc bnc" id="L64" title="All 2 branches missed.">                args.length == 0</span>
+<span class="nc" id="L65">                        ? Path.of(&quot;data&quot;, &quot;Knapsack&quot;, &quot;instance_n1000_c1000_10_5_10_5_0&quot;).toString()</span>
+<span class="nc" id="L66">                        : args[0];</span>
+<span class="nc" id="L67">        final KSProblem problem = new KSProblem(instance);</span>
+<span class="nc" id="L68">        final DdoModel&lt;Integer&gt; model =</span>
+<span class="nc" id="L69">                new DdoModel&lt;&gt;() {</span>
+                    @Override
+                    public Problem&lt;Integer&gt; problem() {
+<span class="nc" id="L72">                        return problem;</span>
+                    }
 
-            @Override
-            public FastLowerBound&lt;Integer&gt; lowerBound() {
-<span class="nc" id="L72">                return new KSFastLowerBound(problem);</span>
-            }
+                    @Override
+                    public FastLowerBound&lt;Integer&gt; lowerBound() {
+<span class="nc" id="L77">                        return new KSFastLowerBound(problem);</span>
+                    }
 
-            @Override
-            public DominanceChecker&lt;Integer&gt; dominance() {
-<span class="nc" id="L77">                return new SimpleDominanceChecker&lt;&gt;(new KSDominance(), problem.nbVars());</span>
-            }
+                    @Override
+                    public DominanceChecker&lt;Integer&gt; dominance() {
+<span class="nc" id="L82">                        return new SimpleDominanceChecker&lt;&gt;(new KSDominance(), problem.nbVars());</span>
+                    }
 
-            @Override
-            public VerbosityLevel verbosityLevel() {
-<span class="nc" id="L82">                return VerbosityLevel.LARGE;</span>
-            }
+                    @Override
+                    public VerbosityLevel verbosityLevel() {
+<span class="nc" id="L87">                        return VerbosityLevel.LARGE;</span>
+                    }
 
-            @Override
-            public Relaxation&lt;Integer&gt; relaxation() {
-<span class="nc" id="L87">                return new KSRelax();</span>
-            }
+                    @Override
+                    public Relaxation&lt;Integer&gt; relaxation() {
+<span class="nc" id="L92">                        return new KSRelax();</span>
+                    }
 
-            @Override
-            public KSRanking ranking() {
-<span class="nc" id="L92">                return new KSRanking();</span>
-            }
+                    @Override
+                    public KSRanking ranking() {
+<span class="nc" id="L97">                        return new KSRanking();</span>
+                    }
 
-            @Override
-            public WidthHeuristic&lt;Integer&gt; widthHeuristic() {
-<span class="nc" id="L97">                return new FixedWidth&lt;&gt;(100);</span>
-            }
+                    @Override
+                    public WidthHeuristic&lt;Integer&gt; widthHeuristic() {
+<span class="nc" id="L102">                        return new FixedWidth&lt;&gt;(100);</span>
+                    }
 
-            @Override
-            public Frontier&lt;Integer&gt; frontier() {
-<span class="nc" id="L102">                return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.Frontier);</span>
-            }
+                    @Override
+                    public Frontier&lt;Integer&gt; frontier() {
+<span class="nc" id="L107">                        return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.Frontier);</span>
+                    }
 
-            @Override
-            public boolean useCache() {
-<span class="nc" id="L107">                return true;</span>
-            }
+                    @Override
+                    public boolean useCache() {
+<span class="nc" id="L112">                        return true;</span>
+                    }
 
-            @Override
-            public ReductionStrategy&lt;Integer&gt; relaxStrategy() {
-<span class="nc" id="L112">                return new GHP&lt;&gt;(new KSDistance(problem));</span>
-//                return new Hybrid&lt;&gt;(new KSRanking(), new KSDistance(problem));
-//                return new CostBased&lt;&gt;(new KSRanking());  // default strategy
-            }
+                    @Override
+                    public ReductionStrategy&lt;Integer&gt; relaxStrategy() {
+<span class="nc" id="L117">                        return new GHP&lt;&gt;(new KSDistance(problem));</span>
+                        //                return new Hybrid&lt;&gt;(new KSRanking(), new
+                        // KSDistance(problem));
+                        //                return new CostBased&lt;&gt;(new KSRanking());  // default
+                        // strategy
+                    }
 
-            @Override
-            public ReductionStrategy&lt;Integer&gt; restrictStrategy() {
-<span class="nc" id="L119">                return new GHP&lt;&gt;(new KSDistance(problem));</span>
-//                return new Hybrid&lt;&gt;(new KSRanking(), new KSDistance(problem));
-//                return new CostBased&lt;&gt;(new KSRanking()); // default strategy
-            }
-        };
+                    @Override
+                    public ReductionStrategy&lt;Integer&gt; restrictStrategy() {
+<span class="nc" id="L126">                        return new GHP&lt;&gt;(new KSDistance(problem));</span>
+                        //                return new Hybrid&lt;&gt;(new KSRanking(), new
+                        // KSDistance(problem));
+                        //                return new CostBased&lt;&gt;(new KSRanking()); // default
+                        // strategy
+                    }
+                };
 
-<span class="nc" id="L125">        Solution bestSolution = Solvers.minimizeDdo(model, (sol, s) -&gt; {</span>
-<span class="nc" id="L126">            SolutionPrinter.printSolution(s, sol);</span>
-<span class="nc" id="L127">        });</span>
+<span class="nc" id="L134">        Solution bestSolution =</span>
+<span class="nc" id="L135">                Solvers.minimizeDdo(</span>
+                        model,
+                        (sol, s) -&gt; {
+<span class="nc" id="L138">                            SolutionPrinter.printSolution(s, sol);</span>
+<span class="nc" id="L139">                        });</span>
 
-<span class="nc" id="L129">        System.out.println(bestSolution.statistics());</span>
-<span class="nc" id="L130">        System.out.println(bestSolution);</span>
-
-
-<span class="nc" id="L133">    }</span>
+<span class="nc" id="L141">        System.out.println(bestSolution.statistics());</span>
+<span class="nc" id="L142">        System.out.println(bestSolution);</span>
+<span class="nc" id="L143">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
