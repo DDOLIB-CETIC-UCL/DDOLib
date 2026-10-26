@@ -1,18 +1,28 @@
 package org.ddolib.common.solver.stat;
 
-/** Class tracking statistics specific to Decision Diagram Optimization (DDO) solver. */
+/**
+ * Class tracking statistics specific to Decision Diagram Optimization (DDO) solver.
+ */
 public class DdoStats extends SearchStatistics {
 
-    /** Total number of nodes created in all compiled MDDs. */
+    /**
+     * Total number of nodes created in all compiled MDDs.
+     */
     private long totalNodes = 0;
 
-    /** Maximum depth of a subproblem root popped from the frontier and explored. */
+    /**
+     * Maximum depth of a subproblem root popped from the frontier and explored.
+     */
     private int maxExploredDepth = 0;
 
-    /** Best (highest) global lower bound found so far. */
+    /**
+     * Best (highest) global lower bound found so far.
+     */
     private double bestLowerBound = Double.NEGATIVE_INFINITY;
 
-    /** Iteration during which the last lower bound improvement was found. */
+    /**
+     * Iteration during which the last lower bound improvement was found.
+     */
     private int lastIterationOfLowerBoundImprovement = 0;
 
     /**
@@ -25,7 +35,9 @@ public class DdoStats extends SearchStatistics {
         super(startTime, initValue);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected DdoStats createSpecificInstance() {
         DdoStats clone = new DdoStats(this._startTime, this._incumbent);
@@ -36,7 +48,9 @@ public class DdoStats extends SearchStatistics {
         return clone;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats copy() {
         DdoStats clone = (DdoStats) super.copy();
@@ -47,40 +61,68 @@ public class DdoStats extends SearchStatistics {
         return clone;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats updateIncumbent(double incumbent, double gap) {
         return (DdoStats) super.updateIncumbent(incumbent, gap);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats updateStatus(SearchStatus status) {
         return (DdoStats) super.updateStatus(status);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats incrementNbIter() {
         return (DdoStats) super.incrementNbIter();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats updateFrontierMaxSize(int frontierSize) {
         return (DdoStats) super.updateFrontierMaxSize(frontierSize);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats updateGap(double gap) {
         return (DdoStats) super.updateGap(gap);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public DdoStats updateTime(long time) {
         return (DdoStats) super.updateTime(time);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats incrementNbFastLowerBoundPruning() {
+        return (DdoStats) super.incrementNbFastLowerBoundPruning();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats incrementNbDominancePruning() {
+        return (DdoStats) super.incrementNbDominancePruning();
     }
 
     /**
