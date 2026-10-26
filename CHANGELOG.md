@@ -18,8 +18,8 @@ This file documents the DDOLib changes.
 - LNS: the reported gap is now computed with a global lower bound (the fast lower bound at the
   root) instead of the lower bound of the last explored neighborhood, so that it is a valid
   optimality gap.
-- LNS: when the initial solution is never improved, it is now returned as the best solution
-  (it was previously returned empty).
+- LNS: when the initial solution is never improved, it is now returned as the best solution (it was previously returned
+  empty).
 - LNS: `fixWidth`, `setInitialSolution` and `setProbability` now keep all the LNS parameters of
   the model (initial solution, probability, restriction strategy, state distance).
 - LNS: as long as no solution is known, the restricted DD compiled from the root was the same at
@@ -50,8 +50,8 @@ This file documents the DDOLib changes.
   maximization formulation of the original ddo solver), counted some demands several times and
   scheduled the cheapest demands first. The bound is now positive, which gave LNS gaps above
   100 % before.
-- PDPTW generator: the case removing both time windows of a pickup/delivery pair was never drawn
-  (`random.nextInt(2)` instead of `random.nextInt(3)`). The generated instances change for a
+- PDPTW generator: the case removing both time windows of a pickup/delivery pair was never drawn (`random.nextInt(2)`
+  instead of `random.nextInt(3)`). The generated instances change for a
   given seed; the instance files of the tests are not affected.
 
 ### Added
@@ -61,6 +61,7 @@ This file documents the DDOLib changes.
 - Checkstyle configuration based on the Google Java Style (with a 4-space indentation and the
   abbreviations allowed in names to keep the public API), run with `mvn checkstyle:check` and in a
   non-blocking CI workflow (the warnings are reported but never fail the build).
+- DFS based start heuristic.
 
 ### Changed
 
@@ -71,6 +72,7 @@ This file documents the DDOLib changes.
   API is unchanged.
 - The package-private classes `ALPSchedule`, `TSPNode`, `VirtualNodes` and the no-layer
   `*DdoModel` example classes were moved to their own source files.
+- All the solver can use an initial solution
 
 ## [0.1.0] - 03/07/2026
 
