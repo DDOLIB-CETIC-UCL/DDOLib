@@ -76,4 +76,55 @@ public interface AwAstarModel<T> extends Model<T> {
             }
         };
     }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default AwAstarModel<T> setInitialSolution(Solution solution) {
+        return new AwAstarModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return AwAstarModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return AwAstarModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return AwAstarModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return AwAstarModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AwAstarModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AwAstarModel.this.debugMode();
+            }
+
+            @Override
+            public double weight() {
+                return AwAstarModel.this.weight();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
+    }
 }

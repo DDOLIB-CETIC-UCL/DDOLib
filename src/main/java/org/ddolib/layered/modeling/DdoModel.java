@@ -584,4 +584,100 @@ public interface DdoModel<T> extends Model<T> {
             }
         };
     }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default DdoModel<T> setInitialSolution(Solution solution) {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier<T> frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
+    }
 }

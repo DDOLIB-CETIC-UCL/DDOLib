@@ -242,6 +242,7 @@ public interface LnsModel<T> extends Model<T> {
      * @param solution the initial solution
      * @return a new {@code LnsModel} using the given initial solution
      */
+    @Override
     default LnsModel<T> setInitialSolution(Solution solution) {
         return new LnsModel<>() {
             @Override

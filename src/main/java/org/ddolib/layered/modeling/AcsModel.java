@@ -160,4 +160,55 @@ public interface AcsModel<T> extends Model<T> {
             }
         };
     }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default AcsModel<T> setInitialSolution(Solution solution) {
+        return new AcsModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return AcsModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return AcsModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return AcsModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return AcsModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AcsModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AcsModel.this.debugMode();
+            }
+
+            @Override
+            public int columnWidth() {
+                return AcsModel.this.columnWidth();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
+    }
 }

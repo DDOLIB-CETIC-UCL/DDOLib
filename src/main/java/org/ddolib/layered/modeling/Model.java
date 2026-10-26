@@ -183,4 +183,49 @@ public interface Model<T> {
             }
         };
     }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    default Model<T> setInitialSolution(Solution solution) {
+        return new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return Model.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<T> dominance() {
+                return Model.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic<T> variableHeuristic() {
+                return Model.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
+    }
 }
