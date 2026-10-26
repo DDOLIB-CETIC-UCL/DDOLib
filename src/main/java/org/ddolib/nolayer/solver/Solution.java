@@ -40,6 +40,15 @@ public class Solution {
     }
 
     /**
+     * Returns whether this solution is empty, i.e. no solution was found.
+     *
+     * @return {@code true} if this solution does not contain any label
+     */
+    public boolean isEmpty() {
+        return solution.isEmpty();
+    }
+
+    /**
      * Returns the statistics associated to this solution.
      *
      * @return the statistics associated to this solution

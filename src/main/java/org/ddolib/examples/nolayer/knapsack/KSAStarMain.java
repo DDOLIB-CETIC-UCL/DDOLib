@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.nolayer.modeling.Solvers;
 import org.ddolib.nolayer.solver.Solution;
+import org.ddolib.nolayer.solving.startheuristic.DFS;
 
 /**
  * Knapsack Problem (KS) with A*, using the no-layer modeling API.
@@ -30,9 +31,13 @@ public final class KSAStarMain {
         final KSProblem problem = KSProblem.fromFile(instance);
         final KSModel model = new KSModel(problem);
 
+        // A first solution found by a depth-first dive gives an initial upper bound to A*.
+        final Solution initial = new DFS<>(model).findSolution();
+        System.out.println(initial);
+
         Solution bestSolution =
                 Solvers.minimizeAstar(
-                        model,
+                        model.setInitialSolution(initial),
                         (sol, stats) -> {
                             SolutionPrinter.printSolution(stats, sol);
                         });

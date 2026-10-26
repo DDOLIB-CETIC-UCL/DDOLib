@@ -1,15 +1,12 @@
 package org.ddolib.examples.layered.knapsack;
 
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.startheuristic.DFS;
+
 import java.io.IOException;
 import java.nio.file.Path;
-import org.ddolib.common.util.io.SolutionPrinter;
-import org.ddolib.layered.modeling.DominanceChecker;
-import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.layered.modeling.Model;
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.SimpleDominanceChecker;
-import org.ddolib.layered.modeling.Solvers;
-import org.ddolib.layered.solver.Solution;
 
 /**
  * Knapsack Problem (KS) with AsTar.
@@ -32,7 +29,8 @@ import org.ddolib.layered.solver.Solution;
  */
 public class KSAstarMain {
 
-    private KSAstarMain() {}
+    private KSAstarMain() {
+    }
 
     /**
      * Entry point of the A* demonstration for the Knapsack Problem.
@@ -65,9 +63,12 @@ public class KSAstarMain {
                     }
                 };
 
+        final Solution upper = new DFS<>(model).findSolution();
+        System.out.println(upper);
+
         Solution bestSolution =
                 Solvers.minimizeAstar(
-                        model,
+                        model.setInitialSolution(upper),
                         (sol, s) -> {
                             SolutionPrinter.printSolution(s, sol);
                         });

@@ -1,6 +1,7 @@
 package org.ddolib.layered.solver;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import org.ddolib.common.solver.stat.SearchStatistics;
@@ -60,6 +61,28 @@ public class Solution {
      */
     public int[] solution() {
         return solution;
+    }
+
+    /**
+     * Returns whether this solution is empty, i.e. no solution was found.
+     *
+     * @return {@code true} if this solution does not assign any variable
+     */
+    public boolean isEmpty() {
+        return solution.length == 0;
+    }
+
+    /**
+     * Returns the decisions assigning each variable to its value in this solution.
+     *
+     * @return the set of decisions {@code (i, t[i])} where {@code t} is {@link #solution()}
+     */
+    public Set<Decision> decisions() {
+        Set<Decision> decisions = new HashSet<>();
+        for (int i = 0; i < solution.length; i++) {
+            decisions.add(new Decision(i, solution[i]));
+        }
+        return decisions;
     }
 
     /**

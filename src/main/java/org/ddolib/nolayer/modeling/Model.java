@@ -2,6 +2,7 @@ package org.ddolib.nolayer.modeling;
 
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.nolayer.solver.Solution;
 
 /**
  * Defines the core model interface for describing an optimization problem in the NoLayer API.
@@ -27,12 +28,19 @@ public interface Model<T> {
     }
 
     /**
-     * Returns a precomputed upper bound on the optimal value.
+     * Returns a precomputed solution to start the search from.
      *
-     * @return a precomputed upper bound on the optimal value
+     * <p>Its value is used as initial upper bound, which allows to start pruning earlier. It is
+     * returned by the solver if no better solution is found. A non-empty solution must reach a
+     * target state and be feasible.
+     *
+     * <p>By default, it returns {@code null}. A {@code null} or empty solution means that no
+     * initial solution is available.
+     *
+     * @return a precomputed solution, or {@code null} if there is none
      */
-    default double upperBound() {
-        return Double.POSITIVE_INFINITY;
+    default Solution initialSolution() {
+        return null;
     }
 
     /**
@@ -60,5 +68,45 @@ public interface Model<T> {
      */
     default DebugLevel debugMode() {
         return DebugLevel.OFF;
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    default Model<T> setInitialSolution(Solution solution) {
+        return new Model<>() {
+            @Override
+            public Problem<T> problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return Model.this.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
+                return Model.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
     }
 }

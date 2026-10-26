@@ -2,9 +2,12 @@ package org.ddolib.nolayer.modeling;
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.nolayer.solver.Solution;
 
 /**
  * Defines the interface for an unlayered Dynamic Decision Diagram Optimization (DDO) model.
@@ -82,5 +85,81 @@ public interface DdoModel<T> extends Model<T> {
      */
     default boolean exportDot() {
         return false;
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default DdoModel<T> setInitialSolution(Solution solution) {
+        return new DdoModel<>() {
+            @Override
+            public Problem<T> problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound<T> lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker<T> dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation<T> relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking<T> ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic<T> widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
     }
 }

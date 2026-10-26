@@ -60,8 +60,9 @@ public final class AcsSolver<T> implements Solver {
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = model.upperBound();
-        this.bestSol = Optional.empty();
+        Optional<Solution> init = Solver.initialSolution(model);
+        this.bestUB = init.map(Solution::value).orElse(Double.POSITIVE_INFINITY);
+        this.bestSol = init.map(Solution::solution);
         this.columnWidth = model.columnWidth();
 
         this.closed = new HashMap<>();
@@ -81,7 +82,7 @@ public final class AcsSolver<T> implements Solver {
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = model.upperBound();
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.columnWidth = model.columnWidth();
 
@@ -117,6 +118,9 @@ public final class AcsSolver<T> implements Solver {
         // declared first on purpose: it records the start time of the search
         @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
         AstarStats statistics = new AstarStats(System.currentTimeMillis(), bestUB);
+        if (bestSol.isPresent()) { // initial solution provided by the model
+            statistics = statistics.updateStatus(SearchStatus.SAT);
+        }
         open.get(0).add(root);
         present.put(root.getState(), root.f());
 

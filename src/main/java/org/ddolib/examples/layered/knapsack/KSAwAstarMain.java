@@ -45,7 +45,7 @@ public class KSAwAstarMain {
         final KSProblem problem = new KSProblem(instance);
 
         long t0 = System.currentTimeMillis();
-        final double ub = KSAlgo.greedyKS(problem);
+        final Solution greedy = KSAlgo.greedyKS(problem);
         final long greedyDuration = System.currentTimeMillis() - t0;
 
         final AwAstarModel<Integer> model =
@@ -71,8 +71,8 @@ public class KSAwAstarMain {
                     }
 
                     @Override
-                    public double upperBound() {
-                        return 0;
+                    public Solution initialSolution() {
+                        return greedy;
                     }
                 };
         Solution bestSolution =
@@ -84,7 +84,7 @@ public class KSAwAstarMain {
 
         System.out.println(bestSolution.statistics());
         System.out.println(bestSolution);
-        System.out.printf("Greedy Upper Bound: %f%n", model.upperBound());
+        System.out.printf("Greedy Upper Bound: %f%n", greedy.value());
         System.out.printf(
                 "Total duration: %s%n",
                 PrettyPrint.formatMs(greedyDuration + bestSolution.statistics().runtime()));

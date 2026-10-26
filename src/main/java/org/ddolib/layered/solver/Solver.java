@@ -1,11 +1,15 @@
 package org.ddolib.layered.solver;
 
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.layered.modeling.Model;
+import org.ddolib.layered.solving.ddo.core.Decision;
+
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Predicate;
-import org.ddolib.common.solver.stat.SearchStatistics;
-import org.ddolib.layered.solving.ddo.core.Decision;
 
 /**
  * Interface representing a generic solver for decision diagram based optimization problems.
@@ -26,12 +30,45 @@ import org.ddolib.layered.solving.ddo.core.Decision;
  */
 public interface Solver {
     /**
+     * Returns the initial solution of a model, if it provides a non-empty one.
+     *
+     * <p>Its value is trusted. When the debug mode is enabled, it is checked against {@link
+     * org.ddolib.layered.modeling.Problem#evaluate(int[])}.
+     *
+     * @param model the model providing the initial solution
+     * @return the initial solution, or an empty {@link Optional} if the model has none
+     * @throws IllegalArgumentException in debug mode, if the initial solution is invalid or if its
+     *                                  value does not match its evaluation
+     */
+    static Optional<Solution> initialSolution(Model<?> model) {
+        Solution init = model.initialSolution();
+        if (init == null || init.isEmpty()) {
+            return Optional.empty();
+        }
+        if (model.debugMode() != DebugLevel.OFF) {
+            try {
+                double evaluated = model.problem().evaluate(init.solution());
+                if (Math.abs(evaluated - init.value()) > 1e-10) {
+                    throw new IllegalArgumentException(
+                            String.format(
+                                    "The value of the initial solution (%f) does not match its"
+                                            + " evaluation (%f)",
+                                    init.value(), evaluated));
+                }
+            } catch (InvalidSolutionException e) {
+                throw new IllegalArgumentException("The initial solution is invalid", e);
+            }
+        }
+        return Optional.of(init);
+    }
+
+    /**
      * Minimizes the objective function according to the solver strategy.
      *
-     * @param limit a {@link Predicate} that can limit or stop the search based on current {@link
-     *     SearchStatistics}
+     * @param limit      a {@link Predicate} that can limit or stop the search based on current {@link
+     *                   SearchStatistics}
      * @param onSolution a {@link BiConsumer} invoked on each new solution found; receives the
-     *     solution array and current statistics
+     *                   solution array and current statistics
      * @return the statistics of the search after completion
      */
     Solution minimize(
@@ -48,7 +85,7 @@ public interface Solver {
      * Returns the set of decisions that lead to the best solution found by this solver, if any.
      *
      * @return an {@link Optional} containing the set of {@link Decision} objects representing the
-     *     best solution, or empty if no solution exists
+     * best solution, or empty if no solution exists
      */
     Optional<Set<Decision>> bestSolution();
 
@@ -58,7 +95,7 @@ public interface Solver {
      *
      * @param decisions a set of {@link Decision} objects representing variable assignments
      * @return an array {@code t} such that {@code t[i]} is the assigned value of variable {@code
-     *     i}, or an empty array if the solution does not exist
+     * i}, or an empty array if the solution does not exist
      */
     default int[] constructSolution(Set<Decision> decisions) {
         int maxVar = -1;
