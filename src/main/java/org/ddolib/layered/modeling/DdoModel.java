@@ -175,6 +175,21 @@ public interface DdoModel<T> extends Model<T> {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
@@ -308,6 +323,21 @@ public interface DdoModel<T> extends Model<T> {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
@@ -388,6 +418,21 @@ public interface DdoModel<T> extends Model<T> {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
@@ -458,6 +503,21 @@ public interface DdoModel<T> extends Model<T> {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
@@ -525,13 +585,23 @@ public interface DdoModel<T> extends Model<T> {
             }
 
             @Override
-            public DdoModel<T> fixWidth(int width) {
-                return DdoModel.this.fixWidth(width);
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
             }
 
             @Override
-            public boolean useLNS() {
-                return DdoModel.this.useLNS();
+            public ReductionStrategy<T> relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy<T> restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance<T> stateDistance() {
+                return DdoModel.this.stateDistance();
             }
         };
     }
