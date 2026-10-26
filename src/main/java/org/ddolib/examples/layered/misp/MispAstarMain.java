@@ -1,16 +1,14 @@
 package org.ddolib.examples.layered.misp;
 
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.io.SolutionPrinter;
+import org.ddolib.layered.modeling.*;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.startheuristic.DFS;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.BitSet;
-import org.ddolib.common.util.debug.DebugLevel;
-import org.ddolib.common.util.io.SolutionPrinter;
-import org.ddolib.layered.modeling.DominanceChecker;
-import org.ddolib.layered.modeling.Model;
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.SimpleDominanceChecker;
-import org.ddolib.layered.modeling.Solvers;
-import org.ddolib.layered.solver.Solution;
 
 /**
  * The Maximum Independent Set Problem (MISP) with AsTar. Entry point for solving the Maximum
@@ -31,7 +29,8 @@ import org.ddolib.layered.solver.Solution;
  */
 public final class MispAstarMain {
 
-    private MispAstarMain() {}
+    private MispAstarMain() {
+    }
 
     /**
      * Main method to execute the A* solver on a MISP instance.
@@ -40,12 +39,12 @@ public final class MispAstarMain {
      * data/MISP/tadpole_4_2.dot</code> is used.
      *
      * @param args optional command-line arguments; args[0] can specify the path to the MISP
-     *     instance file
+     *             instance file
      * @throws IOException if there is an error reading the problem instance from the file
      */
     public static void main(String[] args) throws IOException {
         final String instance =
-                args.length == 0 ? Path.of("data", "MISP", "tadpole_4_2.dot").toString() : args[0];
+                args.length == 0 ? Path.of("data", "MISP", "weighted.dot").toString() : args[0];
         final MispProblem problem = new MispProblem(instance);
         Model<BitSet> model =
                 new Model<>() {
@@ -65,9 +64,11 @@ public final class MispAstarMain {
                     }
                 };
 
+        final Solution upper = new DFS<>(model).findSolution();
+        System.out.println(upper);
         Solution bestSolution =
                 Solvers.minimizeAstar(
-                        model,
+                        model.setInitialSolution(upper),
                         (sol, s) -> {
                             SolutionPrinter.printSolution(s, sol);
                         });
