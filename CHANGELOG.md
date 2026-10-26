@@ -62,6 +62,8 @@ This file documents the DDOLib changes.
   abbreviations allowed in names to keep the public API), run with `mvn checkstyle:check` and in a
   non-blocking CI workflow (the warnings are reported but never fail the build).
 - DFS based start heuristic.
+- Add statistic counting the number of pruning done by the `FastLowerBound`
+- Add statistic counting the number of pruning done by the `Dominance`
 
 ### Changed
 
