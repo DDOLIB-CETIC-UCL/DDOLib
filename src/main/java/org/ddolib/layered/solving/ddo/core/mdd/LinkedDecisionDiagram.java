@@ -123,6 +123,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /** Total number of nodes created in this diagram. */
     private int nodesCount = 0;
 
+    /** Number of nodes pruned because their lower bound cannot improve the best known solution. */
+    private int nbFastLowerBoundPruning = 0;
+
+    /** Number of nodes pruned because they are dominated. */
+    private int nbDominancePruning = 0;
+
     /** Random number generator used by the randomized LNS restriction. */
     private final Random random;
 
@@ -243,6 +249,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
                 }
 
                 if (n.lb >= config.bestUB) {
+                    nbFastLowerBoundPruning++;
                     continue;
                 }
 
@@ -396,6 +403,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         return nodesCount;
     }
 
+    @Override
+    public int nbFastLowerBoundPruning() {
+        return nbFastLowerBoundPruning;
+    }
+
+    @Override
+    public int nbDominancePruning() {
+        return nbDominancePruning;
+    }
+
     /**
      * Returns the minimum lower bound of expanded nodes of the MDD during the LNS compilation.
      *
@@ -431,8 +448,10 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         for (Entry<T, Node> e : this.nextLayer.entrySet()) {
             T state = e.getKey();
             Node node = e.getValue();
-            if (node.type != NodeType.EXACT
-                    || !config.dominance.updateDominance(state, depthGlobalDD, node.value)) {
+            if (node.type == NodeType.EXACT
+                    && config.dominance.updateDominance(state, depthGlobalDD, node.value)) {
+                nbDominancePruning++;
+            } else {
                 double flb = config.flb.fastLowerBound(state, variables);
                 double rlb = saturatedAdd(node.value, flb);
                 node.flb = flb;

@@ -1,15 +1,5 @@
 package org.ddolib.nolayer.solving.acs.core.solver;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -24,6 +14,10 @@ import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solver.Solver;
 import org.ddolib.nolayer.solving.astar.core.solver.SubProblem;
 import org.ddolib.nolayer.util.debug.DebugUtil;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * Implementation of an Anytime Column Search (ACS) solver for no-layer decision diagram-based
@@ -50,6 +44,7 @@ public final class AcsSolver<T> implements Solver {
     private boolean defaultLowerBoundValue;
     private double bestUB;
     private Optional<List<Integer>> bestSol;
+    private AstarStats statistics;
 
     /**
      * Creates a new ACS solver for the given model.
@@ -115,9 +110,8 @@ public final class AcsSolver<T> implements Solver {
     public Solution minimize(
             Predicate<SearchStatistics> limit,
             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
-        // declared first on purpose: it records the start time of the search
-        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
-        AstarStats statistics = new AstarStats(System.currentTimeMillis(), bestUB);
+        // set first on purpose: it records the start time of the search
+        statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         if (bestSol.isPresent()) { // initial solution provided by the model
             statistics = statistics.updateStatus(SearchStatus.SAT);
         }
@@ -155,12 +149,15 @@ public final class AcsSolver<T> implements Solver {
                     SubProblem<T> sub = open.get(i).poll();
                     if (sub.getState() != null
                             && dominance.updateDominance(sub.getState(), sub.getValue())) {
+                        statistics = statistics.incrementNbDominancePruning();
                         continue;
                     }
                     present.remove(sub.getState());
                     if (sub.f() < bestUB) {
                         candidates.add(sub);
                     } else {
+                        // the polled node and every node left in the column are pruned
+                        statistics = statistics.addNbFastLowerBoundPruning(1 + open.get(i).size());
                         open.get(i).clear();
                         break;
                     }
@@ -173,21 +170,19 @@ public final class AcsSolver<T> implements Solver {
                         if (bestUB > sub.getValue()) {
                             bestSol = Optional.of(sub.getPath());
                             bestUB = sub.getValue();
-                            statistics =
-                                    statistics
-                                            .updateIncumbent(bestUB, gap())
-                                            .updateStatus(SearchStatus.SAT);
+                            statistics = statistics
+                                    .updateIncumbent(bestUB, gap())
+                                    .updateStatus(SearchStatus.SAT);
                             onSolution.accept(bestSol.get(), statistics);
                         }
                         verboseMode.newBest(bestUB);
                     } else {
-                        addChildren(sub, onSolution, statistics);
+                        addChildren(sub, onSolution);
                     }
                 }
             }
-            statistics =
-                    statistics.updateFrontierMaxSize(
-                            open.stream().mapToInt(PriorityQueue::size).sum());
+            statistics = statistics.updateFrontierMaxSize(
+                    open.stream().mapToInt(PriorityQueue::size).sum());
         }
 
         if (debugLevel != DebugLevel.OFF) {
@@ -207,8 +202,7 @@ public final class AcsSolver<T> implements Solver {
 
     private void addChildren(
             SubProblem<T> subProblem,
-            BiConsumer<List<Integer>, SearchStatistics> onSolution,
-            AstarStats statistics) {
+            BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
         while (domain.hasNext()) {
@@ -230,6 +224,7 @@ public final class AcsSolver<T> implements Solver {
             double f = g + h;
 
             if (f + 1e-10 > bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 

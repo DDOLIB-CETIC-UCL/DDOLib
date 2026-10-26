@@ -1,20 +1,5 @@
 package org.ddolib.layered.solving.lns.core.solver;
 
-import static org.ddolib.common.util.MathUtil.saturatedAdd;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.mdd.DecisionDiagram;
@@ -31,6 +16,18 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
+import static org.ddolib.common.util.MathUtil.saturatedAdd;
 
 /**
  * Large Neighborhood Search (LNS) solver based on restricted decision diagrams.
@@ -49,23 +46,24 @@ public final class LnsSolver<T> implements Solver {
     private final boolean exportAsDot;
     private final LnsModel<T> model;
     private final int maxDepth;
-    private double bestUB;
-    private Optional<Set<Decision>> bestSol;
-    private boolean firstRestricted = true;
-    private int destructionDepth;
-    private int[] solution;
-
-    /** Assignment of the model's initial solution, or {@code null} if it has none. */
+    /**
+     * Assignment of the model's initial solution, or {@code null} if it has none.
+     */
     private final int[] initialSolution;
-
     /**
      * Lower bound on the optimal value of the whole problem, given by the fast lower bound at the
      * root. Unlike the bounds of the restricted neighborhoods, it is valid globally.
      */
     private final double globalLB;
-
-    /** Random number generator shared by all the restricted DDs of a run. */
+    /**
+     * Random number generator shared by all the restricted DDs of a run.
+     */
     private final Random random;
+    private double bestUB;
+    private Optional<Set<Decision>> bestSol;
+    private boolean firstRestricted = true;
+    private int destructionDepth;
+    private int[] solution;
 
     /**
      * Creates a new LNS solver for the provided model.
@@ -159,6 +157,8 @@ public final class LnsSolver<T> implements Solver {
 
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
             restrictedMdd.compile();
+            stats = stats.addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
+                    .addNbDominancePruning(restrictedMdd.nbDominancePruning());
 
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (Double.isInfinite(bestUB) && widthFactor < Integer.MAX_VALUE) {
@@ -166,11 +166,10 @@ public final class LnsSolver<T> implements Solver {
             }
             gap = computeGap(bestUB, globalLB);
             if (newbest) {
-                stats =
-                        stats.updateTime(System.currentTimeMillis())
-                                .updateIncumbent(bestUB, gap)
-                                .updateStatus(SearchStatus.SAT)
-                                .updateGap(gap);
+                stats = stats.updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, gap)
+                        .updateStatus(SearchStatus.SAT)
+                        .updateGap(gap);
                 onSolution.accept(constructSolution(bestSol.get()), stats);
             }
             if (exportAsDot && firstRestricted) {
@@ -193,11 +192,10 @@ public final class LnsSolver<T> implements Solver {
                 return new Solution(bestSolution(), stats);
             }
             if ((compiledFromRoot && restrictedMdd.isExact()) || bestUB <= globalLB) {
-                stats =
-                        stats.updateTime(System.currentTimeMillis())
-                                .updateIncumbent(bestUB, 0.0)
-                                .updateStatus(SearchStatus.OPTIMAL)
-                                .updateGap(0.0);
+                stats = stats.updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, 0.0)
+                        .updateStatus(SearchStatus.OPTIMAL)
+                        .updateGap(0.0);
                 return new Solution(bestSolution(), stats);
             }
         }
@@ -244,7 +242,7 @@ public final class LnsSolver<T> implements Solver {
      * Updates the incumbent solution if the current restricted DD found a strict improvement.
      *
      * @param currentMdd restricted decision diagram compiled at the current iteration
-     * @param exportDot whether to force DOT materialization to reflect incumbent edge coloring
+     * @param exportDot  whether to force DOT materialization to reflect incumbent edge coloring
      * @return {@code true} if the incumbent was improved, {@code false} otherwise
      */
     private boolean maybeUpdateBest(DecisionDiagram<T> currentMdd, boolean exportDot) {
@@ -275,7 +273,7 @@ public final class LnsSolver<T> implements Solver {
     /**
      * Writes a DOT representation to disk.
      *
-     * @param dot DOT graph content
+     * @param dot      DOT graph content
      * @param fileName output file path
      */
     private void exportDot(String dot, String fileName) {
@@ -305,7 +303,7 @@ public final class LnsSolver<T> implements Solver {
      * Builds a residual subproblem by fixing a prefix of the current solution.
      *
      * @param solution incumbent solution used as reference for neighborhood destruction
-     * @param depth number of fixed variables in the prefix
+     * @param depth    number of fixed variables in the prefix
      * @return residual subproblem rooted at the state reached after the fixed prefix
      */
     private SubProblem<T> buildInitialSubProblem(int[] solution, int depth) {
@@ -333,7 +331,7 @@ public final class LnsSolver<T> implements Solver {
      * Computes the objective value accumulated by a solution prefix.
      *
      * @param solution full variable assignment
-     * @param depth prefix length to evaluate
+     * @param depth    prefix length to evaluate
      * @return cumulative objective value up to {@code depth}
      */
     private double costInSolutionAtDepth(int[] solution, int depth) {
@@ -353,7 +351,7 @@ public final class LnsSolver<T> implements Solver {
      * Computes the state reached after applying a solution prefix.
      *
      * @param solution full variable assignment
-     * @param depth prefix length to apply
+     * @param depth    prefix length to apply
      * @return state reached at the requested depth
      */
     private T stateInSolutionAtDepth(int[] solution, int depth) {
@@ -370,9 +368,9 @@ public final class LnsSolver<T> implements Solver {
     /**
      * Creates the compilation configuration for a restricted DD iteration.
      *
-     * @param type compilation type to use
-     * @param sub residual subproblem to compile
-     * @param maxWidth maximal width allowed during restriction
+     * @param type        compilation type to use
+     * @param sub         residual subproblem to compile
+     * @param maxWidth    maximal width allowed during restriction
      * @param exportAsDot whether DOT export is enabled for this compilation
      * @return fully initialized compilation configuration
      */

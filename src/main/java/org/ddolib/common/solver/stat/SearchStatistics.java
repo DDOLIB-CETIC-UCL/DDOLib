@@ -1,12 +1,13 @@
 package org.ddolib.common.solver.stat;
 
-import static java.lang.Math.abs;
+import org.ddolib.common.util.PrettyPrint;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.List;
 import java.util.Locale;
-import org.ddolib.common.util.PrettyPrint;
+
+import static java.lang.Math.abs;
 
 /**
  * Class representing the statistics of a search process in a solver.
@@ -20,41 +21,69 @@ import org.ddolib.common.util.PrettyPrint;
  */
 @SuppressWarnings("checkstyle:MemberName") // protected fields of the public API (_startTime...)
 public abstract class SearchStatistics {
-    /** Start time of the search (in milliseconds). */
+    /**
+     * Start time of the search (in milliseconds).
+     */
     protected final long _startTime;
 
-    /** Time at which the last improvement was found (in milliseconds). */
+    /**
+     * Time at which the last improvement was found (in milliseconds).
+     */
     protected long _lastTimeOfImprovement;
 
-    /** Current time of the search (in milliseconds). */
+    /**
+     * Current time of the search (in milliseconds).
+     */
     protected long _currentTime;
 
-    /** Current status of the search. */
+    /**
+     * Current status of the search.
+     */
     protected SearchStatus _status = SearchStatus.UNKNOWN;
 
-    /** Total number of iterations performed. */
+    /**
+     * Total number of iterations performed.
+     */
     protected int _nbIterations = 0;
 
-    /** Iteration during which the last improvement was found. */
+    /**
+     * Iteration during which the last improvement was found.
+     */
     protected int _lastIterationOfImprovement = 0;
 
-    /** Value of the best solution found so far (incumbent). */
+    /**
+     * Value of the best solution found so far (incumbent).
+     */
     protected double _incumbent;
 
-    /** Value of the previous incumbent found. */
+    /**
+     * Value of the previous incumbent found.
+     */
     protected double _prevIncumbent = Double.POSITIVE_INFINITY;
 
-    /** Best optimality gap reached so far. */
+    /**
+     * Best optimality gap reached so far.
+     */
     protected double _gap = Double.POSITIVE_INFINITY;
 
-    /** Maximum size reached by the search frontier. */
+    /**
+     * Maximum size reached by the search frontier.
+     */
     protected int _frontierMaxSize = 0;
 
-    /** Relative improvement of the incumbent value. */
+    /**
+     * Relative improvement of the incumbent value.
+     */
     protected double _relativeImprovement = 1.0;
 
-    /** Iteration during which the last gap improvement was found. */
+    /**
+     * Iteration during which the last gap improvement was found.
+     */
     protected int _lastIterationOfGapImprovement = 0;
+
+    protected int _nbFastLowerBoundPruning = 0;
+
+    protected int _nbDominancePruning = 0;
 
     /**
      * Constructs a new SearchStatistics instance.
@@ -185,6 +214,14 @@ public abstract class SearchStatistics {
         return 100 * _relativeImprovement;
     }
 
+    public int nbFastLowerBoundPruning() {
+        return _nbFastLowerBoundPruning;
+    }
+
+    public int nbDominancePruning() {
+        return _nbDominancePruning;
+    }
+
     /**
      * Creates and returns a copy of this statistics instance.
      *
@@ -203,6 +240,8 @@ public abstract class SearchStatistics {
         clone._gap = this._gap;
         clone._frontierMaxSize = this._frontierMaxSize;
         clone._relativeImprovement = this._relativeImprovement;
+        clone._nbFastLowerBoundPruning = this._nbFastLowerBoundPruning;
+        clone._nbDominancePruning = this._nbDominancePruning;
 
         return clone;
     }
@@ -211,7 +250,7 @@ public abstract class SearchStatistics {
      * Returns a new SearchStatistics instance with an updated incumbent value and gap.
      *
      * @param incumbent the new incumbent value
-     * @param gap the new optimality gap
+     * @param gap       the new optimality gap
      * @return a new instance with updated incumbent and gap
      */
     public SearchStatistics updateIncumbent(double incumbent, double gap) {
@@ -296,6 +335,30 @@ public abstract class SearchStatistics {
         return toReturn;
     }
 
+    public SearchStatistics incrementNbFastLowerBoundPruning() {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbFastLowerBoundPruning++;
+        return toReturn;
+    }
+
+    public SearchStatistics incrementNbDominancePruning() {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbDominancePruning++;
+        return toReturn;
+    }
+
+    public SearchStatistics addNbFastLowerBoundPruning(int nbPruning) {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbFastLowerBoundPruning += nbPruning;
+        return toReturn;
+    }
+
+    public SearchStatistics addNbDominancePruning(int nbPruning) {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbDominancePruning += nbPruning;
+        return toReturn;
+    }
+
     @Override
     public String toString() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);
@@ -311,7 +374,9 @@ public abstract class SearchStatistics {
                         "Runtime",
                         "Incumbent",
                         "Gap",
-                        "Relative improvement");
+                        "Relative improvement",
+                        "Nb FastLowerBound pruning",
+                        "Nb Dominance pruning");
 
         List<String> values =
                 List.of(
@@ -321,7 +386,9 @@ public abstract class SearchStatistics {
                         PrettyPrint.formatMs(runtime()),
                         Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
                         Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %",
-                        df.format(relativeImprovement()) + " %");
+                        df.format(relativeImprovement()) + " %",
+                        df.format(nbFastLowerBoundPruning()),
+                        df.format(nbDominancePruning()));
 
         int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;
         int valueSize = values.stream().mapToInt(String::length).max().orElse(1) + 1;

@@ -1,15 +1,5 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.text.DecimalFormat;
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.CutSetType;
 import org.ddolib.common.mdd.DecisionDiagram;
@@ -26,6 +16,17 @@ import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.text.DecimalFormat;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * Solver that compiles a single exact decision diagram (MDD) to find the optimal solution.
@@ -48,29 +49,39 @@ import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
  */
 public final class ExactSolver<T> implements Solver {
 
-    /** The problem instance to be minimized. */
+    /**
+     * The problem instance to be minimized.
+     */
     private final Problem<T> problem;
 
-    /** Verbosity level controlling output during the solving process. */
+    /**
+     * Verbosity level controlling output during the solving process.
+     */
     private final VerbosityLevel verbosityLevel;
 
-    /** Flag to indicate whether the compiled MDD should be exported as a DOT file. */
+    /**
+     * Flag to indicate whether the compiled MDD should be exported as a DOT file.
+     */
     private final boolean exportAsDot;
 
     private final ExactModel<T> model;
 
-    /** Optional set containing the best solution found so far. */
+    /**
+     * Optional set containing the best solution found so far.
+     */
     private Optional<Set<Decision>> bestSol;
 
-    /** Optional value of the best solution found so far. */
+    /**
+     * Optional value of the best solution found so far.
+     */
     private Optional<Double> bestValue = Optional.empty();
 
     /**
      * Creates a fully-configured ExactSolver instance.
      *
      * @param model the {@link DdoModel} containing all necessary parameters and heuristics to
-     *     configure the solver, including the problem, relaxation, ranking, variable heuristic,
-     *     lower bound, dominance checker, caching, and verbosity settings.
+     *              configure the solver, including the problem, relaxation, ranking, variable heuristic,
+     *              lower bound, dominance checker, caching, and verbosity settings.
      */
     public ExactSolver(ExactModel<T> model) {
         this.problem = model.problem();
@@ -93,7 +104,7 @@ public final class ExactSolver<T> implements Solver {
      *   <li>Optionally exports the MDD in DOT format.
      * </ul>
      *
-     * @param limit a predicate that may be used to limit the search based on statistics
+     * @param limit      a predicate that may be used to limit the search based on statistics
      * @param onSolution a callback invoked when a solution is found
      * @return statistics about the search process, including the best value found
      */
@@ -130,6 +141,8 @@ public final class ExactSolver<T> implements Solver {
 
         DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
+        statistics = statistics.addNbFastLowerBoundPruning(mdd.nbFastLowerBoundPruning())
+                .addNbDominancePruning(mdd.nbDominancePruning());
         extractBest(mdd);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
@@ -194,7 +207,7 @@ public final class ExactSolver<T> implements Solver {
     /**
      * Exports a DOT representation of the MDD to a file.
      *
-     * @param dot the DOT string representing the MDD
+     * @param dot      the DOT string representing the MDD
      * @param fileName the output file path
      */
     private void exportDot(String dot, String fileName) {
