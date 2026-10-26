@@ -11,6 +11,7 @@ import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model.
@@ -133,6 +134,11 @@ public interface DdoModel<T> extends Model<T> {
             @Override
             public DebugLevel debugMode() {
                 return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
             }
 
             @Override
@@ -264,6 +270,11 @@ public interface DdoModel<T> extends Model<T> {
             }
 
             @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
+            }
+
+            @Override
             public Relaxation<T> relaxation() {
                 return DdoModel.this.relaxation();
             }
@@ -339,6 +350,11 @@ public interface DdoModel<T> extends Model<T> {
             }
 
             @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
+            }
+
+            @Override
             public Relaxation<T> relaxation() {
                 return DdoModel.this.relaxation();
             }
@@ -404,6 +420,11 @@ public interface DdoModel<T> extends Model<T> {
             }
 
             @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
+            }
+
+            @Override
             public Relaxation<T> relaxation() {
                 return DdoModel.this.relaxation();
             }
@@ -466,6 +487,11 @@ public interface DdoModel<T> extends Model<T> {
             @Override
             public DebugLevel debugMode() {
                 return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
             }
 
             @Override
@@ -540,6 +566,11 @@ public interface DdoModel<T> extends Model<T> {
             @Override
             public DebugLevel debugMode() {
                 return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
             }
 
             @Override

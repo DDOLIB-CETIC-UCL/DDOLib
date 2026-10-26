@@ -8,9 +8,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.examples.layered.knapsack.KSDominance;
@@ -28,6 +32,7 @@ import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.ddo.core.Decision;
 import org.junit.jupiter.api.Test;
 
 /** Tests of the Large Neighborhood Search (LNS) solver on knapsack instances. */
@@ -128,8 +133,9 @@ public class LnsSolverTest {
                     }
 
                     @Override
-                    public int[] initialSolution() {
-                        return new int[] {
+                    public Solution initialSolution() {
+                        return toSolution(
+                                new int[] {
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
                             0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -172,8 +178,9 @@ public class LnsSolverTest {
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
                             1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
-                        };
-                    } // incumbent = -17
+                        },
+                                -17);
+                    }
                 };
 
         ArrayList<SearchStatistics> statsList = new ArrayList<>();
@@ -238,8 +245,8 @@ public class LnsSolverTest {
                     }
 
                     @Override
-                    public int[] initialSolution() {
-                        return new int[problem.nbVars()];
+                    public Solution initialSolution() {
+                        return toSolution(new int[problem.nbVars()], 0);
                     }
                 };
 
@@ -288,7 +295,7 @@ public class LnsSolverTest {
         // 2)
         final KSProblem problem = new KSProblem(10, new int[] {10, 1, 1}, new int[] {10, 5, 5});
         final LnsModel<Integer> model =
-                ksModel(problem, 100).setInitialSolution(new int[] {0, 1, 1});
+                ksModel(problem, 100).setInitialSolution(toSolution(new int[] {0, 1, 1}, -2));
 
         // The first neighborhood fixes x0 = 0: its DD is exact but it does not contain the
         // optimum, the solver must not conclude that the incumbent is optimal.
@@ -329,14 +336,23 @@ public class LnsSolverTest {
         final LnsModel<Integer> model =
                 ksModel(problem, 10)
                         .setSeed(7)
-                        .setInitialSolution(initial)
+                        .setInitialSolution(toSolution(initial, -1))
                         .setProbability(0.3)
                         .fixWidth(20);
 
         assertEquals(7, model.seed());
         assertEquals(0.3, model.probability());
-        assertArrayEquals(initial, model.initialSolution());
+        assertArrayEquals(initial, model.initialSolution().solution());
         assertEquals(LnsModel.DEFAULT_SEED, ksModel(problem, 10).seed());
+    }
+
+    /** Wraps an assignment of all the variables and its value in a {@link Solution}. */
+    private static Solution toSolution(int[] assignment, double value) {
+        Set<Decision> decisions = new HashSet<>();
+        for (int i = 0; i < assignment.length; i++) {
+            decisions.add(new Decision(i, assignment[i]));
+        }
+        return new Solution(Optional.of(decisions), new DdoStats(0, value));
     }
 
     private static LnsModel<TSPTWState> tsptwModel(TSPTWProblem problem, int width) {

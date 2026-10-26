@@ -3,6 +3,7 @@ package org.ddolib.layered.modeling;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Defines the structure of an optimization model solved using the <b>Anytime Weighted A* (AWA*)</b>
@@ -62,6 +63,11 @@ public interface AwAstarModel<T> extends Model<T> {
             @Override
             public DebugLevel debugMode() {
                 return AwAstarModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return AwAstarModel.this.initialSolution();
             }
 
             @Override

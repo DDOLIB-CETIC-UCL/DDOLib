@@ -55,6 +55,9 @@ public final class LnsSolver<T> implements Solver {
     private int destructionDepth;
     private int[] solution;
 
+    /** Assignment of the model's initial solution, or {@code null} if it has none. */
+    private final int[] initialSolution;
+
     /**
      * Lower bound on the optimal value of the whole problem, given by the fast lower bound at the
      * root. Unlike the bounds of the restricted neighborhoods, it is valid globally.
@@ -78,6 +81,8 @@ public final class LnsSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
         this.model = model;
+        Solution init = model.initialSolution();
+        this.initialSolution = init == null || init.isEmpty() ? null : init.solution();
         this.maxDepth = Math.max(0, problem.nbVars() - 2);
         this.destructionDepth = maxDepth;
         this.solution = new int[problem.nbVars()];
@@ -119,9 +124,9 @@ public final class LnsSolver<T> implements Solver {
             if (bestSol.isPresent()) {
                 solution = constructSolution(bestSol.get());
             } else {
-                if (model.initialSolution() != null) {
-                    solution = model.initialSolution();
-                    bestUB = costInSolutionAtDepth(model.initialSolution(), problem.nbVars());
+                if (initialSolution != null) {
+                    solution = initialSolution;
+                    bestUB = costInSolutionAtDepth(initialSolution, problem.nbVars());
                     if (Double.isInfinite(stats.incumbent())) {
                         stats = stats.updateIncumbent(bestUB, gap).updateStatus(SearchStatus.SAT);
                     }
@@ -213,9 +218,9 @@ public final class LnsSolver<T> implements Solver {
         if (bestSol.isPresent()) {
             return Optional.of(bestUB);
         } else {
-            if (model.initialSolution() != null) {
+            if (initialSolution != null) {
                 return Optional.of(
-                        costInSolutionAtDepth(model.initialSolution(), problem.nbVars()));
+                        costInSolutionAtDepth(initialSolution, problem.nbVars()));
             }
             return Optional.empty();
         }
@@ -223,9 +228,9 @@ public final class LnsSolver<T> implements Solver {
 
     @Override
     public Optional<Set<Decision>> bestSolution() {
-        if (bestSol.isEmpty() && model.initialSolution() != null) {
+        if (bestSol.isEmpty() && initialSolution != null) {
             // The initial solution has never been improved: it is the incumbent
-            int[] initial = model.initialSolution();
+            int[] initial = initialSolution;
             Set<Decision> decisions = new HashSet<>();
             for (int k = 0; k < initial.length; k++) {
                 decisions.add(new Decision(k, initial[k]));
@@ -386,14 +391,14 @@ public final class LnsSolver<T> implements Solver {
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
         compilation.reductionStrategy = model.restrictStrategy();
-        compilation.initialSolution = model.initialSolution();
+        compilation.initialSolution = initialSolution;
         compilation.probability = model.probability();
         compilation.useLNS = model.useLNS();
         compilation.random = random;
         if (bestSol.isPresent()) {
             compilation.solution = constructSolution(bestSol.get());
         } else {
-            compilation.solution = model.initialSolution();
+            compilation.solution = initialSolution;
         }
         return compilation;
     }

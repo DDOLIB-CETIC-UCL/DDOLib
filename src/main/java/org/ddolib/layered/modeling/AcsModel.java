@@ -3,6 +3,7 @@ package org.ddolib.layered.modeling;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Defines the structure of an optimization model solved using the <b>Anytime Column Search
@@ -69,6 +70,11 @@ public interface AcsModel<T> extends Model<T> {
             }
 
             @Override
+            public Solution initialSolution() {
+                return AcsModel.this.initialSolution();
+            }
+
+            @Override
             public int columnWidth() {
                 return width;
             }
@@ -104,6 +110,11 @@ public interface AcsModel<T> extends Model<T> {
             }
 
             @Override
+            public Solution initialSolution() {
+                return AcsModel.this.initialSolution();
+            }
+
+            @Override
             public int columnWidth() {
                 return AcsModel.this.columnWidth();
             }
@@ -136,6 +147,11 @@ public interface AcsModel<T> extends Model<T> {
             @Override
             public DebugLevel debugMode() {
                 return AcsModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return AcsModel.this.initialSolution();
             }
 
             @Override

@@ -2,6 +2,7 @@ package org.ddolib.layered.modeling;
 
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.DefaultVariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 
@@ -44,16 +45,19 @@ public interface Model<T> {
     }
 
     /**
-     * Returns a precomputed upper bound on the optimal value.
+     * Returns a precomputed solution to start the search from.
      *
-     * <p>This bound allows to start the search with a better upper bound and start pruning earlier.
+     * <p>Its value is used as initial upper bound, which allows to start pruning earlier. It is
+     * returned by the solver if no better solution is found. A non-empty solution must assign all
+     * the variables and be feasible.
      *
-     * <p>By default, it returns {@code Double.POSITIVE_INFINITY}
+     * <p>By default, it returns {@code null}. A {@code null} or empty solution means that no
+     * initial solution is available.
      *
-     * @return a precomputed upper bound on the optimal value
+     * @return a precomputed solution, or {@code null} if there is none
      */
-    default double upperBound() {
-        return Double.POSITIVE_INFINITY;
+    default Solution initialSolution() {
+        return null;
     }
 
     /**
@@ -133,6 +137,11 @@ public interface Model<T> {
             public DebugLevel debugMode() {
                 return Model.this.debugMode();
             }
+
+            @Override
+            public Solution initialSolution() {
+                return Model.this.initialSolution();
+            }
         };
     }
 
@@ -166,6 +175,11 @@ public interface Model<T> {
             @Override
             public DebugLevel debugMode() {
                 return Model.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return Model.this.initialSolution();
             }
         };
     }

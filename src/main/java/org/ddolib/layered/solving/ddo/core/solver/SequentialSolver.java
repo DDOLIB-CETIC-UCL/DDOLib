@@ -146,8 +146,9 @@ public final class SequentialSolver<T> implements Solver {
         this.width = model.widthHeuristic();
         this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
         this.frontier = model.frontier();
-        this.bestUB = model.upperBound();
-        this.bestSol = Optional.empty();
+        Optional<Solution> init = Solver.initialSolution(model);
+        this.bestUB = init.map(Solution::value).orElse(Double.POSITIVE_INFINITY);
+        this.bestSol = init.map(Solution::decisions);
         this.verbosityLevel = model.verbosityLevel();
         this.verboseMode = new VerboseMode(verbosityLevel, 500L);
         this.exportAsDot = model.exportDot();
@@ -160,6 +161,9 @@ public final class SequentialSolver<T> implements Solver {
             Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
 
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
+        if (bestSol.isPresent()) { // initial solution provided by the model
+            statistics = statistics.updateStatus(SearchStatus.SAT);
+        }
         frontier.push(root());
         cache.ifPresent(c -> c.initialize());
 

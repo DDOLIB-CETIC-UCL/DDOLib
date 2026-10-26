@@ -4,6 +4,7 @@ import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
@@ -45,7 +46,7 @@ import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic
  *
  * <ul>
  *   <li>{@link #fixWidth(int)} returns a new {@code LnsModel} with a fixed search width.
- *   <li>{@link #setInitialSolution(int[])} returns a new {@code LnsModel} using a given initial
+ *   <li>{@link #setInitialSolution(Solution)} returns a new {@code LnsModel} using a given initial
  *       solution.
  *   <li>{@link #setProbability(double)} returns a new {@code LnsModel} with a specified destruction
  *       probability.
@@ -119,16 +120,6 @@ public interface LnsModel<T> extends Model<T> {
      */
     default StateDistance<T> stateDistance() {
         return (o1, o2) -> 0;
-    }
-
-    /**
-     * Returns the initial solution to start the search from. Default is {@code null} (no initial
-     * solution).
-     *
-     * @return the initial solution as an array of variable assignments
-     */
-    default int[] initialSolution() {
-        return null;
     }
 
     /**
@@ -224,7 +215,7 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
-            public int[] initialSolution() {
+            public Solution initialSolution() {
                 return LnsModel.this.initialSolution();
             }
 
@@ -251,7 +242,7 @@ public interface LnsModel<T> extends Model<T> {
      * @param solution the initial solution
      * @return a new {@code LnsModel} using the given initial solution
      */
-    default LnsModel<T> setInitialSolution(int[] solution) {
+    default LnsModel<T> setInitialSolution(Solution solution) {
         return new LnsModel<>() {
             @Override
             public Problem<T> problem() {
@@ -299,7 +290,7 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
-            public int[] initialSolution() {
+            public Solution initialSolution() {
                 return solution;
             }
 
@@ -384,7 +375,7 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
-            public int[] initialSolution() {
+            public Solution initialSolution() {
                 return LnsModel.this.initialSolution();
             }
 
@@ -469,7 +460,7 @@ public interface LnsModel<T> extends Model<T> {
             }
 
             @Override
-            public int[] initialSolution() {
+            public Solution initialSolution() {
                 return LnsModel.this.initialSolution();
             }
 
