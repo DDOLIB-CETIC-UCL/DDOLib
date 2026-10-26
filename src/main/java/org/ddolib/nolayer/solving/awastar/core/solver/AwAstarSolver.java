@@ -186,6 +186,7 @@ public final class AwAstarSolver<T> implements Solver {
             openByF.remove(sub);
             // if current state is dominated, we skip it
             if (dominance.updateDominance(sub.getState(), sub.getValue())) {
+                statistics = statistics.incrementNbDominancePruning();
                 continue;
             }
 
@@ -200,6 +201,7 @@ public final class AwAstarSolver<T> implements Solver {
 
             // Sub can only lead to less good solution.
             if (sub.f() + 1e-10 >= bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 
@@ -260,6 +262,7 @@ public final class AwAstarSolver<T> implements Solver {
             double fprime = g + weight * h;
 
             if (f + 1e-10 > bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 

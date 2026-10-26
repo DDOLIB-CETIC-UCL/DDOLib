@@ -1,15 +1,5 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import org.ddolib.common.cache.SimpleCache;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.CutSetType;
@@ -21,12 +11,7 @@ import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-import org.ddolib.layered.modeling.DdoModel;
-import org.ddolib.layered.modeling.DominanceChecker;
-import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
@@ -34,6 +19,17 @@ import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
+
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * A sequential implementation of a Branch-and-Bound solver based on Multi-valued Decision Diagrams
@@ -81,10 +77,14 @@ import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
  * @see DominanceChecker
  */
 public final class SequentialSolver<T> implements Solver {
-    /** The problem we want to minimize. */
+    /**
+     * The problem we want to minimize.
+     */
     private final Problem<T> problem;
 
-    /** A heuristic to choose the maximum width of the DD you compile. */
+    /**
+     * A heuristic to choose the maximum width of the DD you compile.
+     */
     private final WidthHeuristic<T> width;
 
     /**
@@ -113,26 +113,38 @@ public final class SequentialSolver<T> implements Solver {
 
     private final VerboseMode verboseMode;
 
-    /** Whether we want to export the first explored restricted and relaxed mdd. */
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
     private final boolean exportAsDot;
 
     private final DdoModel<T> model;
 
-    /** This is the cache used to prune the search tree. */
+    /**
+     * This is the cache used to prune the search tree.
+     */
     private final Optional<SimpleCache<T>> cache;
 
     private final DominanceChecker<T> dominance;
 
-    /** Value of the best known upper bound. */
+    /**
+     * Value of the best known upper bound.
+     */
     private double bestUB;
 
-    /** If set, this keeps the info about the best solution so far. */
+    /**
+     * If set, this keeps the info about the best solution so far.
+     */
     private Optional<Set<Decision>> bestSol;
 
-    /** Only the first restricted mdd can be exported to a .dot file. */
+    /**
+     * Only the first restricted mdd can be exported to a .dot file.
+     */
     private boolean firstRestricted = true;
 
-    /** Only the first relaxed mdd can be exported to a .dot file. */
+    /**
+     * Only the first relaxed mdd can be exported to a .dot file.
+     */
     private boolean firstRelaxed = true;
 
     /**
@@ -219,16 +231,16 @@ public final class SequentialSolver<T> implements Solver {
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
-            statistics = statistics.addNodes(restrictedMdd.nbNodes());
+            statistics = statistics.addNodes(restrictedMdd.nbNodes())
+                    .addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
+                    .addNbDominancePruning(restrictedMdd.nbDominancePruning());
 
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (newbest) {
-                statistics =
-                        statistics
-                                .updateTime(System.currentTimeMillis())
-                                .updateIncumbent(bestUB, gap())
-                                .updateStatus(SearchStatus.SAT);
+                statistics = statistics.updateTime(System.currentTimeMillis())
+                        .updateIncumbent(bestUB, gap())
+                        .updateStatus(SearchStatus.SAT);
                 onSolution.accept(constructSolution(bestSol.get()), statistics);
             }
             if (exportAsDot && firstRestricted) {
@@ -254,18 +266,19 @@ public final class SequentialSolver<T> implements Solver {
             }
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
             relaxedMdd.compile();
-            statistics = statistics.addNodes(relaxedMdd.nbNodes());
+            statistics = statistics.addNodes(relaxedMdd.nbNodes())
+                    .addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
+                    .addNbDominancePruning(relaxedMdd.nbDominancePruning());
 
             if (compilation.compilationType == CompilationType.Relaxed
                     && relaxedMdd.relaxedBestPathIsExact()
                     && frontier.cutSetType() == CutSetType.Frontier) {
                 newbest = maybeUpdateBest(relaxedMdd, exportAsDot && firstRelaxed);
                 if (newbest) {
-                    statistics =
-                            statistics
-                                    .updateTime(System.currentTimeMillis())
-                                    .updateIncumbent(bestUB, gap())
-                                    .updateStatus(SearchStatus.SAT);
+                    statistics = statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
                     onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
             }
@@ -381,9 +394,9 @@ public final class SequentialSolver<T> implements Solver {
     /**
      * Initialize the parameters of a compilation.
      *
-     * @param type the type of the compilation (restricted or relaxed)
-     * @param sub the root of the current sub-problem
-     * @param maxWidth the max width of the diagram
+     * @param type        the type of the compilation (restricted or relaxed)
+     * @param sub         the root of the current sub-problem
+     * @param maxWidth    the max width of the diagram
      * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */

@@ -168,6 +168,7 @@ public final class AStarSolver<T> implements Solver {
             // if the new state is dominated, we skip it
             if (sub.getState() != null
                     && dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                statistics = statistics.incrementNbDominancePruning();
                 continue;
             }
             StateAndDepth<T> subKey = new StateAndDepth<>(sub.getState(), sub.getDepth());
@@ -182,6 +183,7 @@ public final class AStarSolver<T> implements Solver {
 
             // sub can only lead to less good solution
             if (sub.f() + 1e-10 > bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 
@@ -280,6 +282,7 @@ public final class AStarSolver<T> implements Solver {
 
             // this child can only lead to less good solution
             if (f + 1e-10 > bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 

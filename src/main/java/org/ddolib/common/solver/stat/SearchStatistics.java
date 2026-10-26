@@ -347,6 +347,18 @@ public abstract class SearchStatistics {
         return toReturn;
     }
 
+    public SearchStatistics addNbFastLowerBoundPruning(int nbPruning) {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbFastLowerBoundPruning += nbPruning;
+        return toReturn;
+    }
+
+    public SearchStatistics addNbDominancePruning(int nbPruning) {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbDominancePruning += nbPruning;
+        return toReturn;
+    }
+
     @Override
     public String toString() {
         DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);

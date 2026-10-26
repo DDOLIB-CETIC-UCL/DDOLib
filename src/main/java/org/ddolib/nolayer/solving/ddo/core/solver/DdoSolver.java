@@ -1,16 +1,5 @@
 package org.ddolib.nolayer.solving.ddo.core.solver;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import org.ddolib.common.cache.Cache;
 import org.ddolib.common.cache.SimpleCache;
 import org.ddolib.common.compilation.CompilationType;
@@ -26,6 +15,10 @@ import org.ddolib.nolayer.modeling.Problem;
 import org.ddolib.nolayer.solver.Solution;
 import org.ddolib.nolayer.solver.Solver;
 import org.ddolib.nolayer.solving.ddo.core.mdd.NoLayerDecisionDiagram;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * Implementation of the DDO (Decision Diagram Optimization) branch-and-bound solver for no-layer
@@ -66,6 +59,17 @@ public final class DdoSolver<T> implements Solver {
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
 
         this.frontier = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::getLowerBound));
+    }
+
+    /**
+     * Inverse of {@link #constructSolution(Set)}: the i-th label becomes the decision (i, label).
+     */
+    private static Set<Decision> toDecisions(List<Integer> labels) {
+        Set<Decision> decisions = new HashSet<>();
+        for (int i = 0; i < labels.size(); i++) {
+            decisions.add(new Decision(i, labels.get(i)));
+        }
+        return decisions;
     }
 
     @Override
@@ -136,23 +140,24 @@ public final class DdoSolver<T> implements Solver {
                             cache.map(c -> (Cache<T>) c));
 
             relaxedMdd.compile();
-            statistics = statistics.addNodes(relaxedMdd.nbNodes());
+            statistics = statistics.addNodes(relaxedMdd.nbNodes())
+                    .addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
+                    .addNbDominancePruning(relaxedMdd.nbDominancePruning());
 
             if (relaxedMdd.relaxedBestPathIsExact()) {
                 boolean newbest = maybeUpdateBest(relaxedMdd);
                 if (newbest) {
-                    statistics =
-                            statistics
-                                    .updateTime(System.currentTimeMillis())
-                                    .updateIncumbent(bestUB, gap())
-                                    .updateStatus(SearchStatus.SAT);
+                    statistics = statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
                     onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
             }
 
             if (!relaxedMdd.isExact()
                     && (relaxedMdd.bestValue().isEmpty()
-                            || relaxedMdd.bestValue().get() < bestUB)) {
+                    || relaxedMdd.bestValue().get() < bestUB)) {
 
                 // 2. RESTRICTION
                 if (model.dominance() != null) {
@@ -168,15 +173,16 @@ public final class DdoSolver<T> implements Solver {
                                 cache.map(c -> (Cache<T>) c));
 
                 restrictedMdd.compile();
-                statistics = statistics.addNodes(restrictedMdd.nbNodes());
+                statistics = statistics.addNodes(restrictedMdd.nbNodes())
+                        .addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
+                        .addNbDominancePruning(restrictedMdd.nbDominancePruning());
 
                 boolean newbest = maybeUpdateBest(restrictedMdd);
                 if (newbest) {
-                    statistics =
-                            statistics
-                                    .updateTime(System.currentTimeMillis())
-                                    .updateIncumbent(bestUB, gap())
-                                    .updateStatus(SearchStatus.SAT);
+                    statistics = statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateIncumbent(bestUB, gap())
+                            .updateStatus(SearchStatus.SAT);
                     onSolution.accept(constructSolution(bestSol.get()), statistics);
                 }
 
@@ -257,14 +263,5 @@ public final class DdoSolver<T> implements Solver {
             sol[d.variable()] = d.value();
         }
         return Arrays.stream(sol).boxed().toList();
-    }
-
-    /** Inverse of {@link #constructSolution(Set)}: the i-th label becomes the decision (i, label). */
-    private static Set<Decision> toDecisions(List<Integer> labels) {
-        Set<Decision> decisions = new HashSet<>();
-        for (int i = 0; i < labels.size(); i++) {
-            decisions.add(new Decision(i, labels.get(i)));
-        }
-        return decisions;
     }
 }

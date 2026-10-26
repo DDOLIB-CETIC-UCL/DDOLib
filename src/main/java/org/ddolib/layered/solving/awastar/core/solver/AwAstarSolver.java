@@ -1,16 +1,5 @@
 package org.ddolib.layered.solving.awastar.core.solver;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.PriorityQueue;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
@@ -19,16 +8,18 @@ import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-import org.ddolib.layered.modeling.AwAstarModel;
-import org.ddolib.layered.modeling.DefaultFastLowerBound;
-import org.ddolib.layered.modeling.DominanceChecker;
-import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.layered.modeling.Problem;
+import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solver.Solver;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.util.debug.DebugUtil;
+
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Implementation of an Anytime Weighted A* search (AWA*) solver for decision diagram-based
@@ -200,6 +191,7 @@ public final class AwAstarSolver<T> implements Solver {
 
             // if current state is dominated, we skip it
             if (dominance.updateDominance(sub.getState(), sub.getDepth(), sub.getValue())) {
+                statistics = statistics.incrementNbDominancePruning();
                 continue;
             }
 
@@ -215,6 +207,7 @@ public final class AwAstarSolver<T> implements Solver {
 
             // Sub can only lead to less good solution.
             if (sub.f() + 1e-10 >= bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 
@@ -291,6 +284,7 @@ public final class AwAstarSolver<T> implements Solver {
 
             // this child can only lead to less good solution
             if (f + 1e-10 >= bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 
@@ -352,7 +346,9 @@ public final class AwAstarSolver<T> implements Solver {
         return new SubProblem<>(state, value, lb.fastLowerBound(state, vars), nullDecisions);
     }
 
-    /** Checks if the lower bound of explored nodes of the search is admissible. */
+    /**
+     * Checks if the lower bound of explored nodes of the search is admissible.
+     */
     private void checkFLBAdmissibility() {
 
         HashSet<StateAndDepth<T>> toCheck = new HashSet<>(closed.keySet());

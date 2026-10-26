@@ -48,6 +48,8 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     private final Node<T> rootNode;
     private Node<T> targetNode = null;
     private boolean exact = true;
+    private int nbFastLowerBoundPruning = 0;
+    private int nbDominancePruning = 0;
 
     /**
      * Creates a new decision diagram rooted at the given subproblem.
@@ -187,6 +189,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                 double ep = saturatedAdd(n.bound, cost);
                 double flb = model.lowerBound().fastLowerBound(nextState);
                 if (saturatedAdd(ep, flb) >= primalBound) {
+                    nbFastLowerBoundPruning++;
                     continue;
                 }
 
@@ -195,6 +198,7 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
 
                 if (newNode) {
                     if (dominance.updateDominance(nextState, ep)) {
+                        nbDominancePruning++;
                         continue; // Dominated!
                     }
                 }
@@ -475,6 +479,16 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public int nbNodes() {
         return stateMap.size();
+    }
+
+    @Override
+    public int nbFastLowerBoundPruning() {
+        return nbFastLowerBoundPruning;
+    }
+
+    @Override
+    public int nbDominancePruning() {
+        return nbDominancePruning;
     }
 
     @Override

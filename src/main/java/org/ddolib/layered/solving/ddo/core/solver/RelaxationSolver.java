@@ -1,10 +1,5 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
-import java.util.Collections;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.Frontier;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
@@ -13,18 +8,19 @@ import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
-import org.ddolib.layered.modeling.DdoModel;
-import org.ddolib.layered.modeling.DominanceChecker;
-import org.ddolib.layered.modeling.FastLowerBound;
-import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.Relaxation;
-import org.ddolib.layered.modeling.StateRanking;
+import org.ddolib.layered.modeling.*;
 import org.ddolib.layered.solver.Solution;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
+
+import java.util.Collections;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
 
 /**
  * A solver that compile one relaxed MDD from the root node.
@@ -41,10 +37,14 @@ import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
  * @see DominanceChecker
  */
 public final class RelaxationSolver<T> {
-    /** The problem we want to minimize. */
+    /**
+     * The problem we want to minimize.
+     */
     private final Problem<T> problem;
 
-    /** A heuristic to choose the maximum width of the DD you compile. */
+    /**
+     * A heuristic to choose the maximum width of the DD you compile.
+     */
     private final WidthHeuristic<T> width;
 
     /**
@@ -58,7 +58,9 @@ public final class RelaxationSolver<T> {
      */
     private final Frontier<T> frontier;
 
-    /** The dominance object that will be used to prune the search space. */
+    /**
+     * The dominance object that will be used to prune the search space.
+     */
     private final DominanceChecker<T> dominance;
 
     private final DdoModel<T> model;
@@ -78,13 +80,19 @@ public final class RelaxationSolver<T> {
 
     private final VerboseMode verboseMode;
 
-    /** Whether we want to export the first explored restricted and relaxed mdd. */
+    /**
+     * Whether we want to export the first explored restricted and relaxed mdd.
+     */
     private final boolean exportAsDot;
 
-    /** Value of the best known upper bound. */
+    /**
+     * Value of the best known upper bound.
+     */
     private double bestUB;
 
-    /** If set, this keeps the info about the best solution so far. */
+    /**
+     * If set, this keeps the info about the best solution so far.
+     */
     private Optional<Set<Decision>> bestSol;
 
     /**
@@ -109,7 +117,7 @@ public final class RelaxationSolver<T> {
     /**
      * Solves the model by compiling a single relaxed decision diagram.
      *
-     * @param limit a predicate that can limit or stop the search based on current statistics
+     * @param limit      a predicate that can limit or stop the search based on current statistics
      * @param onSolution a callback invoked once with the best solution found, if any
      * @return the statistics of the search after completion
      */
@@ -123,6 +131,8 @@ public final class RelaxationSolver<T> {
 
         LinkedDecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
+        statistics = statistics.addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
+                .addNbDominancePruning(relaxedMdd.nbDominancePruning());
         maybeUpdateBest(relaxedMdd, exportAsDot);
 
         statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);
@@ -146,7 +156,7 @@ public final class RelaxationSolver<T> {
      * Returns the set of decisions that lead to the best solution found by this solver, if any.
      *
      * @return an {@link Optional} containing the set of {@link Decision} objects representing the
-     *     best solution, or empty if no solution exists
+     * best solution, or empty if no solution exists
      */
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
@@ -194,8 +204,8 @@ public final class RelaxationSolver<T> {
     /**
      * Initialize the parameters of a compilation.
      *
-     * @param sub the root of the current sub-problem
-     * @param maxWidth the max width of the diagram
+     * @param sub         the root of the current sub-problem
+     * @param maxWidth    the max width of the diagram
      * @param exportAsDot whether the diagram has to be exported as .dot file
      * @return the parameters of the compilation
      */

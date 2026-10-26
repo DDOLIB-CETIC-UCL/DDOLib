@@ -126,6 +126,22 @@ public class DdoStats extends SearchStatistics {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats addNbFastLowerBoundPruning(int nbPruning) {
+        return (DdoStats) super.addNbFastLowerBoundPruning(nbPruning);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats addNbDominancePruning(int nbPruning) {
+        return (DdoStats) super.addNbDominancePruning(nbPruning);
+    }
+
+    /**
      * Returns the total number of nodes created in all compiled MDDs.
      *
      * @return the total number of nodes

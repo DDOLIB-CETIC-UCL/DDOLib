@@ -108,6 +108,22 @@ public class AstarStats extends SearchStatistics {
     }
 
     /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats addNbFastLowerBoundPruning(int nbPruning) {
+        return (AstarStats) super.addNbFastLowerBoundPruning(nbPruning);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats addNbDominancePruning(int nbPruning) {
+        return (AstarStats) super.addNbDominancePruning(nbPruning);
+    }
+
+    /**
      * Retrieves the current Exponential Moving Average (EMA) of the novelty percentage. A value
      * close to 0.0 indicates that the algorithm is generating a massive amount of redundant or
      * suboptimal states, signaling probable stagnation.

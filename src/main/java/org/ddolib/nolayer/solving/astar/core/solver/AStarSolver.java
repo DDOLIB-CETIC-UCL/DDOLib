@@ -120,6 +120,7 @@ public final class AStarSolver<T> implements Solver {
             T state = sub.getState();
 
             if (state != null && dominance.updateDominance(state, sub.getValue())) {
+                statistics = statistics.incrementNbDominancePruning();
                 continue;
             }
 
@@ -132,6 +133,7 @@ public final class AStarSolver<T> implements Solver {
             closed.put(state, sub.f());
 
             if (sub.f() + 1e-10 > bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 
@@ -180,6 +182,7 @@ public final class AStarSolver<T> implements Solver {
             double f = g + h;
 
             if (f + 1e-10 > bestUB) {
+                statistics = statistics.incrementNbFastLowerBoundPruning();
                 continue;
             }
 

@@ -111,6 +111,22 @@ public interface DecisionDiagram<T> {
     int nbNodes();
 
     /**
+     * Returns the number of nodes pruned during the compilation of this decision diagram because
+     * their fast lower bound could not improve the best known solution.
+     *
+     * @return the number of nodes pruned by the fast lower bound
+     */
+    int nbFastLowerBoundPruning();
+
+    /**
+     * Returns the number of nodes pruned during the compilation of this decision diagram because
+     * they were dominated.
+     *
+     * @return the number of nodes pruned by dominance
+     */
+    int nbDominancePruning();
+
+    /**
      * Returns the minimum lower bound among the nodes expanded during the compilation of this
      * decision diagram, mainly used to compute the optimality gap during a large neighborhood
      * search.
