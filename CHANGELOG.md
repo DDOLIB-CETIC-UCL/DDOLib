@@ -2,7 +2,9 @@
 
 This file documents the DDOLib changes.
 
-## [Unreleased]
+## Unreleased
+
+## [0.2.0] - 26/10/2026
 
 ### Fixed
 
