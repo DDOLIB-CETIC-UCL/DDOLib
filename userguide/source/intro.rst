@@ -87,7 +87,7 @@ Add the following to your project's ``pom.xml``:
    <dependency>
        <groupId>io.github.ddolib-cetic-ucl</groupId>
        <artifactId>ddolib</artifactId>
-       <version>0.0.5</version>
+       <version>0.2.0</version>
    </dependency>
 
 Building from source
