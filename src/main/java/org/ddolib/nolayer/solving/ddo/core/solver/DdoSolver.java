@@ -3,6 +3,7 @@ package org.ddolib.nolayer.solving.ddo.core.solver;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -59,8 +60,9 @@ public final class DdoSolver<T> implements Solver {
         this.model = model;
         this.problem = model.problem();
         this.cache = model.useCache() ? Optional.of(new SimpleCache<>()) : Optional.empty();
-        this.bestUB = Double.POSITIVE_INFINITY;
-        this.bestSol = Optional.empty();
+        Optional<Solution> init = Solver.initialSolution(model);
+        this.bestUB = init.map(Solution::value).orElse(Double.POSITIVE_INFINITY);
+        this.bestSol = init.map(i -> toDecisions(i.solution()));
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
 
         this.frontier = new PriorityQueue<>(Comparator.comparingDouble(SubProblem::getLowerBound));
@@ -71,6 +73,9 @@ public final class DdoSolver<T> implements Solver {
             Predicate<SearchStatistics> limit,
             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
+        if (bestSol.isPresent()) { // initial solution provided by the model
+            statistics = statistics.updateStatus(SearchStatus.SAT);
+        }
         frontier.add(root());
         cache.ifPresent(c -> c.initialize());
 
@@ -252,5 +257,14 @@ public final class DdoSolver<T> implements Solver {
             sol[d.variable()] = d.value();
         }
         return Arrays.stream(sol).boxed().toList();
+    }
+
+    /** Inverse of {@link #constructSolution(Set)}: the i-th label becomes the decision (i, label). */
+    private static Set<Decision> toDecisions(List<Integer> labels) {
+        Set<Decision> decisions = new HashSet<>();
+        for (int i = 0; i < labels.size(); i++) {
+            decisions.add(new Decision(i, labels.get(i)));
+        }
+        return decisions;
     }
 }

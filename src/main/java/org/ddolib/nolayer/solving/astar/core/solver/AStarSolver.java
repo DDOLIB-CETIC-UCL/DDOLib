@@ -61,8 +61,9 @@ public final class AStarSolver<T> implements Solver {
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = model.upperBound();
-        this.bestSol = Optional.empty();
+        Optional<Solution> init = Solver.initialSolution(model);
+        this.bestUB = init.map(Solution::value).orElse(Double.POSITIVE_INFINITY);
+        this.bestSol = init.map(Solution::solution);
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
         this.verboseMode = new VerboseMode(model.verbosityLevel(), 500L);
@@ -75,7 +76,7 @@ public final class AStarSolver<T> implements Solver {
         this.problem = model.problem();
         this.lb = model.lowerBound();
         this.dominance = model.dominance();
-        this.bestUB = model.upperBound();
+        this.bestUB = Double.POSITIVE_INFINITY;
         this.bestSol = Optional.empty();
         this.present = new HashMap<>();
         this.closed = new HashMap<>();
@@ -94,6 +95,9 @@ public final class AStarSolver<T> implements Solver {
             Predicate<SearchStatistics> limit,
             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
+        if (bestSol.isPresent()) { // initial solution provided by the model
+            statistics = statistics.updateStatus(SearchStatus.SAT);
+        }
         if (dominance != null) {
             dominance.clear();
         }
