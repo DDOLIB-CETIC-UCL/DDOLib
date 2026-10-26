@@ -52,6 +52,7 @@ org.ddolib.layered.solving.ddo.core.heuristics.variable
 org.ddolib.layered.solving.ddo.core.mdd
 org.ddolib.layered.solving.ddo.core.solver
 org.ddolib.layered.solving.lns.core.solver
+org.ddolib.layered.solving.startheuristic
 org.ddolib.layered.util.debug
 org.ddolib.nolayer.modeling
 org.ddolib.nolayer.solver
@@ -61,4 +62,5 @@ org.ddolib.nolayer.solving.awastar.core.solver
 org.ddolib.nolayer.solving.ddo.core.heuristics.cluster
 org.ddolib.nolayer.solving.ddo.core.mdd
 org.ddolib.nolayer.solving.ddo.core.solver
+org.ddolib.nolayer.solving.startheuristic
 org.ddolib.nolayer.util.debug
