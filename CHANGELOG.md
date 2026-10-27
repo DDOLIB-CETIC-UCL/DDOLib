@@ -4,6 +4,17 @@ This file documents the DDOLib changes.
 
 ## Unreleased
 
+### Fixed
+
+- A*-family stats: the moving average behind `validChildrenPercent` now also takes into account
+  the expanded nodes whose children are all pruned or redundant. Previously these nodes were
+  ignored, so the indicator decreased far too slowly to signal stagnation.
+- A* and ACS (layered and no-layer) now update `validChildrenPercent`. Previously only AWA* did,
+  so the `minValidChildrenPercent` stop criterion could never trigger with A* or ACS.
+- No-layer ACS: a better solution found while generating children now updates the incumbent in
+  the statistics and is reported to the `onSolution` callback. Previously only the internal upper
+  bound was updated.
+
 ## [0.2.0] - 26/10/2026
 
 ### Fixed
