@@ -128,7 +128,7 @@ public class AstarStats extends SearchStatistics {
      * close to 0.0 indicates that the algorithm is generating a massive amount of redundant or
      * suboptimal states, signaling probable stagnation.
      *
-     * @return the smoothed ratio value (theoretically between 0 % and 1 %)
+     * @return the smoothed ratio value (theoretically between 0 % and 100 %)
      */
     public double validChildrenPercent() {
         return 100 * validChildrenRatio;
@@ -152,7 +152,7 @@ public class AstarStats extends SearchStatistics {
      * @return a new instance with updated validChildrenRatio
      */
     public AstarStats updateValidChildrenPercent(int nbGeneratedChildren, int nbSelectedChildren) {
-        if (nbSelectedChildren == 0) {
+        if (nbGeneratedChildren == 0) {
             return this;
         }
 
