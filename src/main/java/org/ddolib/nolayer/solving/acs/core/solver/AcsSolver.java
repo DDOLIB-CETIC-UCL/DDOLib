@@ -205,6 +205,8 @@ public final class AcsSolver<T> implements Solver {
             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
+        int nbGeneratedChildren = 0;
+        int nbSelectedChildren = 0;
         while (domain.hasNext()) {
             int label = domain.next();
 
@@ -214,6 +216,7 @@ public final class AcsSolver<T> implements Solver {
 
             T newState = problem.transition(state, label);
             double cost = problem.transitionCost(state, label);
+            nbGeneratedChildren++;
 
             double g = subProblem.getValue() + cost;
             List<Integer> path = new ArrayList<>(subProblem.getPath());
@@ -238,15 +241,18 @@ public final class AcsSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.get(newDepth).add(newSub);
                 present.put(newState, newSub.f());
+                nbSelectedChildren++;
             } else if (presentValue == null) {
                 Double closedValue = closed.get(newState);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.get(newDepth).add(newSub);
                     closed.remove(newState);
                     present.put(newState, newSub.f());
+                    nbSelectedChildren++;
                 } else if (closedValue == null) {
                     open.get(newDepth).add(newSub);
                     present.put(newState, newSub.f());
+                    nbSelectedChildren++;
                 }
             }
 
@@ -256,6 +262,7 @@ public final class AcsSolver<T> implements Solver {
                 this.bestUB = newSub.getValue();
             }
         }
+        statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 
     @Override

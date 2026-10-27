@@ -165,6 +165,8 @@ public final class AStarSolver<T> implements Solver {
             SubProblem<T> subProblem, BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
+        int nbGeneratedChildren = 0;
+        int nbSelectedChildren = 0;
         while (domain.hasNext()) {
             int label = domain.next();
 
@@ -174,6 +176,7 @@ public final class AStarSolver<T> implements Solver {
 
             T newState = problem.transition(state, label);
             double cost = problem.transitionCost(state, label);
+            nbGeneratedChildren++;
             double g = subProblem.getValue() + cost;
             List<Integer> newPath = new ArrayList<>(subProblem.getPath());
             newPath.add(label);
@@ -192,15 +195,18 @@ public final class AStarSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.add(newSub);
                 present.put(newState, newSub.f());
+                nbSelectedChildren++;
             } else if (presentValue == null) {
                 Double closedValue = closed.get(newState);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.add(newSub);
                     closed.remove(newState);
                     present.put(newState, newSub.f());
+                    nbSelectedChildren++;
                 } else if (closedValue == null) {
                     open.add(newSub);
                     present.put(newState, newSub.f());
+                    nbSelectedChildren++;
                 }
             }
 
@@ -213,6 +219,7 @@ public final class AStarSolver<T> implements Solver {
                 verboseMode.newBest(bestUB);
             }
         }
+        statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 
     private double gap() {
