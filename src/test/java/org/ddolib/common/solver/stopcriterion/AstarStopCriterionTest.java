@@ -19,8 +19,10 @@ import org.junit.jupiter.api.Test;
 
 class AstarStopCriterionTest {
 
+    // On smaller instances (e.g. instance_test_0), A* can reach the optimum without ever pruning
+    // or discarding a freshly generated child, so the indicator legitimately stays at 100 %.
     private static final String KS_INSTANCE =
-            Path.of("src", "test", "resources", "Knapsack", "instance_test_0").toString();
+            Path.of("src", "test", "resources", "Knapsack", "instance_test_1").toString();
 
     @Test
     void testMinValidChildrenPercent() {
