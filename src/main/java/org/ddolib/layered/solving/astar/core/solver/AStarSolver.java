@@ -264,6 +264,8 @@ public final class AStarSolver<T> implements Solver {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
+        int nbGeneratedChildren = 0;
+        int nbSelectedChildren = 0;
         while (domain.hasNext()) {
             final int val = domain.next();
             final Decision decision = new Decision(var, val);
@@ -272,6 +274,7 @@ public final class AStarSolver<T> implements Solver {
             }
             T newState = problem.transition(state, decision);
             double cost = problem.transitionCost(state, decision);
+            nbGeneratedChildren++;
             double g = subProblem.getValue() + cost;
             Set<Decision> path = new HashSet<>(subProblem.getPath());
             path.add(decision);
@@ -295,15 +298,18 @@ public final class AStarSolver<T> implements Solver {
             if (presentValue != null && presentValue > newSub.f()) {
                 open.add(newSub);
                 present.put(newKey, newSub.f());
+                nbSelectedChildren++;
             } else if (presentValue == null) {
                 Double closedValue = closed.get(newKey);
                 if (closedValue != null && closedValue > newSub.f()) {
                     open.add(newSub);
                     closed.remove(newKey);
                     present.put(newKey, newSub.f());
+                    nbSelectedChildren++;
                 } else if (closedValue == null) {
                     open.add(newSub);
                     present.put(newKey, newSub.f());
+                    nbSelectedChildren++;
                 }
             }
 
@@ -318,6 +324,7 @@ public final class AStarSolver<T> implements Solver {
                 verboseMode.newBest(bestUB);
             }
         }
+        statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 
     /** Checks if the lower bound of explored nodes of the search is admissible. */

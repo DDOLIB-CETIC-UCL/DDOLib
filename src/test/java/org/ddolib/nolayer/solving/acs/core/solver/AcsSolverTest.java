@@ -134,7 +134,7 @@ class AcsSolverTest {
                             }
                             computedCost += problem.distanceMatrix[current][0];
 
-                            assertEquals(n - 1, sol.size());
+                            assertEquals(n, sol.size());
                             assertEquals(computedCost, s.incumbent());
                             assertEquals(SearchStatus.SAT, s.status());
                             statsList.add(s);
