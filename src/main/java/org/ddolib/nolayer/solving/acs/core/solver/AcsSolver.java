@@ -259,7 +259,9 @@ public final class AcsSolver<T> implements Solver {
             if (problem.isTarget(newState) && newSub.getValue() < bestUB) {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                this.bestUB = newSub.getValue();
+                statistics = statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                onSolution.accept(path, statistics);
+                verboseMode.newBest(bestUB);
             }
         }
         statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
