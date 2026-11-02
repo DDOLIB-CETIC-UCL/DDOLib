@@ -2,6 +2,7 @@
 
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.nolayer.solver.Solution;
 
 /**
  * Defines the core model interface for describing an optimization problem in the NoLayer API.
@@ -23,16 +24,23 @@ public interface Model&lt;T&gt; {
      * @return the {@link FastLowerBound} heuristic
      */
     default FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L26">        return new DefaultFastLowerBound&lt;&gt;();</span>
+<span class="fc" id="L27">        return new DefaultFastLowerBound&lt;&gt;();</span>
     }
 
     /**
-     * Returns a precomputed upper bound on the optimal value.
+     * Returns a precomputed solution to start the search from.
      *
-     * @return a precomputed upper bound on the optimal value
+     * &lt;p&gt;Its value is used as initial upper bound, which allows to start pruning earlier. It is
+     * returned by the solver if no better solution is found. A non-empty solution must reach a
+     * target state and be feasible.
+     *
+     * &lt;p&gt;By default, it returns {@code null}. A {@code null} or empty solution means that no
+     * initial solution is available.
+     *
+     * @return a precomputed solution, or {@code null} if there is none
      */
-    default double upperBound() {
-<span class="fc" id="L35">        return Double.POSITIVE_INFINITY;</span>
+    default Solution initialSolution() {
+<span class="fc" id="L43">        return null;</span>
     }
 
     /**
@@ -41,7 +49,7 @@ public interface Model&lt;T&gt; {
      * @return the {@link NoLayerDominanceChecker} used for dominance testing
      */
     default NoLayerDominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L44">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
+<span class="fc" id="L52">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
     }
 
     /**
@@ -50,7 +58,7 @@ public interface Model&lt;T&gt; {
      * @return the desired {@link VerbosityLevel}
      */
     default VerbosityLevel verbosityLevel() {
-<span class="fc" id="L53">        return VerbosityLevel.SILENT;</span>
+<span class="fc" id="L61">        return VerbosityLevel.SILENT;</span>
     }
 
     /**
@@ -59,7 +67,47 @@ public interface Model&lt;T&gt; {
      * @return the {@link DebugLevel} controlling debug behavior
      */
     default DebugLevel debugMode() {
-<span class="fc" id="L62">        return DebugLevel.OFF;</span>
+<span class="fc" id="L70">        return DebugLevel.OFF;</span>
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    default Model&lt;T&gt; setInitialSolution(Solution solution) {
+<span class="fc" id="L80">        return new Model&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+                return Model.this.problem();
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+                return Model.this.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker&lt;T&gt; dominance() {
+                return Model.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return Model.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return Model.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

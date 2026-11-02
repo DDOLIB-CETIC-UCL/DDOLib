@@ -3,6 +3,7 @@
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Defines the structure of an optimization model solved using the &lt;b&gt;Anytime Weighted A* (AWA*)&lt;/b&gt;
@@ -23,7 +24,7 @@ public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the weight to add to the heuristic function (5 by default)
      */
     default double weight() {
-<span class="fc" id="L26">        return 5.0;</span>
+<span class="fc" id="L27">        return 5.0;</span>
     }
 
     /**
@@ -33,7 +34,58 @@ public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a copy of this model but with another weight
      */
     default AwAstarModel&lt;T&gt; setWeight(double w) {
-<span class="nc" id="L36">        return new AwAstarModel&lt;&gt;() {</span>
+<span class="nc" id="L37">        return new AwAstarModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+                return AwAstarModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+                return AwAstarModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+                return AwAstarModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+                return AwAstarModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AwAstarModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AwAstarModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return AwAstarModel.this.initialSolution();
+            }
+
+            @Override
+            public double weight() {
+                return w;
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default AwAstarModel&lt;T&gt; setInitialSolution(Solution solution) {
+<span class="fc" id="L88">        return new AwAstarModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return AwAstarModel.this.problem();
@@ -66,7 +118,12 @@ public interface AwAstarModel&lt;T&gt; extends Model&lt;T&gt; {
 
             @Override
             public double weight() {
-                return w;
+                return AwAstarModel.this.weight();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
             }
         };
     }

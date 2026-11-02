@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DFS.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.nolayer.solving.startheuristic</a> &gt; <span class="el_source">DFS.java</span></div><h1>DFS.java</h1><pre class="source lang-java linenums">package org.ddolib.nolayer.solving.startheuristic;
+
+import org.ddolib.common.solver.stat.AstarStats;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.nolayer.modeling.FastLowerBound;
+import org.ddolib.nolayer.modeling.Model;
+import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
+import org.ddolib.nolayer.modeling.Problem;
+import org.ddolib.nolayer.solver.Solution;
+
+import java.util.*;
+import java.util.function.Predicate;
+
+/**
+ * Depth-first start heuristic returning the first feasible solution it encounters.
+ *
+ * &lt;p&gt;Its purpose is to quickly provide an upper bound to a complete search algorithm. The
+ * children of a node are explored by increasing {@code g + h}, where {@code h} is given by the
+ * model's {@link FastLowerBound}, so that the first dive follows the most promising decisions.
+ *
+ * &lt;p&gt;Since the search stops at the first solution, every node whose subtree has been fully
+ * explored is a dead end. States already explored, or dominated (according to the model's {@link
+ * NoLayerDominanceChecker}) by an explored state, are therefore skipped.
+ *
+ * &lt;p&gt;The returned statistics reuse {@link AstarStats}.
+ *
+ * @param &lt;T&gt; the type of state
+ */
+public final class DFS&lt;T&gt; {
+
+    private final Problem&lt;T&gt; problem;
+    private final FastLowerBound&lt;T&gt; lb;
+    private final NoLayerDominanceChecker&lt;T&gt; dominance;
+
+    /**
+     * Creates the heuristic from a model. Only its problem, fast lower bound and dominance checker
+     * are used.
+     *
+     * @param model the model of the problem to solve
+     */
+<span class="fc" id="L42">    public DFS(Model&lt;T&gt; model) {</span>
+<span class="fc" id="L43">        this.problem = model.problem();</span>
+<span class="fc" id="L44">        this.lb = model.lowerBound();</span>
+<span class="fc" id="L45">        this.dominance = model.dominance();</span>
+<span class="fc" id="L46">    }</span>
+
+    /**
+     * Searches the first feasible solution without any stopping criterion.
+     *
+     * @return the first solution found, or an empty solution with status {@code UNSAT} if the
+     * problem has none
+     */
+    public Solution findSolution() {
+<span class="fc" id="L55">        return findSolution(s -&gt; false);</span>
+    }
+
+    /**
+     * Searches the first feasible solution.
+     *
+     * @param limit stopping criterion tested at each iteration
+     * @return the first solution found (status {@code SAT}), an empty solution with status {@code
+     * UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
+     * limit was reached first
+     */
+    public Solution findSolution(Predicate&lt;SearchStatistics&gt; limit) {
+<span class="fc" id="L67">        SearchStatistics statistics =</span>
+<span class="fc" id="L68">                new AstarStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L69">        Deque&lt;Node&lt;T&gt;&gt; frontier = new ArrayDeque&lt;&gt;();</span>
+<span class="fc" id="L70">        Set&lt;T&gt; explored = new HashSet&lt;&gt;();</span>
+
+<span class="fc" id="L72">        frontier.push(new Node&lt;&gt;(problem.initialState(), problem.initialValue(), -1, null));</span>
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        while (!frontier.isEmpty()) {</span>
+<span class="fc" id="L75">            statistics = statistics</span>
+<span class="fc" id="L76">                    .incrementNbIter()</span>
+<span class="fc" id="L77">                    .updateFrontierMaxSize(frontier.size())</span>
+<span class="fc" id="L78">                    .updateTime(System.currentTimeMillis());</span>
+
+<span class="fc bfc" id="L80" title="All 2 branches covered.">            if (limit.test(statistics)) {</span>
+<span class="fc" id="L81">                return new Solution(List.of(), statistics.updateStatus(SearchStatus.UNKNOWN));</span>
+            }
+
+<span class="fc" id="L84">            Node&lt;T&gt; current = frontier.pop();</span>
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            if (problem.isTarget(current.state())) {</span>
+<span class="fc" id="L87">                statistics = statistics</span>
+<span class="fc" id="L88">                        .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L89">                        .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)</span>
+<span class="fc" id="L90">                        .updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L91">                return new Solution(buildPath(current), statistics);</span>
+            }
+
+            // A state popped before is either fully explored without reaching a target, or an
+            // ancestor of the current node (the current path is a cycle). In both cases, it is
+            // useless to explore it again, which also prevents infinite loops on cycles. Skipping
+            // dominated states assumes that a dominating state is at least as feasible as the
+            // dominated one.
+<span class="fc bfc" id="L99" title="All 2 branches covered.">            if (!explored.add(current.state())</span>
+<span class="pc bpc" id="L100" title="1 of 2 branches missed.">                    || dominance.updateDominance(current.state(), current.value())) {</span>
+<span class="nc" id="L101">                continue;</span>
+            }
+
+<span class="fc" id="L104">            pushChildren(current, frontier);</span>
+<span class="fc" id="L105">        }</span>
+
+<span class="fc" id="L107">        return new Solution(List.of(), statistics.updateStatus(SearchStatus.UNSAT));</span>
+    }
+
+    private void pushChildren(Node&lt;T&gt; node, Deque&lt;Node&lt;T&gt;&gt; frontier) {
+<span class="fc" id="L111">        T state = node.state();</span>
+
+<span class="fc" id="L113">        List&lt;Candidate&lt;T&gt;&gt; children = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L114">        Iterator&lt;Integer&gt; domain = problem.domain(state);</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
+<span class="fc" id="L116">            int label = domain.next();</span>
+<span class="fc" id="L117">            T newState = problem.transition(state, label);</span>
+<span class="fc" id="L118">            double g = node.value() + problem.transitionCost(state, label);</span>
+<span class="fc" id="L119">            double h = lb.fastLowerBound(newState);</span>
+<span class="fc" id="L120">            children.add(new Candidate&lt;&gt;(new Node&lt;&gt;(newState, g, label, node), g + h));</span>
+<span class="fc" id="L121">        }</span>
+
+        // Pushed from the worst to the best estimate, so the best child is popped first.
+<span class="fc" id="L124">        children.sort(Comparator.comparingDouble(Candidate&lt;T&gt;::f).reversed());</span>
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        for (Candidate&lt;T&gt; child : children) {</span>
+<span class="fc" id="L126">            frontier.push(child.node());</span>
+<span class="fc" id="L127">        }</span>
+<span class="fc" id="L128">    }</span>
+
+    private List&lt;Integer&gt; buildPath(Node&lt;T&gt; leaf) {
+<span class="fc" id="L131">        List&lt;Integer&gt; path = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (Node&lt;T&gt; n = leaf; n.parent() != null; n = n.parent()) {</span>
+<span class="fc" id="L133">            path.add(n.label());</span>
+        }
+<span class="fc" id="L135">        Collections.reverse(path);</span>
+<span class="fc" id="L136">        return path;</span>
+    }
+
+    /**
+     * A node of the search tree. The path is stored through the parent link to avoid copying it
+     * for each child. The root has no parent and its label is meaningless.
+     */
+<span class="fc" id="L143">    private record Node&lt;T&gt;(T state, double value, int label, Node&lt;T&gt; parent) {</span>
+    }
+
+    /**
+     * A child waiting to be pushed, with its estimated cost {@code g + h}.
+     */
+<span class="fc" id="L149">    private record Candidate&lt;T&gt;(Node&lt;T&gt; node, double f) {</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

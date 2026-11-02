@@ -136,7 +136,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L139">        return minimizeAstar(model, limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L139">        return minimizeAstar(model, limit, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -186,7 +186,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model) {
-<span class="pc" id="L189">        return minimizeAcs(model, s -&gt; false, (sol, s) -&gt; {});</span>
+<span class="fc" id="L189">        return minimizeAcs(model, s -&gt; false, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -199,7 +199,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L202">        return minimizeAcs(model, limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L202">        return minimizeAcs(model, limit, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -264,7 +264,7 @@ public class Solvers {
      */
     public static &lt;T&gt; Solution minimizeAwAstar(
             AwAstarModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L267">        return minimizeAwAstar(model, limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L267">        return minimizeAwAstar(model, limit, (sol, s) -&gt; {});</span>
     }
 
     /**

@@ -32,9 +32,9 @@ public class MaxCoverDistance implements StateDistance&lt;MaxCoverState&gt; {
      *
      * @param instance the MaxCover problem instance providing problem-specific parameters
      */
-<span class="nc" id="L35">    public MaxCoverDistance(MaxCoverProblem instance) {</span>
-<span class="nc" id="L36">        this.instance = instance;</span>
-<span class="nc" id="L37">    }</span>
+<span class="fc" id="L35">    public MaxCoverDistance(MaxCoverProblem instance) {</span>
+<span class="fc" id="L36">        this.instance = instance;</span>
+<span class="fc" id="L37">    }</span>
 
     /**
      * Computes a Roger-like distance based on the size of the intersection between two sets.
@@ -114,7 +114,7 @@ public class MaxCoverDistance implements StateDistance&lt;MaxCoverState&gt; {
      */
     @Override
     public double distance(MaxCoverState a, MaxCoverState b) {
-<span class="nc" id="L117">        return symmetricDifferenceDistance(a.coveredItems(), b.coveredItems()) / instance.nbItems;</span>
+<span class="fc" id="L117">        return symmetricDifferenceDistance(a.coveredItems(), b.coveredItems()) / instance.nbItems;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

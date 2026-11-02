@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KSAlgo.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.knapsack</a> &gt; <span class="el_source">KSAlgo.java</span></div><h1>KSAlgo.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.knapsack;
 
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+import org.ddolib.common.solver.stat.AstarStats;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.layered.solver.Solution;
+import org.ddolib.layered.solving.ddo.core.Decision;
 
 /** Utility class providing algorithms to solve the Knapsack Problem. */
 public class KSAlgo {
@@ -15,34 +22,42 @@ public class KSAlgo {
      * capacity.
      *
      * @param problem the Knapsack Problem instance to solve
-     * @return the total profit of the selected items, providing a primal bound (lower bound) on the
-     *     optimal solution
+     * @return the selected items ({@code 1} if item {@code i} is taken, {@code 0} otherwise). As the
+     *     problem is modeled as a minimization, its value is minus the total profit and provides
+     *     an upper bound on the optimal value.
      */
-    public static int greedyKS(KSProblem problem) {
-<span class="nc" id="L22">        Integer[] items = new Integer[problem.nbVars()];</span>
-<span class="nc bnc" id="L23" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
-<span class="nc" id="L24">            items[i] = i;</span>
+    public static Solution greedyKS(KSProblem problem) {
+<span class="nc" id="L30">        long start = System.currentTimeMillis();</span>
+<span class="nc" id="L31">        Integer[] items = new Integer[problem.nbVars()];</span>
+<span class="nc bnc" id="L32" title="All 2 branches missed.">        for (int i = 0; i &lt; problem.nbVars(); i++) {</span>
+<span class="nc" id="L33">            items[i] = i;</span>
         }
 
-<span class="nc" id="L27">        Arrays.sort(</span>
+<span class="nc" id="L36">        Arrays.sort(</span>
                 items,
                 (o1, o2) -&gt; {
-<span class="nc" id="L30">                    double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
-<span class="nc" id="L31">                    double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
-<span class="nc" id="L32">                    return Double.compare(ratio2, ratio1);</span>
+<span class="nc" id="L39">                    double ratio1 = (double) problem.profit[o1] / problem.weight[o1];</span>
+<span class="nc" id="L40">                    double ratio2 = (double) problem.profit[o2] / problem.weight[o2];</span>
+<span class="nc" id="L41">                    return Double.compare(ratio2, ratio1);</span>
                 });
 
-<span class="nc" id="L35">        int capa = problem.capa;</span>
-<span class="nc" id="L36">        int value = 0;</span>
-<span class="nc bnc" id="L37" title="All 2 branches missed.">        for (Integer i : items) {</span>
-<span class="nc bnc" id="L38" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) {</span>
-<span class="nc" id="L39">                continue;</span>
+<span class="nc" id="L44">        int capa = problem.capa;</span>
+<span class="nc" id="L45">        int value = 0;</span>
+<span class="nc" id="L46">        Set&lt;Decision&gt; decisions = new HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (Integer i : items) {</span>
+<span class="nc bnc" id="L48" title="All 2 branches missed.">            if (capa &lt; problem.weight[i]) {</span>
+<span class="nc" id="L49">                decisions.add(new Decision(i, 0));</span>
+<span class="nc" id="L50">                continue;</span>
             }
-<span class="nc" id="L41">            value += problem.profit[i];</span>
-<span class="nc" id="L42">            capa -= problem.weight[i];</span>
+<span class="nc" id="L52">            decisions.add(new Decision(i, 1));</span>
+<span class="nc" id="L53">            value += problem.profit[i];</span>
+<span class="nc" id="L54">            capa -= problem.weight[i];</span>
         }
 
-<span class="nc" id="L45">        return value;</span>
+<span class="nc" id="L57">        AstarStats stats = new AstarStats(start, -value);</span>
+<span class="nc" id="L58">        return new Solution(</span>
+<span class="nc" id="L59">                Optional.of(decisions),</span>
+<span class="nc" id="L60">                stats.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.SAT));</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

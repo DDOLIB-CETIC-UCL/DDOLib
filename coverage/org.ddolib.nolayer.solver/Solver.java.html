@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Solver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.nolayer.solver</a> &gt; <span class="el_source">Solver.java</span></div><h1>Solver.java</h1><pre class="source lang-java linenums">package org.ddolib.nolayer.solver;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Predicate;
+import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.util.InvalidSolutionException;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.nolayer.modeling.Model;
+
+/**
+ * Interface representing a generic solver for no-layered decision diagram based optimization
+ * problems.
+ *
+ * &lt;p&gt;A solver explores the search space defined by a decision diagram, applies bounds and
+ * relaxations, and can return the best solution found along with its value.
+ *
+ * &lt;p&gt;Implementations of this interface typically provide algorithms such as:
+ *
+ * &lt;ul&gt;
+ *   &lt;li&gt;Dynamic programming on decision diagrams
+ *   &lt;li&gt;A* search
+ *   &lt;li&gt;Branch-and-bound or anytime search strategies
+ * &lt;/ul&gt;
+ *
+ * @see SearchStatistics
+ * @see Decision
+ */
+public interface Solver {
+
+    /**
+     * Minimizes the objective function according to the solver strategy.
+     *
+     * @param limit a {@link Predicate} that can limit or stop the search based on current {@link
+     *     SearchStatistics}
+     * @param onSolution a {@link BiConsumer} invoked on each new solution found; receives the
+     *     solution array and current statistics
+     * @return the statistics of the search after completion
+     */
+    Solution minimize(
+            Predicate&lt;SearchStatistics&gt; limit,
+            BiConsumer&lt;List&lt;Integer&gt;, SearchStatistics&gt; onSolution);
+
+    /**
+     * Returns the value of the best solution found so far by this solver, if any.
+     *
+     * @return the value of the best solution in this decision diagram if there is one
+     */
+    Optional&lt;Double&gt; bestValue();
+
+    /**
+     * Returns the ordered list of labels leading to the best solution from the initial state.
+     *
+     * @return the ordered list of labels leading to the best solution from the initial state
+     */
+    List&lt;Integer&gt; bestSolution();
+
+    /**
+     * Returns the initial solution of a model, if it provides a non-empty one.
+     *
+     * &lt;p&gt;Its value is trusted. When the debug mode is enabled, it is checked against {@link
+     * org.ddolib.nolayer.modeling.Problem#evaluate(List)}.
+     *
+     * @param model the model providing the initial solution
+     * @return the initial solution, or an empty {@link Optional} if the model has none
+     * @throws IllegalArgumentException in debug mode, if the initial solution is invalid or if its
+     *     value does not match its evaluation
+     */
+    static Optional&lt;Solution&gt; initialSolution(Model&lt;?&gt; model) {
+<span class="fc" id="L72">        Solution init = model.initialSolution();</span>
+<span class="fc bfc" id="L73" title="All 4 branches covered.">        if (init == null || init.isEmpty()) {</span>
+<span class="fc" id="L74">            return Optional.empty();</span>
+        }
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">        if (model.debugMode() != DebugLevel.OFF) {</span>
+            try {
+<span class="fc" id="L78">                double evaluated = model.problem().evaluate(init.solution());</span>
+<span class="fc bfc" id="L79" title="All 2 branches covered.">                if (Math.abs(evaluated - init.value()) &gt; 1e-6) {</span>
+<span class="fc" id="L80">                    throw new IllegalArgumentException(</span>
+<span class="fc" id="L81">                            String.format(</span>
+                                    &quot;The value of the initial solution (%f) does not match its&quot;
+                                            + &quot; evaluation (%f)&quot;,
+<span class="fc" id="L84">                                    init.value(), evaluated));</span>
+                }
+<span class="nc" id="L86">            } catch (InvalidSolutionException e) {</span>
+<span class="nc" id="L87">                throw new IllegalArgumentException(&quot;The initial solution is invalid&quot;, e);</span>
+<span class="fc" id="L88">            }</span>
+        }
+<span class="fc" id="L90">        return Optional.of(init);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

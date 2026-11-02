@@ -11,6 +11,7 @@ import org.ddolib.layered.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.ReductionStrategy;
 import org.ddolib.layered.solving.ddo.core.heuristics.cluster.StateDistance;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
+import org.ddolib.layered.solver.Solution;
 
 /**
  * Defines the interface for a Dynamic Decision Diagram Optimization (DDO) model.
@@ -58,7 +59,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link StateRanking} comparator between states
      */
     default StateRanking&lt;T&gt; ranking() {
-<span class="fc" id="L61">        return (o1, o2) -&gt; 0;</span>
+<span class="fc" id="L62">        return (o1, o2) -&gt; 0;</span>
     }
 
     /**
@@ -69,7 +70,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link WidthHeuristic} instance controlling diagram width
      */
     default WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="fc" id="L72">        return new FixedWidth&lt;&gt;(10);</span>
+<span class="fc" id="L73">        return new FixedWidth&lt;&gt;(10);</span>
     }
 
     /**
@@ -82,7 +83,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link Frontier} instance defining the search frontier
      */
     default Frontier&lt;T&gt; frontier() {
-<span class="fc" id="L85">        return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.LastExactLayer);</span>
+<span class="fc" id="L86">        return new SimpleFrontier&lt;&gt;(ranking(), CutSetType.LastExactLayer);</span>
     }
 
     /**
@@ -94,7 +95,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if caching is enabled, {@code false} otherwise
      */
     default boolean useCache() {
-<span class="fc" id="L97">        return false;</span>
+<span class="fc" id="L98">        return false;</span>
     }
 
     /**
@@ -104,7 +105,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a copy of this model by enabling or disabling the cache
      */
     default DdoModel&lt;T&gt; useCache(boolean b) {
-<span class="fc" id="L107">        return new DdoModel&lt;T&gt;() {</span>
+<span class="fc" id="L108">        return new DdoModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -133,6 +134,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             @Override
             public DebugLevel debugMode() {
                 return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
             }
 
             @Override
@@ -169,6 +175,21 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance&lt;T&gt; stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
@@ -182,7 +203,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if DOT export is enabled, {@code false} otherwise
      */
     default boolean exportDot() {
-<span class="fc" id="L185">        return false;</span>
+<span class="fc" id="L206">        return false;</span>
     }
 
     /**
@@ -191,7 +212,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the {@link ReductionStrategy} used to merge nodes in a relaxed decision diagram
      */
     default ReductionStrategy&lt;T&gt; relaxStrategy() {
-<span class="fc" id="L194">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="fc" id="L215">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
@@ -200,7 +221,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the {@link ReductionStrategy} used to drop nodes in a restricted decision diagram
      */
     default ReductionStrategy&lt;T&gt; restrictStrategy() {
-<span class="fc" id="L203">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="fc" id="L224">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
@@ -210,7 +231,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the {@link StateDistance} used to compare states
      */
     default StateDistance&lt;T&gt; stateDistance() {
-<span class="nc" id="L213">        return (o1, o2) -&gt; 0;</span>
+<span class="nc" id="L234">        return (o1, o2) -&gt; 0;</span>
     }
 
     /**
@@ -222,7 +243,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if LNS is enabled, {@code false} otherwise
      */
     default boolean useLNS() {
-<span class="nc" id="L225">        return false;</span>
+<span class="nc" id="L246">        return false;</span>
     }
 
     /**
@@ -232,7 +253,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a copy of this model but with a fixed width
      */
     default DdoModel&lt;T&gt; fixWidth(int width) {
-<span class="fc" id="L235">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L256">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -261,6 +282,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             @Override
             public DebugLevel debugMode() {
                 return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
             }
 
             @Override
@@ -297,6 +323,21 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance&lt;T&gt; stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
@@ -307,7 +348,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a copy of this model by changing the {@link CutSetType}
      */
     default DdoModel&lt;T&gt; setCutSetType(CutSetType type) {
-<span class="fc" id="L310">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L351">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -336,6 +377,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             @Override
             public DebugLevel debugMode() {
                 return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
             }
 
             @Override
@@ -372,12 +418,27 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance&lt;T&gt; stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
     @Override
     default DdoModel&lt;T&gt; disableDominance() {
-<span class="fc" id="L380">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L441">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -404,6 +465,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             }
 
             @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
+            }
+
+            @Override
             public Relaxation&lt;T&gt; relaxation() {
                 return DdoModel.this.relaxation();
             }
@@ -437,12 +503,27 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             public boolean useLNS() {
                 return DdoModel.this.useLNS();
             }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance&lt;T&gt; stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
         };
     }
 
     @Override
     default DdoModel&lt;T&gt; disableLowerBound() {
-<span class="nc" id="L445">        return new DdoModel&lt;&gt;() {</span>
+<span class="fc" id="L526">        return new DdoModel&lt;&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -469,6 +550,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             }
 
             @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
+            }
+
+            @Override
             public Relaxation&lt;T&gt; relaxation() {
                 return DdoModel.this.relaxation();
             }
@@ -499,13 +585,23 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             }
 
             @Override
-            public DdoModel&lt;T&gt; fixWidth(int width) {
-                return DdoModel.this.fixWidth(width);
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
             }
 
             @Override
-            public boolean useLNS() {
-                return DdoModel.this.useLNS();
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance&lt;T&gt; stateDistance() {
+                return DdoModel.this.stateDistance();
             }
         };
     }
@@ -516,7 +612,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a model usable by an {@link ExactModel}
      */
     default ExactModel&lt;T&gt; toExactModel() {
-<span class="nc" id="L519">        return new ExactModel&lt;T&gt;() {</span>
+<span class="fc" id="L615">        return new ExactModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return DdoModel.this.problem();
@@ -543,6 +639,11 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             }
 
             @Override
+            public Solution initialSolution() {
+                return DdoModel.this.initialSolution();
+            }
+
+            @Override
             public boolean exportDot() {
                 return DdoModel.this.exportDot();
             }
@@ -550,6 +651,102 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
             @Override
             public ExactModel&lt;T&gt; toExactModel() {
                 return DdoModel.this.toExactModel();
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default DdoModel&lt;T&gt; setInitialSolution(Solution solution) {
+<span class="fc" id="L666">        return new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker&lt;T&gt; dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VariableHeuristic&lt;T&gt; variableHeuristic() {
+                return DdoModel.this.variableHeuristic();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public Frontier&lt;T&gt; frontier() {
+                return DdoModel.this.frontier();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public StateDistance&lt;T&gt; stateDistance() {
+                return DdoModel.this.stateDistance();
+            }
+
+            @Override
+            public boolean useLNS() {
+                return DdoModel.this.useLNS();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
             }
         };
     }

@@ -48,6 +48,8 @@ public class NoLayerDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt;
     private final Node&lt;T&gt; rootNode;
 <span class="fc" id="L49">    private Node&lt;T&gt; targetNode = null;</span>
 <span class="fc" id="L50">    private boolean exact = true;</span>
+<span class="fc" id="L51">    private int nbFastLowerBoundPruning = 0;</span>
+<span class="fc" id="L52">    private int nbDominancePruning = 0;</span>
 
     /**
      * Creates a new decision diagram rooted at the given subproblem.
@@ -65,421 +67,433 @@ public class NoLayerDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt;
             CompilationType type,
             int maxWidth,
             double primalBound,
-<span class="fc" id="L68">            Optional&lt;Cache&lt;T&gt;&gt; cache) {</span>
-<span class="fc" id="L69">        this.model = model;</span>
-<span class="fc" id="L70">        this.problem = model.problem();</span>
-<span class="fc" id="L71">        this.rootSubProblem = rootSubProblem;</span>
-<span class="fc" id="L72">        this.type = type;</span>
-<span class="fc" id="L73">        this.maxWidth = maxWidth;</span>
-<span class="fc" id="L74">        this.primalBound = primalBound;</span>
-<span class="fc" id="L75">        this.cache = cache;</span>
+<span class="fc" id="L70">            Optional&lt;Cache&lt;T&gt;&gt; cache) {</span>
+<span class="fc" id="L71">        this.model = model;</span>
+<span class="fc" id="L72">        this.problem = model.problem();</span>
+<span class="fc" id="L73">        this.rootSubProblem = rootSubProblem;</span>
+<span class="fc" id="L74">        this.type = type;</span>
+<span class="fc" id="L75">        this.maxWidth = maxWidth;</span>
+<span class="fc" id="L76">        this.primalBound = primalBound;</span>
+<span class="fc" id="L77">        this.cache = cache;</span>
 
-<span class="fc" id="L77">        this.rootNode = makeNode(rootSubProblem.getState(), true);</span>
-<span class="fc" id="L78">        this.rootNode.layer = rootSubProblem.getPath().size();</span>
-<span class="fc" id="L79">        this.rootNode.bound = rootSubProblem.getValue();</span>
-<span class="fc" id="L80">    }</span>
+<span class="fc" id="L79">        this.rootNode = makeNode(rootSubProblem.getState(), true);</span>
+<span class="fc" id="L80">        this.rootNode.layer = rootSubProblem.getPath().size();</span>
+<span class="fc" id="L81">        this.rootNode.bound = rootSubProblem.getValue();</span>
+<span class="fc" id="L82">    }</span>
 
     private Node&lt;T&gt; makeNode(T state, boolean exactNode) {
-<span class="fc" id="L83">        Node&lt;T&gt; node = stateMap.get(state);</span>
-<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (node != null) {</span>
-<span class="fc" id="L85">            node.isExact &amp;= exactNode;</span>
-<span class="fc" id="L86">            return node;</span>
+<span class="fc" id="L85">        Node&lt;T&gt; node = stateMap.get(state);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (node != null) {</span>
+<span class="fc" id="L87">            node.isExact &amp;= exactNode;</span>
+<span class="fc" id="L88">            return node;</span>
         }
-<span class="fc" id="L88">        node = new Node&lt;&gt;(state);</span>
-<span class="fc" id="L89">        node.isExact = exactNode;</span>
-<span class="fc" id="L90">        node.bound = Double.POSITIVE_INFINITY; // DDOLib Minimizes</span>
-<span class="fc" id="L91">        stateMap.put(state, node);</span>
-<span class="fc" id="L92">        return node;</span>
+<span class="fc" id="L90">        node = new Node&lt;&gt;(state);</span>
+<span class="fc" id="L91">        node.isExact = exactNode;</span>
+<span class="fc" id="L92">        node.bound = Double.POSITIVE_INFINITY; // DDOLib Minimizes</span>
+<span class="fc" id="L93">        stateMap.put(state, node);</span>
+<span class="fc" id="L94">        return node;</span>
     }
 
     private double saturatedAdd(double a, double b) {
-<span class="pc bpc" id="L96" title="1 of 4 branches missed.">        if (a == Double.POSITIVE_INFINITY || b == Double.POSITIVE_INFINITY) {</span>
-<span class="fc" id="L97">            return Double.POSITIVE_INFINITY;</span>
+<span class="pc bpc" id="L98" title="1 of 4 branches missed.">        if (a == Double.POSITIVE_INFINITY || b == Double.POSITIVE_INFINITY) {</span>
+<span class="fc" id="L99">            return Double.POSITIVE_INFINITY;</span>
         }
-<span class="pc bpc" id="L99" title="2 of 4 branches missed.">        if (a == Double.NEGATIVE_INFINITY || b == Double.NEGATIVE_INFINITY) {</span>
-<span class="nc" id="L100">            return Double.NEGATIVE_INFINITY;</span>
+<span class="pc bpc" id="L101" title="2 of 4 branches missed.">        if (a == Double.NEGATIVE_INFINITY || b == Double.NEGATIVE_INFINITY) {</span>
+<span class="nc" id="L102">            return Double.NEGATIVE_INFINITY;</span>
         }
-<span class="fc" id="L102">        return a + b;</span>
+<span class="fc" id="L104">        return a + b;</span>
     }
 
     private boolean isBetter(double obj1, double obj2) {
-<span class="fc bfc" id="L106" title="All 2 branches covered.">        return obj1 &lt; obj2;</span>
+<span class="fc bfc" id="L108" title="All 2 branches covered.">        return obj1 &lt; obj2;</span>
     }
 
     private boolean isBetterEQ(double obj1, double obj2) {
-<span class="nc bnc" id="L110" title="All 2 branches missed.">        return obj1 &lt;= obj2;</span>
+<span class="nc bnc" id="L112" title="All 2 branches missed.">        return obj1 &lt;= obj2;</span>
     }
 
     @Override
     public void compile() {
-<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (type == CompilationType.Relaxed) {</span>
-<span class="fc" id="L116">            compileRelaxed();</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        if (type == CompilationType.Relaxed) {</span>
+<span class="fc" id="L118">            compileRelaxed();</span>
         } else {
-<span class="fc" id="L118">            compileRestricted();</span>
+<span class="fc" id="L120">            compileRestricted();</span>
         }
-<span class="fc" id="L120">    }</span>
+<span class="fc" id="L122">    }</span>
 
     private void compileRelaxed() {
-<span class="fc" id="L123">        PriorityQueue&lt;Node&lt;T&gt;&gt; qn = new PriorityQueue&lt;&gt;(Comparator.comparingInt(n -&gt; n.layer));</span>
-<span class="fc" id="L124">        qn.add(rootNode);</span>
+<span class="fc" id="L125">        PriorityQueue&lt;Node&lt;T&gt;&gt; qn = new PriorityQueue&lt;&gt;(Comparator.comparingInt(n -&gt; n.layer));</span>
+<span class="fc" id="L126">        qn.add(rootNode);</span>
 
-<span class="fc" id="L126">        List&lt;Node&lt;T&gt;&gt; currentLayerNodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L128">        List&lt;Node&lt;T&gt;&gt; currentLayerNodes = new ArrayList&lt;&gt;();</span>
 
-<span class="fc bfc" id="L128" title="All 2 branches covered.">        while (!qn.isEmpty()) {</span>
-<span class="fc" id="L129">            Node&lt;T&gt; p = qn.poll();</span>
-<span class="fc" id="L130">            currentLayerNodes.add(p);</span>
+<span class="fc bfc" id="L130" title="All 2 branches covered.">        while (!qn.isEmpty()) {</span>
+<span class="fc" id="L131">            Node&lt;T&gt; p = qn.poll();</span>
+<span class="fc" id="L132">            currentLayerNodes.add(p);</span>
 
-<span class="fc bfc" id="L132" title="All 4 branches covered.">            if (qn.isEmpty() || qn.peek().layer != p.layer) {</span>
-<span class="fc" id="L133">                reduceRelaxed(currentLayerNodes);</span>
-<span class="fc" id="L134">                expandLayer(currentLayerNodes, qn);</span>
-<span class="fc" id="L135">                currentLayerNodes.clear();</span>
+<span class="fc bfc" id="L134" title="All 4 branches covered.">            if (qn.isEmpty() || qn.peek().layer != p.layer) {</span>
+<span class="fc" id="L135">                reduceRelaxed(currentLayerNodes);</span>
+<span class="fc" id="L136">                expandLayer(currentLayerNodes, qn);</span>
+<span class="fc" id="L137">                currentLayerNodes.clear();</span>
             }
-<span class="fc" id="L137">        }</span>
+<span class="fc" id="L139">        }</span>
 
-<span class="fc bfc" id="L139" title="All 2 branches covered.">        if (targetNode != null) {</span>
-<span class="fc" id="L140">            computeBestBackward();</span>
-<span class="fc" id="L141">            updateCache();</span>
+<span class="fc bfc" id="L141" title="All 2 branches covered.">        if (targetNode != null) {</span>
+<span class="fc" id="L142">            computeBestBackward();</span>
+<span class="fc" id="L143">            updateCache();</span>
         }
-<span class="fc" id="L143">    }</span>
+<span class="fc" id="L145">    }</span>
 
     private void compileRestricted() {
-<span class="fc" id="L146">        PriorityQueue&lt;Node&lt;T&gt;&gt; qn = new PriorityQueue&lt;&gt;(Comparator.comparingInt(n -&gt; n.layer));</span>
-<span class="fc" id="L147">        qn.add(rootNode);</span>
+<span class="fc" id="L148">        PriorityQueue&lt;Node&lt;T&gt;&gt; qn = new PriorityQueue&lt;&gt;(Comparator.comparingInt(n -&gt; n.layer));</span>
+<span class="fc" id="L149">        qn.add(rootNode);</span>
 
-<span class="fc" id="L149">        List&lt;Node&lt;T&gt;&gt; currentLayerNodes = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L151">        List&lt;Node&lt;T&gt;&gt; currentLayerNodes = new ArrayList&lt;&gt;();</span>
 
-<span class="fc bfc" id="L151" title="All 2 branches covered.">        while (!qn.isEmpty()) {</span>
-<span class="fc" id="L152">            Node&lt;T&gt; p = qn.poll();</span>
-<span class="fc" id="L153">            currentLayerNodes.add(p);</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">        while (!qn.isEmpty()) {</span>
+<span class="fc" id="L154">            Node&lt;T&gt; p = qn.poll();</span>
+<span class="fc" id="L155">            currentLayerNodes.add(p);</span>
 
-<span class="pc bpc" id="L155" title="1 of 4 branches missed.">            if (qn.isEmpty() || qn.peek().layer != p.layer) {</span>
-<span class="fc" id="L156">                reduceRestricted(currentLayerNodes);</span>
-<span class="fc" id="L157">                expandLayer(currentLayerNodes, qn);</span>
-<span class="fc" id="L158">                currentLayerNodes.clear();</span>
+<span class="pc bpc" id="L157" title="1 of 4 branches missed.">            if (qn.isEmpty() || qn.peek().layer != p.layer) {</span>
+<span class="fc" id="L158">                reduceRestricted(currentLayerNodes);</span>
+<span class="fc" id="L159">                expandLayer(currentLayerNodes, qn);</span>
+<span class="fc" id="L160">                currentLayerNodes.clear();</span>
             }
-<span class="fc" id="L160">        }</span>
-<span class="fc" id="L161">    }</span>
+<span class="fc" id="L162">        }</span>
+<span class="fc" id="L163">    }</span>
 
     private void expandLayer(List&lt;Node&lt;T&gt;&gt; layerNodes, PriorityQueue&lt;Node&lt;T&gt;&gt; qn) {
-<span class="fc" id="L164">        NoLayerDominanceChecker&lt;T&gt; dominance = model.dominance();</span>
-<span class="fc bfc" id="L165" title="All 2 branches covered.">        for (Node&lt;T&gt; n : layerNodes) {</span>
-<span class="fc bfc" id="L166" title="All 2 branches covered.">            if (cache.isPresent()) {</span>
-<span class="fc" id="L167">                Optional&lt;org.ddolib.common.cache.Threshold&gt; th =</span>
-<span class="fc" id="L168">                        cache.get().getThreshold(n.state, n.layer);</span>
-<span class="pc bpc" id="L169" title="3 of 4 branches missed.">                if (th.isPresent() &amp;&amp; n.bound &gt;= th.get().getValue()) {</span>
-<span class="nc" id="L170">                    continue; // Pruned by cache</span>
+<span class="fc" id="L166">        NoLayerDominanceChecker&lt;T&gt; dominance = model.dominance();</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        for (Node&lt;T&gt; n : layerNodes) {</span>
+<span class="fc bfc" id="L168" title="All 2 branches covered.">            if (cache.isPresent()) {</span>
+<span class="fc" id="L169">                Optional&lt;org.ddolib.common.cache.Threshold&gt; th =</span>
+<span class="fc" id="L170">                        cache.get().getThreshold(n.state, n.layer);</span>
+<span class="pc bpc" id="L171" title="3 of 4 branches missed.">                if (th.isPresent() &amp;&amp; n.bound &gt;= th.get().getValue()) {</span>
+<span class="nc" id="L172">                    continue; // Pruned by cache</span>
                 }
             }
-<span class="fc bfc" id="L173" title="All 2 branches covered.">            if (n.isSink(problem)) {</span>
-<span class="fc bfc" id="L174" title="All 2 branches covered.">                if (targetNode == null) {</span>
-<span class="fc" id="L175">                    targetNode = n;</span>
-<span class="fc bfc" id="L176" title="All 2 branches covered.">                } else if (targetNode != n) {</span>
-<span class="fc" id="L177">                    targetNode = mergeTargetNodes(targetNode, n);</span>
+<span class="fc bfc" id="L175" title="All 2 branches covered.">            if (n.isSink(problem)) {</span>
+<span class="fc bfc" id="L176" title="All 2 branches covered.">                if (targetNode == null) {</span>
+<span class="fc" id="L177">                    targetNode = n;</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">                } else if (targetNode != n) {</span>
+<span class="fc" id="L179">                    targetNode = mergeTargetNodes(targetNode, n);</span>
                 }
                 continue;
             }
 
-<span class="fc" id="L182">            Iterator&lt;Integer&gt; labels = problem.domain(n.state);</span>
-<span class="fc bfc" id="L183" title="All 2 branches covered.">            while (labels.hasNext()) {</span>
-<span class="fc" id="L184">                int l = labels.next();</span>
-<span class="fc" id="L185">                T nextState = problem.transition(n.state, l);</span>
-<span class="fc" id="L186">                double cost = problem.transitionCost(n.state, l);</span>
-<span class="fc" id="L187">                double ep = saturatedAdd(n.bound, cost);</span>
-<span class="fc" id="L188">                double flb = model.lowerBound().fastLowerBound(nextState);</span>
-<span class="fc bfc" id="L189" title="All 2 branches covered.">                if (saturatedAdd(ep, flb) &gt;= primalBound) {</span>
-<span class="fc" id="L190">                    continue;</span>
+<span class="fc" id="L184">            Iterator&lt;Integer&gt; labels = problem.domain(n.state);</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">            while (labels.hasNext()) {</span>
+<span class="fc" id="L186">                int l = labels.next();</span>
+<span class="fc" id="L187">                T nextState = problem.transition(n.state, l);</span>
+<span class="fc" id="L188">                double cost = problem.transitionCost(n.state, l);</span>
+<span class="fc" id="L189">                double ep = saturatedAdd(n.bound, cost);</span>
+<span class="fc" id="L190">                double flb = model.lowerBound().fastLowerBound(nextState);</span>
+<span class="fc bfc" id="L191" title="All 2 branches covered.">                if (saturatedAdd(ep, flb) &gt;= primalBound) {</span>
+<span class="fc" id="L192">                    nbFastLowerBoundPruning++;</span>
+<span class="fc" id="L193">                    continue;</span>
                 }
 
-<span class="fc" id="L193">                Node&lt;T&gt; child = stateMap.get(nextState);</span>
-<span class="fc bfc" id="L194" title="All 2 branches covered.">                boolean newNode = (child == null);</span>
+<span class="fc" id="L196">                Node&lt;T&gt; child = stateMap.get(nextState);</span>
+<span class="fc bfc" id="L197" title="All 2 branches covered.">                boolean newNode = (child == null);</span>
 
-<span class="fc bfc" id="L196" title="All 2 branches covered.">                if (newNode) {</span>
-<span class="fc bfc" id="L197" title="All 2 branches covered.">                    if (dominance.updateDominance(nextState, ep)) {</span>
-<span class="fc" id="L198">                        continue; // Dominated!</span>
+<span class="fc bfc" id="L199" title="All 2 branches covered.">                if (newNode) {</span>
+<span class="fc bfc" id="L200" title="All 2 branches covered.">                    if (dominance.updateDominance(nextState, ep)) {</span>
+<span class="fc" id="L201">                        nbDominancePruning++;</span>
+<span class="fc" id="L202">                        continue; // Dominated!</span>
                     }
                 }
 
-<span class="fc" id="L202">                child = makeNode(nextState, n.isExact);</span>
+<span class="fc" id="L206">                child = makeNode(nextState, n.isExact);</span>
 
-<span class="fc" id="L204">                Edge&lt;T&gt; e = new Edge&lt;&gt;(n, child, l, cost);</span>
-<span class="fc" id="L205">                n.outEdges.add(e);</span>
-<span class="fc" id="L206">                child.inEdges.add(e);</span>
+<span class="fc" id="L208">                Edge&lt;T&gt; e = new Edge&lt;&gt;(n, child, l, cost);</span>
+<span class="fc" id="L209">                n.outEdges.add(e);</span>
+<span class="fc" id="L210">                child.inEdges.add(e);</span>
 
-<span class="fc bfc" id="L208" title="All 2 branches covered.">                if (isBetter(ep, child.bound)) {</span>
-<span class="fc" id="L209">                    child.bound = ep;</span>
-<span class="fc" id="L210">                    child.bestParentEdge = e;</span>
+<span class="fc bfc" id="L212" title="All 2 branches covered.">                if (isBetter(ep, child.bound)) {</span>
+<span class="fc" id="L213">                    child.bound = ep;</span>
+<span class="fc" id="L214">                    child.bestParentEdge = e;</span>
                 }
 
-<span class="fc" id="L213">                int newLayer = Math.max(child.layer, n.layer + 1);</span>
-<span class="fc bfc" id="L214" title="All 2 branches covered.">                if (newLayer &gt; child.layer) {</span>
-<span class="fc bfc" id="L215" title="All 2 branches covered.">                    if (!newNode) {</span>
-<span class="fc" id="L216">                        qn.remove(child);</span>
+<span class="fc" id="L217">                int newLayer = Math.max(child.layer, n.layer + 1);</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">                if (newLayer &gt; child.layer) {</span>
+<span class="fc bfc" id="L219" title="All 2 branches covered.">                    if (!newNode) {</span>
+<span class="fc" id="L220">                        qn.remove(child);</span>
                     }
-<span class="fc" id="L218">                    child.layer = newLayer;</span>
-<span class="fc" id="L219">                    qn.add(child);</span>
-<span class="pc bpc" id="L220" title="1 of 2 branches missed.">                } else if (newNode) {</span>
-<span class="nc" id="L221">                    qn.add(child);</span>
+<span class="fc" id="L222">                    child.layer = newLayer;</span>
+<span class="fc" id="L223">                    qn.add(child);</span>
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">                } else if (newNode) {</span>
+<span class="nc" id="L225">                    qn.add(child);</span>
                 }
-<span class="fc" id="L223">            }</span>
-<span class="fc" id="L224">        }</span>
-<span class="fc" id="L225">    }</span>
+<span class="fc" id="L227">            }</span>
+<span class="fc" id="L228">        }</span>
+<span class="fc" id="L229">    }</span>
 
     private Node&lt;T&gt; mergeTargetNodes(Node&lt;T&gt; t1, Node&lt;T&gt; t2) {
         // Since it's target, we can just keep t1 and move edges
-<span class="fc bfc" id="L229" title="All 2 branches covered.">        for (Edge&lt;T&gt; e : t2.inEdges) {</span>
-<span class="fc" id="L230">            e.destination = t1;</span>
-<span class="fc" id="L231">            t1.inEdges.add(e);</span>
-<span class="fc" id="L232">        }</span>
-<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (isBetter(t2.bound, t1.bound)) {</span>
-<span class="fc" id="L234">            t1.bound = t2.bound;</span>
-<span class="fc" id="L235">            t1.bestParentEdge = t2.bestParentEdge;</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">        for (Edge&lt;T&gt; e : t2.inEdges) {</span>
+<span class="fc" id="L234">            e.destination = t1;</span>
+<span class="fc" id="L235">            t1.inEdges.add(e);</span>
+<span class="fc" id="L236">        }</span>
+<span class="fc bfc" id="L237" title="All 2 branches covered.">        if (isBetter(t2.bound, t1.bound)) {</span>
+<span class="fc" id="L238">            t1.bound = t2.bound;</span>
+<span class="fc" id="L239">            t1.bestParentEdge = t2.bestParentEdge;</span>
         }
-<span class="fc" id="L237">        t1.isExact &amp;= t2.isExact;</span>
-<span class="fc" id="L238">        stateMap.remove(t2.state);</span>
-<span class="fc" id="L239">        return t1;</span>
+<span class="fc" id="L241">        t1.isExact &amp;= t2.isExact;</span>
+<span class="fc" id="L242">        stateMap.remove(t2.state);</span>
+<span class="fc" id="L243">        return t1;</span>
     }
 
     private void reduceRelaxed(List&lt;Node&lt;T&gt;&gt; layerNodes) {
-<span class="fc bfc" id="L243" title="All 2 branches covered.">        if (layerNodes.size() &lt;= maxWidth) {</span>
-<span class="fc" id="L244">            return;</span>
+<span class="fc bfc" id="L247" title="All 2 branches covered.">        if (layerNodes.size() &lt;= maxWidth) {</span>
+<span class="fc" id="L248">            return;</span>
         }
-<span class="fc" id="L246">        exact = false;</span>
+<span class="fc" id="L250">        exact = false;</span>
 
-<span class="fc" id="L248">        List&lt;T&gt; toMergeStates = layerNodes.stream().map(n -&gt; n.state).collect(Collectors.toList());</span>
-<span class="fc" id="L249">        List&lt;Double&gt; toMergeBounds =</span>
-<span class="fc" id="L250">                layerNodes.stream()</span>
-<span class="fc" id="L251">                        .map(n -&gt; saturatedAdd(n.bound, model.lowerBound().fastLowerBound(n.state)))</span>
-<span class="fc" id="L252">                        .collect(Collectors.toList());</span>
-<span class="fc" id="L253">        List&lt;List&lt;T&gt;&gt; grouped =</span>
-<span class="fc" id="L254">                model.relaxStrategy().defineClusters(toMergeStates, toMergeBounds, maxWidth);</span>
+<span class="fc" id="L252">        List&lt;T&gt; toMergeStates = layerNodes.stream().map(n -&gt; n.state).collect(Collectors.toList());</span>
+<span class="fc" id="L253">        List&lt;Double&gt; toMergeBounds =</span>
+<span class="fc" id="L254">                layerNodes.stream()</span>
+<span class="fc" id="L255">                        .map(n -&gt; saturatedAdd(n.bound, model.lowerBound().fastLowerBound(n.state)))</span>
+<span class="fc" id="L256">                        .collect(Collectors.toList());</span>
+<span class="fc" id="L257">        List&lt;List&lt;T&gt;&gt; grouped =</span>
+<span class="fc" id="L258">                model.relaxStrategy().defineClusters(toMergeStates, toMergeBounds, maxWidth);</span>
 
-<span class="fc" id="L256">        int originalLayer = layerNodes.get(0).layer;</span>
-<span class="fc" id="L257">        layerNodes.clear();</span>
+<span class="fc" id="L260">        int originalLayer = layerNodes.get(0).layer;</span>
+<span class="fc" id="L261">        layerNodes.clear();</span>
 
-<span class="fc bfc" id="L259" title="All 2 branches covered.">        for (List&lt;T&gt; states : grouped) {</span>
-<span class="fc" id="L260">            T mergedState = model.relaxation().merge(states);</span>
+<span class="fc bfc" id="L263" title="All 2 branches covered.">        for (List&lt;T&gt; states : grouped) {</span>
+<span class="fc" id="L264">            T mergedState = model.relaxation().merge(states);</span>
 
-<span class="fc" id="L262">            List&lt;Edge&lt;T&gt;&gt; allInEdges = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L263">            double bestBound = Double.POSITIVE_INFINITY;</span>
-<span class="fc" id="L264">            Edge&lt;T&gt; bestEdge = null;</span>
+<span class="fc" id="L266">            List&lt;Edge&lt;T&gt;&gt; allInEdges = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L267">            double bestBound = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L268">            Edge&lt;T&gt; bestEdge = null;</span>
 
-<span class="fc" id="L266">            boolean allExact = true;</span>
-<span class="fc bfc" id="L267" title="All 2 branches covered.">            for (T sp : states) {</span>
-<span class="fc" id="L268">                Node&lt;T&gt; oldNode = stateMap.remove(sp);</span>
-<span class="pc bpc" id="L269" title="1 of 2 branches missed.">                if (oldNode != null) {</span>
-<span class="fc" id="L270">                    allExact &amp;= oldNode.isExact;</span>
-<span class="fc" id="L271">                    allInEdges.addAll(oldNode.inEdges);</span>
-<span class="fc bfc" id="L272" title="All 2 branches covered.">                    if (isBetter(oldNode.bound, bestBound)) {</span>
-<span class="fc" id="L273">                        bestBound = oldNode.bound;</span>
-<span class="fc" id="L274">                        bestEdge = oldNode.bestParentEdge;</span>
+<span class="fc" id="L270">            boolean allExact = true;</span>
+<span class="fc bfc" id="L271" title="All 2 branches covered.">            for (T sp : states) {</span>
+<span class="fc" id="L272">                Node&lt;T&gt; oldNode = stateMap.remove(sp);</span>
+<span class="pc bpc" id="L273" title="1 of 2 branches missed.">                if (oldNode != null) {</span>
+<span class="fc" id="L274">                    allExact &amp;= oldNode.isExact;</span>
+<span class="fc" id="L275">                    allInEdges.addAll(oldNode.inEdges);</span>
+<span class="fc bfc" id="L276" title="All 2 branches covered.">                    if (isBetter(oldNode.bound, bestBound)) {</span>
+<span class="fc" id="L277">                        bestBound = oldNode.bound;</span>
+<span class="fc" id="L278">                        bestEdge = oldNode.bestParentEdge;</span>
                     }
                 }
-<span class="fc" id="L277">            }</span>
+<span class="fc" id="L281">            }</span>
 
             // It is exact if the cluster size is 1 and the original node was exact
-<span class="fc bfc" id="L280" title="All 4 branches covered.">            boolean isExactNode = (states.size() == 1) &amp;&amp; allExact;</span>
-<span class="fc" id="L281">            Node&lt;T&gt; mergedNode = makeNode(mergedState, isExactNode);</span>
-<span class="fc" id="L282">            mergedNode.layer = originalLayer;</span>
+<span class="fc bfc" id="L284" title="All 4 branches covered.">            boolean isExactNode = (states.size() == 1) &amp;&amp; allExact;</span>
+<span class="fc" id="L285">            Node&lt;T&gt; mergedNode = makeNode(mergedState, isExactNode);</span>
+<span class="fc" id="L286">            mergedNode.layer = originalLayer;</span>
 
-<span class="fc bfc" id="L284" title="All 2 branches covered.">            for (Edge&lt;T&gt; e : allInEdges) {</span>
-<span class="fc" id="L285">                e.destination = mergedNode;</span>
-<span class="fc" id="L286">                mergedNode.inEdges.add(e);</span>
-<span class="fc" id="L287">            }</span>
+<span class="fc bfc" id="L288" title="All 2 branches covered.">            for (Edge&lt;T&gt; e : allInEdges) {</span>
+<span class="fc" id="L289">                e.destination = mergedNode;</span>
+<span class="fc" id="L290">                mergedNode.inEdges.add(e);</span>
+<span class="fc" id="L291">            }</span>
 
-<span class="fc bfc" id="L289" title="All 2 branches covered.">            if (isBetter(bestBound, mergedNode.bound)) {</span>
-<span class="fc" id="L290">                mergedNode.bound = bestBound;</span>
-<span class="fc" id="L291">                mergedNode.bestParentEdge = bestEdge;</span>
+<span class="fc bfc" id="L293" title="All 2 branches covered.">            if (isBetter(bestBound, mergedNode.bound)) {</span>
+<span class="fc" id="L294">                mergedNode.bound = bestBound;</span>
+<span class="fc" id="L295">                mergedNode.bestParentEdge = bestEdge;</span>
             }
 
-<span class="fc" id="L294">            layerNodes.add(mergedNode);</span>
-<span class="fc" id="L295">        }</span>
-<span class="fc" id="L296">    }</span>
+<span class="fc" id="L298">            layerNodes.add(mergedNode);</span>
+<span class="fc" id="L299">        }</span>
+<span class="fc" id="L300">    }</span>
 
     private void reduceRestricted(List&lt;Node&lt;T&gt;&gt; layerNodes) {
-<span class="fc bfc" id="L299" title="All 2 branches covered.">        if (layerNodes.size() &lt;= maxWidth) {</span>
-<span class="fc" id="L300">            return;</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">        if (layerNodes.size() &lt;= maxWidth) {</span>
+<span class="fc" id="L304">            return;</span>
         }
-<span class="fc" id="L302">        exact = false;</span>
+<span class="fc" id="L306">        exact = false;</span>
 
-<span class="fc" id="L304">        layerNodes.sort(</span>
+<span class="fc" id="L308">        layerNodes.sort(</span>
                 (o1, o2) -&gt; {
-<span class="fc" id="L306">                    double v1 = saturatedAdd(o1.bound, model.lowerBound().fastLowerBound(o1.state));</span>
-<span class="fc" id="L307">                    double v2 = saturatedAdd(o2.bound, model.lowerBound().fastLowerBound(o2.state));</span>
-<span class="fc" id="L308">                    int comp = Double.compare(v1, v2);</span>
-<span class="fc bfc" id="L309" title="All 2 branches covered.">                    return comp == 0 ? model.ranking().compare(o1.state, o2.state) : comp;</span>
+<span class="fc" id="L310">                    double v1 = saturatedAdd(o1.bound, model.lowerBound().fastLowerBound(o1.state));</span>
+<span class="fc" id="L311">                    double v2 = saturatedAdd(o2.bound, model.lowerBound().fastLowerBound(o2.state));</span>
+<span class="fc" id="L312">                    int comp = Double.compare(v1, v2);</span>
+<span class="fc bfc" id="L313" title="All 2 branches covered.">                    return comp == 0 ? model.ranking().compare(o1.state, o2.state) : comp;</span>
                 });
 
         // The best nodes are at the beginning (index 0). We keep the first `maxWidth` nodes.
         // We drop the remaining nodes from `maxWidth` to `size`.
-<span class="fc" id="L314">        List&lt;Node&lt;T&gt;&gt; toDrop = new ArrayList&lt;&gt;(layerNodes.subList(maxWidth, layerNodes.size()));</span>
-<span class="fc bfc" id="L315" title="All 2 branches covered.">        for (Node&lt;T&gt; n : toDrop) {</span>
-<span class="fc" id="L316">            stateMap.remove(n.state);</span>
-<span class="fc bfc" id="L317" title="All 2 branches covered.">            for (Edge&lt;T&gt; e : n.inEdges) {</span>
-<span class="fc" id="L318">                e.origin.outEdges.remove(e);</span>
-<span class="fc" id="L319">            }</span>
-<span class="fc" id="L320">        }</span>
+<span class="fc" id="L318">        List&lt;Node&lt;T&gt;&gt; toDrop = new ArrayList&lt;&gt;(layerNodes.subList(maxWidth, layerNodes.size()));</span>
+<span class="fc bfc" id="L319" title="All 2 branches covered.">        for (Node&lt;T&gt; n : toDrop) {</span>
+<span class="fc" id="L320">            stateMap.remove(n.state);</span>
+<span class="fc bfc" id="L321" title="All 2 branches covered.">            for (Edge&lt;T&gt; e : n.inEdges) {</span>
+<span class="fc" id="L322">                e.origin.outEdges.remove(e);</span>
+<span class="fc" id="L323">            }</span>
+<span class="fc" id="L324">        }</span>
 
-<span class="fc" id="L322">        layerNodes.removeAll(toDrop);</span>
-<span class="fc" id="L323">    }</span>
+<span class="fc" id="L326">        layerNodes.removeAll(toDrop);</span>
+<span class="fc" id="L327">    }</span>
 
     private void computeBestBackward() {
         // Topological sort backwards from Target
         // We can just use a priority queue based on layer (highest layer first)
-<span class="fc" id="L328">        PriorityQueue&lt;Node&lt;T&gt;&gt; pq =</span>
-<span class="fc" id="L329">                new PriorityQueue&lt;&gt;((a, b) -&gt; Integer.compare(b.layer, a.layer));</span>
-<span class="fc" id="L330">        Set&lt;Node&lt;T&gt;&gt; visited = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L332">        PriorityQueue&lt;Node&lt;T&gt;&gt; pq =</span>
+<span class="fc" id="L333">                new PriorityQueue&lt;&gt;((a, b) -&gt; Integer.compare(b.layer, a.layer));</span>
+<span class="fc" id="L334">        Set&lt;Node&lt;T&gt;&gt; visited = new HashSet&lt;&gt;();</span>
 
-<span class="fc" id="L332">        targetNode.backwardBound = 0.0;</span>
-<span class="fc" id="L333">        pq.add(targetNode);</span>
-<span class="fc" id="L334">        visited.add(targetNode);</span>
+<span class="fc" id="L336">        targetNode.backwardBound = 0.0;</span>
+<span class="fc" id="L337">        pq.add(targetNode);</span>
+<span class="fc" id="L338">        visited.add(targetNode);</span>
 
-<span class="fc bfc" id="L336" title="All 2 branches covered.">        while (!pq.isEmpty()) {</span>
-<span class="fc" id="L337">            Node&lt;T&gt; n = pq.poll();</span>
+<span class="fc bfc" id="L340" title="All 2 branches covered.">        while (!pq.isEmpty()) {</span>
+<span class="fc" id="L341">            Node&lt;T&gt; n = pq.poll();</span>
 
-<span class="fc" id="L339">            double cur = n.backwardBound;</span>
+<span class="fc" id="L343">            double cur = n.backwardBound;</span>
 
-<span class="fc bfc" id="L341" title="All 2 branches covered.">            for (Edge&lt;T&gt; e : n.inEdges) {</span>
-<span class="fc" id="L342">                Node&lt;T&gt; p = e.origin;</span>
-<span class="fc" id="L343">                double localBound = model.relaxation().localCost(p.state, e.label, n.state);</span>
-<span class="fc" id="L344">                double ep = saturatedAdd(cur, saturatedAdd(e.cost, localBound));</span>
+<span class="fc bfc" id="L345" title="All 2 branches covered.">            for (Edge&lt;T&gt; e : n.inEdges) {</span>
+<span class="fc" id="L346">                Node&lt;T&gt; p = e.origin;</span>
+<span class="fc" id="L347">                double localBound = model.relaxation().localCost(p.state, e.label, n.state);</span>
+<span class="fc" id="L348">                double ep = saturatedAdd(cur, saturatedAdd(e.cost, localBound));</span>
 
-<span class="pc bpc" id="L346" title="1 of 4 branches missed.">                if (isBetter(ep, p.backwardBound) || p.backwardBound == Double.POSITIVE_INFINITY) {</span>
-<span class="fc" id="L347">                    p.backwardBound = ep;</span>
+<span class="pc bpc" id="L350" title="1 of 4 branches missed.">                if (isBetter(ep, p.backwardBound) || p.backwardBound == Double.POSITIVE_INFINITY) {</span>
+<span class="fc" id="L351">                    p.backwardBound = ep;</span>
                 }
 
-<span class="fc bfc" id="L350" title="All 2 branches covered.">                if (!visited.contains(p)) {</span>
-<span class="fc" id="L351">                    visited.add(p);</span>
-<span class="fc" id="L352">                    pq.add(p);</span>
+<span class="fc bfc" id="L354" title="All 2 branches covered.">                if (!visited.contains(p)) {</span>
+<span class="fc" id="L355">                    visited.add(p);</span>
+<span class="fc" id="L356">                    pq.add(p);</span>
                 }
-<span class="fc" id="L354">            }</span>
-<span class="fc" id="L355">        }</span>
-<span class="fc" id="L356">    }</span>
+<span class="fc" id="L358">            }</span>
+<span class="fc" id="L359">        }</span>
+<span class="fc" id="L360">    }</span>
 
     private void updateCache() {
-<span class="fc bfc" id="L359" title="All 2 branches covered.">        if (!cache.isPresent()) {</span>
-<span class="fc" id="L360">            return;</span>
+<span class="fc bfc" id="L363" title="All 2 branches covered.">        if (!cache.isPresent()) {</span>
+<span class="fc" id="L364">            return;</span>
         }
-<span class="fc bfc" id="L362" title="All 2 branches covered.">        for (Node&lt;T&gt; n : stateMap.values()) {</span>
-<span class="fc bfc" id="L363" title="All 2 branches covered.">            if (n.backwardBound != Double.POSITIVE_INFINITY) {</span>
-<span class="fc" id="L364">                double thresholdValue = saturatedDiff(primalBound, n.backwardBound);</span>
-<span class="fc" id="L365">                Threshold t = new Threshold(thresholdValue, n.isExact);</span>
-<span class="fc" id="L366">                cache.get().updateThreshold(n.state, n.layer, t);</span>
+<span class="fc bfc" id="L366" title="All 2 branches covered.">        for (Node&lt;T&gt; n : stateMap.values()) {</span>
+<span class="fc bfc" id="L367" title="All 2 branches covered.">            if (n.backwardBound != Double.POSITIVE_INFINITY) {</span>
+<span class="fc" id="L368">                double thresholdValue = saturatedDiff(primalBound, n.backwardBound);</span>
+<span class="fc" id="L369">                Threshold t = new Threshold(thresholdValue, n.isExact);</span>
+<span class="fc" id="L370">                cache.get().updateThreshold(n.state, n.layer, t);</span>
             }
-<span class="fc" id="L368">        }</span>
-<span class="fc" id="L369">    }</span>
+<span class="fc" id="L372">        }</span>
+<span class="fc" id="L373">    }</span>
 
     @Override
     public boolean isExact() {
-<span class="fc" id="L373">        return exact;</span>
+<span class="fc" id="L377">        return exact;</span>
     }
 
     @Override
     public Optional&lt;Double&gt; bestValue() {
-<span class="fc bfc" id="L378" title="All 2 branches covered.">        if (targetNode == null) {</span>
-<span class="fc" id="L379">            return Optional.empty();</span>
+<span class="fc bfc" id="L382" title="All 2 branches covered.">        if (targetNode == null) {</span>
+<span class="fc" id="L383">            return Optional.empty();</span>
         }
-<span class="fc" id="L381">        return Optional.of(targetNode.bound);</span>
+<span class="fc" id="L385">        return Optional.of(targetNode.bound);</span>
     }
 
     @Override
     public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
-<span class="pc bpc" id="L386" title="1 of 2 branches missed.">        if (targetNode == null) {</span>
-<span class="nc" id="L387">            return Optional.empty();</span>
+<span class="pc bpc" id="L390" title="1 of 2 branches missed.">        if (targetNode == null) {</span>
+<span class="nc" id="L391">            return Optional.empty();</span>
         }
-<span class="fc" id="L389">        Set&lt;Decision&gt; sol = new HashSet&lt;&gt;(rootSubProblem.getPath());</span>
-<span class="fc" id="L390">        Edge&lt;T&gt; edge = targetNode.bestParentEdge;</span>
-<span class="fc" id="L391">        int depth = targetNode.layer;</span>
-<span class="fc bfc" id="L392" title="All 2 branches covered.">        while (edge != null) {</span>
-<span class="fc" id="L393">            depth--;</span>
-<span class="fc" id="L394">            sol.add(new Decision(depth, edge.label)); // Layer variable is mocked in nolayer</span>
-<span class="fc" id="L395">            edge = edge.origin.bestParentEdge;</span>
+<span class="fc" id="L393">        Set&lt;Decision&gt; sol = new HashSet&lt;&gt;(rootSubProblem.getPath());</span>
+<span class="fc" id="L394">        Edge&lt;T&gt; edge = targetNode.bestParentEdge;</span>
+<span class="fc" id="L395">        int depth = targetNode.layer;</span>
+<span class="fc bfc" id="L396" title="All 2 branches covered.">        while (edge != null) {</span>
+<span class="fc" id="L397">            depth--;</span>
+<span class="fc" id="L398">            sol.add(new Decision(depth, edge.label)); // Layer variable is mocked in nolayer</span>
+<span class="fc" id="L399">            edge = edge.origin.bestParentEdge;</span>
         }
-<span class="fc" id="L397">        return Optional.of(sol);</span>
+<span class="fc" id="L401">        return Optional.of(sol);</span>
     }
 
     @Override
     public Iterator&lt;SubProblem&lt;T&gt;&gt; exactCutset() {
-<span class="fc" id="L402">        List&lt;SubProblem&lt;T&gt;&gt; cutset = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L406">        List&lt;SubProblem&lt;T&gt;&gt; cutset = new ArrayList&lt;&gt;();</span>
         // Nodes that are exact, but have at least one inexact child, or couldn't be expanded fully
         // This logic requires marking nodes properly.
         // For simplicity, a standard cutset is all exact nodes whose children were pruned/merged.
         // Or we can just return exact nodes that were not fully expanded.
-<span class="fc bfc" id="L407" title="All 2 branches covered.">        for (Node&lt;T&gt; n : stateMap.values()) {</span>
-<span class="pc bpc" id="L408" title="1 of 4 branches missed.">            if (n.isExact &amp;&amp; !n.isSink(problem)) {</span>
-<span class="fc" id="L409">                boolean allKidsExact = true;</span>
-<span class="fc bfc" id="L410" title="All 2 branches covered.">                for (Edge&lt;T&gt; e : n.outEdges) {</span>
-<span class="fc bfc" id="L411" title="All 2 branches covered.">                    if (!e.destination.isExact) {</span>
-<span class="fc" id="L412">                        allKidsExact = false;</span>
-<span class="fc" id="L413">                        break;</span>
+<span class="fc bfc" id="L411" title="All 2 branches covered.">        for (Node&lt;T&gt; n : stateMap.values()) {</span>
+<span class="pc bpc" id="L412" title="1 of 4 branches missed.">            if (n.isExact &amp;&amp; !n.isSink(problem)) {</span>
+<span class="fc" id="L413">                boolean allKidsExact = true;</span>
+<span class="fc bfc" id="L414" title="All 2 branches covered.">                for (Edge&lt;T&gt; e : n.outEdges) {</span>
+<span class="fc bfc" id="L415" title="All 2 branches covered.">                    if (!e.destination.isExact) {</span>
+<span class="fc" id="L416">                        allKidsExact = false;</span>
+<span class="fc" id="L417">                        break;</span>
                     }
-<span class="fc" id="L415">                }</span>
-<span class="fc bfc" id="L416" title="All 4 branches covered.">                if (!allKidsExact || n.outEdges.isEmpty()) {</span>
-<span class="fc" id="L417">                    cutset.add(</span>
+<span class="fc" id="L419">                }</span>
+<span class="fc bfc" id="L420" title="All 4 branches covered.">                if (!allKidsExact || n.outEdges.isEmpty()) {</span>
+<span class="fc" id="L421">                    cutset.add(</span>
                             new SubProblem&lt;&gt;(
                                     n.state,
                                     n.bound,
-<span class="fc" id="L421">                                    saturatedAdd(n.bound, n.backwardBound),</span>
-<span class="fc" id="L422">                                    pathOfNode(n)));</span>
+<span class="fc" id="L425">                                    saturatedAdd(n.bound, n.backwardBound),</span>
+<span class="fc" id="L426">                                    pathOfNode(n)));</span>
                 }
             }
-<span class="fc" id="L425">        }</span>
-<span class="fc" id="L426">        return cutset.iterator();</span>
+<span class="fc" id="L429">        }</span>
+<span class="fc" id="L430">        return cutset.iterator();</span>
     }
 
     @Override
     public boolean relaxedBestPathIsExact() {
-<span class="fc bfc" id="L431" title="All 2 branches covered.">        if (targetNode == null) {</span>
-<span class="fc" id="L432">            return false;</span>
+<span class="fc bfc" id="L435" title="All 2 branches covered.">        if (targetNode == null) {</span>
+<span class="fc" id="L436">            return false;</span>
         }
-<span class="fc bfc" id="L434" title="All 2 branches covered.">        if (!targetNode.isExact) {</span>
-<span class="fc" id="L435">            return false;</span>
+<span class="fc bfc" id="L438" title="All 2 branches covered.">        if (!targetNode.isExact) {</span>
+<span class="fc" id="L439">            return false;</span>
         }
-<span class="fc" id="L437">        Edge&lt;T&gt; edge = targetNode.bestParentEdge;</span>
-<span class="fc bfc" id="L438" title="All 2 branches covered.">        while (edge != null) {</span>
-<span class="pc bpc" id="L439" title="1 of 2 branches missed.">            if (!edge.origin.isExact) {</span>
-<span class="nc" id="L440">                return false;</span>
+<span class="fc" id="L441">        Edge&lt;T&gt; edge = targetNode.bestParentEdge;</span>
+<span class="fc bfc" id="L442" title="All 2 branches covered.">        while (edge != null) {</span>
+<span class="pc bpc" id="L443" title="1 of 2 branches missed.">            if (!edge.origin.isExact) {</span>
+<span class="nc" id="L444">                return false;</span>
             }
-<span class="fc" id="L442">            edge = edge.origin.bestParentEdge;</span>
+<span class="fc" id="L446">            edge = edge.origin.bestParentEdge;</span>
         }
 
-<span class="pc bpc" id="L445" title="1 of 2 branches missed.">        if (targetNode.bound &lt; -1477.0) {</span>
-<span class="nc" id="L446">            System.out.println(&quot;FOUND INVALID EXACT PATH WITH BOUND &quot; + targetNode.bound);</span>
-<span class="nc" id="L447">            edge = targetNode.bestParentEdge;</span>
-<span class="nc bnc" id="L448" title="All 2 branches missed.">            while (edge != null) {</span>
-<span class="nc" id="L449">                System.out.println(</span>
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">        if (targetNode.bound &lt; -1477.0) {</span>
+<span class="nc" id="L450">            System.out.println(&quot;FOUND INVALID EXACT PATH WITH BOUND &quot; + targetNode.bound);</span>
+<span class="nc" id="L451">            edge = targetNode.bestParentEdge;</span>
+<span class="nc bnc" id="L452" title="All 2 branches missed.">            while (edge != null) {</span>
+<span class="nc" id="L453">                System.out.println(</span>
                         &quot;Path node: &quot; + edge.origin.state + &quot; exact: &quot; + edge.origin.isExact);
-<span class="nc" id="L451">                edge = edge.origin.bestParentEdge;</span>
+<span class="nc" id="L455">                edge = edge.origin.bestParentEdge;</span>
             }
         }
 
-<span class="fc" id="L455">        return true;</span>
+<span class="fc" id="L459">        return true;</span>
     }
 
     private Set&lt;Decision&gt; pathOfNode(Node&lt;T&gt; n) {
-<span class="fc" id="L459">        Set&lt;Decision&gt; path = new HashSet&lt;&gt;(rootSubProblem.getPath());</span>
-<span class="fc" id="L460">        Edge&lt;T&gt; e = n.bestParentEdge;</span>
-<span class="fc" id="L461">        int depth = n.layer;</span>
-<span class="fc bfc" id="L462" title="All 2 branches covered.">        while (e != null) {</span>
-<span class="fc" id="L463">            depth--;</span>
-<span class="fc" id="L464">            path.add(new Decision(depth, e.label));</span>
-<span class="fc" id="L465">            e = e.origin.bestParentEdge;</span>
+<span class="fc" id="L463">        Set&lt;Decision&gt; path = new HashSet&lt;&gt;(rootSubProblem.getPath());</span>
+<span class="fc" id="L464">        Edge&lt;T&gt; e = n.bestParentEdge;</span>
+<span class="fc" id="L465">        int depth = n.layer;</span>
+<span class="fc bfc" id="L466" title="All 2 branches covered.">        while (e != null) {</span>
+<span class="fc" id="L467">            depth--;</span>
+<span class="fc" id="L468">            path.add(new Decision(depth, e.label));</span>
+<span class="fc" id="L469">            e = e.origin.bestParentEdge;</span>
         }
-<span class="fc" id="L467">        return path;</span>
+<span class="fc" id="L471">        return path;</span>
     }
 
     @Override
     public String exportAsDot() {
-<span class="nc" id="L472">        return &quot;digraph MDD {}&quot;;</span>
+<span class="nc" id="L476">        return &quot;digraph MDD {}&quot;;</span>
     }
 
     @Override
     public int nbNodes() {
-<span class="fc" id="L477">        return stateMap.size();</span>
+<span class="fc" id="L481">        return stateMap.size();</span>
+    }
+
+    @Override
+    public int nbFastLowerBoundPruning() {
+<span class="fc" id="L486">        return nbFastLowerBoundPruning;</span>
+    }
+
+    @Override
+    public int nbDominancePruning() {
+<span class="fc" id="L491">        return nbDominancePruning;</span>
     }
 
     @Override
     public double minLowerBound() {
-<span class="nc" id="L482">        return rootNode.bound;</span>
+<span class="nc" id="L496">        return rootNode.bound;</span>
     }
 
     /**
@@ -493,10 +507,10 @@ public class NoLayerDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt;
         public final T state;
 
         /** The edges going out of this node. */
-<span class="fc" id="L496">        public final List&lt;Edge&lt;T&gt;&gt; outEdges = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L510">        public final List&lt;Edge&lt;T&gt;&gt; outEdges = new ArrayList&lt;&gt;();</span>
 
         /** The edges coming into this node. */
-<span class="fc" id="L499">        public final List&lt;Edge&lt;T&gt;&gt; inEdges = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L513">        public final List&lt;Edge&lt;T&gt;&gt; inEdges = new ArrayList&lt;&gt;();</span>
 
         /** The depth at which this node was created. */
         public int layer;
@@ -508,21 +522,21 @@ public class NoLayerDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt;
         public double backwardBound;
 
         /** Whether this node still represents an exact state (not merged/restricted away). */
-<span class="fc" id="L511">        public boolean isExact = true;</span>
+<span class="fc" id="L525">        public boolean isExact = true;</span>
 
         /** The edge of the best path from the root to this node. */
-<span class="fc" id="L514">        public Edge&lt;T&gt; bestParentEdge = null;</span>
+<span class="fc" id="L528">        public Edge&lt;T&gt; bestParentEdge = null;</span>
 
         /**
          * Creates a new node wrapping the given state.
          *
          * @param state the state associated with this node
          */
-<span class="fc" id="L521">        public Node(T state) {</span>
-<span class="fc" id="L522">            this.state = state;</span>
-<span class="fc" id="L523">            this.bound = Double.POSITIVE_INFINITY;</span>
-<span class="fc" id="L524">            this.backwardBound = Double.POSITIVE_INFINITY;</span>
-<span class="fc" id="L525">        }</span>
+<span class="fc" id="L535">        public Node(T state) {</span>
+<span class="fc" id="L536">            this.state = state;</span>
+<span class="fc" id="L537">            this.bound = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L538">            this.backwardBound = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L539">        }</span>
 
         /**
          * Indicates whether this node's state is a target state of the given problem.
@@ -531,7 +545,7 @@ public class NoLayerDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt;
          * @return {@code true} if this node's state is a target state, {@code false} otherwise
          */
         public boolean isSink(Problem&lt;T&gt; problem) {
-<span class="fc" id="L534">            return problem.isTarget(state);</span>
+<span class="fc" id="L548">            return problem.isTarget(state);</span>
         }
     }
 
@@ -562,12 +576,12 @@ public class NoLayerDecisionDiagram&lt;T&gt; implements DecisionDiagram&lt;T&gt;
          * @param label the label applied along this edge
          * @param cost the cost of this edge
          */
-<span class="fc" id="L565">        public Edge(Node&lt;T&gt; origin, Node&lt;T&gt; destination, int label, double cost) {</span>
-<span class="fc" id="L566">            this.origin = origin;</span>
-<span class="fc" id="L567">            this.destination = destination;</span>
-<span class="fc" id="L568">            this.label = label;</span>
-<span class="fc" id="L569">            this.cost = cost;</span>
-<span class="fc" id="L570">        }</span>
+<span class="fc" id="L579">        public Edge(Node&lt;T&gt; origin, Node&lt;T&gt; destination, int label, double cost) {</span>
+<span class="fc" id="L580">            this.origin = origin;</span>
+<span class="fc" id="L581">            this.destination = destination;</span>
+<span class="fc" id="L582">            this.label = label;</span>
+<span class="fc" id="L583">            this.cost = cost;</span>
+<span class="fc" id="L584">        }</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

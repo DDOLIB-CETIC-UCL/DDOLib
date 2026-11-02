@@ -40,12 +40,21 @@ public class Solution {
     }
 
     /**
+     * Returns whether this solution is empty, i.e. no solution was found.
+     *
+     * @return {@code true} if this solution does not contain any label
+     */
+    public boolean isEmpty() {
+<span class="fc" id="L48">        return solution.isEmpty();</span>
+    }
+
+    /**
      * Returns the statistics associated to this solution.
      *
      * @return the statistics associated to this solution
      */
     public SearchStatistics statistics() {
-<span class="fc" id="L48">        return statistics;</span>
+<span class="fc" id="L57">        return statistics;</span>
     }
 
     /**
@@ -54,12 +63,12 @@ public class Solution {
      * @return a readable string for the search time needed to find this solution
      */
     public String searchTime() {
-<span class="nc" id="L57">        return PrettyPrint.formatMs(statistics.runtime());</span>
+<span class="nc" id="L66">        return PrettyPrint.formatMs(statistics.runtime());</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L62">        return &quot;Solution: %s%nValue: %s&quot;.formatted(solution, value());</span>
+<span class="nc" id="L71">        return &quot;Solution: %s%nValue: %s&quot;.formatted(solution, value());</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

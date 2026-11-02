@@ -2,9 +2,12 @@
 
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
+import org.ddolib.common.util.debug.DebugLevel;
+import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.StateRanking;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.CostBased;
 import org.ddolib.nolayer.solving.ddo.core.heuristics.cluster.ReductionStrategy;
+import org.ddolib.nolayer.solver.Solution;
 
 /**
  * Defines the interface for an unlayered Dynamic Decision Diagram Optimization (DDO) model.
@@ -26,7 +29,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link StateRanking} comparator between states
      */
     default StateRanking&lt;T&gt; ranking() {
-<span class="nc" id="L29">        return (o1, o2) -&gt; 0;</span>
+<span class="nc" id="L32">        return (o1, o2) -&gt; 0;</span>
     }
 
     /**
@@ -35,7 +38,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link WidthHeuristic} instance controlling diagram width
      */
     default WidthHeuristic&lt;T&gt; widthHeuristic() {
-<span class="nc" id="L38">        return new FixedWidth&lt;&gt;(10);</span>
+<span class="fc" id="L41">        return new FixedWidth&lt;&gt;(10);</span>
     }
 
     /**
@@ -44,7 +47,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the {@link ReductionStrategy} used to merge nodes in a relaxed decision diagram
      */
     default ReductionStrategy&lt;T&gt; relaxStrategy() {
-<span class="nc" id="L47">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="fc" id="L50">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
@@ -53,7 +56,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the {@link ReductionStrategy} used to drop nodes in a restricted decision diagram
      */
     default ReductionStrategy&lt;T&gt; restrictStrategy() {
-<span class="nc" id="L56">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
+<span class="nc" id="L59">        return new CostBased&lt;&gt;((o1, o2) -&gt; 0);</span>
     }
 
     /**
@@ -62,7 +65,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if caching is enabled, {@code false} otherwise
      */
     default boolean useCache() {
-<span class="nc" id="L65">        return false;</span>
+<span class="fc" id="L68">        return false;</span>
     }
 
     /**
@@ -71,7 +74,7 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a {@link NoLayerDominanceChecker} instance
      */
     default NoLayerDominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L74">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
+<span class="fc" id="L77">        return new DefaultNoLayerDominanceChecker&lt;&gt;();</span>
     }
 
     /**
@@ -81,7 +84,83 @@ public interface DdoModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return {@code true} if DOT export is enabled, {@code false} otherwise
      */
     default boolean exportDot() {
-<span class="nc" id="L84">        return false;</span>
+<span class="nc" id="L87">        return false;</span>
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default DdoModel&lt;T&gt; setInitialSolution(Solution solution) {
+<span class="fc" id="L98">        return new DdoModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+                return DdoModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+                return DdoModel.this.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker&lt;T&gt; dominance() {
+                return DdoModel.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return DdoModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return DdoModel.this.debugMode();
+            }
+
+            @Override
+            public Relaxation&lt;T&gt; relaxation() {
+                return DdoModel.this.relaxation();
+            }
+
+            @Override
+            public StateRanking&lt;T&gt; ranking() {
+                return DdoModel.this.ranking();
+            }
+
+            @Override
+            public WidthHeuristic&lt;T&gt; widthHeuristic() {
+                return DdoModel.this.widthHeuristic();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; relaxStrategy() {
+                return DdoModel.this.relaxStrategy();
+            }
+
+            @Override
+            public ReductionStrategy&lt;T&gt; restrictStrategy() {
+                return DdoModel.this.restrictStrategy();
+            }
+
+            @Override
+            public boolean useCache() {
+                return DdoModel.this.useCache();
+            }
+
+            @Override
+            public boolean exportDot() {
+                return DdoModel.this.exportDot();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
+            }
+        };
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -263,7 +263,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution minimizeAstar(Model&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L266">        return minimizeAstar(model, limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L266">        return minimizeAstar(model, limit, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -324,7 +324,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution minimizeAcs(AcsModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L327">        return minimizeAcs(model, limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L327">        return minimizeAcs(model, limit, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -379,7 +379,7 @@ public class Solvers {
             AwAstarModel&lt;T&gt; model,
             Predicate&lt;SearchStatistics&gt; limit,
             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L382">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L382">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
     /**
@@ -405,7 +405,7 @@ public class Solvers {
      */
     public static &lt;T&gt; Solution minimizeAwAStar(
             AwAstarModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L408">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L408">        return new AwAstarSolver&lt;&gt;(model).minimize(limit, (sol, s) -&gt; {});</span>
     }
 
     /**

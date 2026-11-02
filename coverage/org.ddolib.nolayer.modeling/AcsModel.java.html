@@ -2,6 +2,7 @@
 
 import org.ddolib.common.util.debug.DebugLevel;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.nolayer.solver.Solution;
 
 /**
  * Defines the structure of an optimization model solved using the &lt;b&gt;Anytime Column Search
@@ -22,7 +23,7 @@ public interface AcsModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return the default column width, in characters (default is {@code 5})
      */
     default int columnWidth() {
-<span class="fc" id="L25">        return 5;</span>
+<span class="fc" id="L26">        return 5;</span>
     }
 
     /**
@@ -32,7 +33,7 @@ public interface AcsModel&lt;T&gt; extends Model&lt;T&gt; {
      * @return a copy of this model but with another column width
      */
     default AcsModel&lt;T&gt; setColumnWidth(int width) {
-<span class="nc" id="L35">        return new AcsModel&lt;T&gt;() {</span>
+<span class="fc" id="L36">        return new AcsModel&lt;T&gt;() {</span>
             @Override
             public Problem&lt;T&gt; problem() {
                 return AcsModel.this.problem();
@@ -59,13 +60,59 @@ public interface AcsModel&lt;T&gt; extends Model&lt;T&gt; {
             }
 
             @Override
-            public double upperBound() {
-                return AcsModel.this.upperBound();
+            public Solution initialSolution() {
+                return AcsModel.this.initialSolution();
             }
 
             @Override
             public int columnWidth() {
                 return width;
+            }
+        };
+    }
+
+    /**
+     * Returns a copy of this model but with the given initial solution.
+     *
+     * @param solution the initial solution (see {@link #initialSolution()})
+     * @return a copy of this model but with the given initial solution
+     */
+    @Override
+    default AcsModel&lt;T&gt; setInitialSolution(Solution solution) {
+<span class="fc" id="L82">        return new AcsModel&lt;&gt;() {</span>
+            @Override
+            public Problem&lt;T&gt; problem() {
+                return AcsModel.this.problem();
+            }
+
+            @Override
+            public FastLowerBound&lt;T&gt; lowerBound() {
+                return AcsModel.this.lowerBound();
+            }
+
+            @Override
+            public NoLayerDominanceChecker&lt;T&gt; dominance() {
+                return AcsModel.this.dominance();
+            }
+
+            @Override
+            public VerbosityLevel verbosityLevel() {
+                return AcsModel.this.verbosityLevel();
+            }
+
+            @Override
+            public DebugLevel debugMode() {
+                return AcsModel.this.debugMode();
+            }
+
+            @Override
+            public int columnWidth() {
+                return AcsModel.this.columnWidth();
+            }
+
+            @Override
+            public Solution initialSolution() {
+                return solution;
             }
         };
     }
