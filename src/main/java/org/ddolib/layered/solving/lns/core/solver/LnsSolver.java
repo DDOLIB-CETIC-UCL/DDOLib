@@ -8,6 +8,7 @@ import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
+import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.LnsModel;
 import org.ddolib.layered.modeling.Problem;
 import org.ddolib.layered.solver.Solution;
@@ -59,6 +60,12 @@ public final class LnsSolver<T> implements Solver {
      * Random number generator shared by all the restricted DDs of a run.
      */
     private final Random random;
+    /**
+     * Dominance checker shared by all the compilations of a run. It is cleared before each
+     * compilation, so that the result does not depend on whether the model returns a new checker
+     * at each call of {@link LnsModel#dominance()} or always the same one.
+     */
+    private final DominanceChecker<T> dominance;
     private double bestUB;
     private Optional<Set<Decision>> bestSol;
     private boolean firstRestricted = true;
@@ -91,6 +98,7 @@ public final class LnsSolver<T> implements Solver {
                         problem.initialValue(),
                         model.lowerBound().fastLowerBound(problem.initialState(), vars));
         this.random = new Random(model.seed());
+        this.dominance = model.dominance();
     }
 
     @Override
@@ -155,6 +163,10 @@ public final class LnsSolver<T> implements Solver {
                             maxWidth,
                             model.exportDot() && this.firstRestricted);
 
+            // The states remembered by the dominance checker come from other neighborhoods, whose
+            // states may have been dropped by the restriction: keeping them would prune states of
+            // this DD (even a state seen before with the same value is dominated by its own copy).
+            dominance.clear();
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
             restrictedMdd.compile();
             stats = stats.addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
@@ -384,7 +396,7 @@ public final class LnsSolver<T> implements Solver {
         compilation.residual = sub;
         compilation.maxWidth = maxWidth;
         compilation.flb = model.lowerBound();
-        compilation.dominance = model.dominance();
+        compilation.dominance = dominance;
         compilation.bestUB = this.bestUB;
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();

@@ -6,6 +6,12 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- LNS: the dominance checker is now obtained once and cleared before each compilation, as in the
+  DDO solver. Previously the LNS called `LnsModel.dominance()` at each compilation and never
+  cleared the checker: when a model returned always the same checker, the states remembered from
+  other neighborhoods pruned the states of the next DDs (a state seen before with the same value
+  was dominated by its own copy). The LNS could then report a non-optimal solution as optimal or a
+  feasible problem as `UNSAT`. The result no longer depends on how the model provides its checker.
 - A*-family stats: the moving average behind `validChildrenPercent` now also takes into account
   the expanded nodes whose children are all pruned or redundant. Previously these nodes were
   ignored, so the indicator decreased far too slowly to signal stagnation.

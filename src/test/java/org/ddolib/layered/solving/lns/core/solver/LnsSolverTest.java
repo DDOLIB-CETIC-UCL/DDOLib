@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 import org.ddolib.common.heuristics.width.FixedWidth;
 import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.solver.stat.DdoStats;
@@ -21,6 +22,7 @@ import org.ddolib.examples.layered.knapsack.KSDominance;
 import org.ddolib.examples.layered.knapsack.KSFastLowerBound;
 import org.ddolib.examples.layered.knapsack.KSProblem;
 import org.ddolib.examples.layered.knapsack.KSRanking;
+import org.ddolib.examples.layered.tsptw.TSPTWDominance;
 import org.ddolib.examples.layered.tsptw.TSPTWFastLowerBound;
 import org.ddolib.examples.layered.tsptw.TSPTWProblem;
 import org.ddolib.examples.layered.tsptw.TSPTWRanking;
@@ -399,5 +401,64 @@ public class LnsSolverTest {
 
         assertTrue(Double.isInfinite(sol.value()));
         assertEquals(SearchStatus.UNSAT, sol.statistics().status());
+    }
+
+    private static LnsModel<TSPTWState> tsptwModelWithDominance(
+            TSPTWProblem problem, Supplier<DominanceChecker<TSPTWState>> dominance) {
+        LnsModel<TSPTWState> base = tsptwModel(problem, 1);
+        return new LnsModel<>() {
+            @Override
+            public Problem<TSPTWState> problem() {
+                return problem;
+            }
+
+            @Override
+            public FastLowerBound<TSPTWState> lowerBound() {
+                return base.lowerBound();
+            }
+
+            @Override
+            public DominanceChecker<TSPTWState> dominance() {
+                return dominance.get();
+            }
+
+            @Override
+            public TSPTWRanking ranking() {
+                return new TSPTWRanking();
+            }
+
+            @Override
+            public WidthHeuristic<TSPTWState> widthHeuristic() {
+                return base.widthHeuristic();
+            }
+        };
+    }
+
+    @Test
+    void testResultDoesNotDependOnTheDominanceCheckerInstance() throws IOException {
+        // The LNS compiles the root several times before finding a solution (see
+        // testWidthIsIncreasedUntilASolutionIsFound). With a dominance checker that is not
+        // cleared between two compilations, every state of the second DD is dominated by its own
+        // copy from the first one, and the feasible problem was reported as UNSAT.
+        final TSPTWProblem problem =
+                new TSPTWProblem(Path.of("data", "TSPTW", "AFG", "rbg017a.tw").toString());
+        DominanceChecker<TSPTWState> single =
+                new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+
+        Solution fresh =
+                Solvers.minimizeLns(
+                        tsptwModelWithDominance(
+                                problem,
+                                () ->
+                                        new SimpleDominanceChecker<>(
+                                                new TSPTWDominance(), problem.nbVars())),
+                        s -> s.nbIterations() > 60);
+        Solution shared =
+                Solvers.minimizeLns(
+                        tsptwModelWithDominance(problem, () -> single), s -> s.nbIterations() > 60);
+
+        assertFalse(Double.isInfinite(shared.value()));
+        assertEquals(fresh.value(), shared.value(), 1e-9);
+        assertEquals(fresh.statistics().status(), shared.statistics().status());
     }
 }
