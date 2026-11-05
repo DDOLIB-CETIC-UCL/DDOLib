@@ -67,6 +67,11 @@ public abstract class SearchStatistics {
     protected double _gap = Double.POSITIVE_INFINITY;
 
     /**
+     * Best lower bound on the optimal value proved so far (the problems are minimized).
+     */
+    protected double _bestBound = Double.NEGATIVE_INFINITY;
+
+    /**
      * Maximum size reached by the search frontier.
      */
     protected int _frontierMaxSize = 0;
@@ -170,6 +175,28 @@ public abstract class SearchStatistics {
     }
 
     /**
+     * Returns the best lower bound on the optimal value proved so far (all the problems are
+     * minimized). It is known even when the search is stopped before the end, for instance by a
+     * time limit, and does not require an incumbent.
+     *
+     * <ul>
+     *   <li>When the search is {@link SearchStatus#OPTIMAL}, it is the incumbent value.
+     *   <li>When the problem is {@link SearchStatus#UNSAT}, it is {@link Double#POSITIVE_INFINITY}.
+     *   <li>When no bound is known, it is {@link Double#NEGATIVE_INFINITY}.
+     * </ul>
+     *
+     * @return the best lower bound on the optimal value
+     */
+    public double bestBound() {
+        if (_status == SearchStatus.OPTIMAL) {
+            return _incumbent;
+        } else if (_status == SearchStatus.UNSAT) {
+            return Double.POSITIVE_INFINITY;
+        }
+        return _bestBound;
+    }
+
+    /**
      * Returns the value of the best solution found so far (incumbent).
      *
      * @return the incumbent value
@@ -238,6 +265,7 @@ public abstract class SearchStatistics {
         clone._lastIterationOfGapImprovement = this._lastIterationOfGapImprovement;
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
+        clone._bestBound = this._bestBound;
         clone._frontierMaxSize = this._frontierMaxSize;
         clone._relativeImprovement = this._relativeImprovement;
         clone._nbFastLowerBoundPruning = this._nbFastLowerBoundPruning;
@@ -324,6 +352,21 @@ public abstract class SearchStatistics {
     }
 
     /**
+     * Returns a new SearchStatistics instance with an updated best bound. Any valid lower bound on
+     * the optimal value can be given: the best one seen so far is kept.
+     *
+     * @param bound a lower bound on the optimal value
+     * @return a new instance with the updated best bound
+     */
+    public SearchStatistics updateBestBound(double bound) {
+        SearchStatistics toReturn = this.copy();
+        if (bound > this._bestBound) {
+            toReturn._bestBound = bound;
+        }
+        return toReturn;
+    }
+
+    /**
      * Returns a new SearchStatistics instance with an updated current time.
      *
      * @param time the current time (in milliseconds)
@@ -374,6 +417,7 @@ public abstract class SearchStatistics {
                         "Runtime",
                         "Incumbent",
                         "Gap",
+                        "Best bound",
                         "Relative improvement",
                         "Nb FastLowerBound pruning",
                         "Nb Dominance pruning");
@@ -386,6 +430,9 @@ public abstract class SearchStatistics {
                         PrettyPrint.formatMs(runtime()),
                         Double.isInfinite(_incumbent) ? "∞" : df.format(_incumbent),
                         Double.isInfinite(_gap) ? "∞" : gapFormat.format(_gap) + " %",
+                        Double.isInfinite(bestBound())
+                                ? (bestBound() > 0 ? "∞" : "-∞")
+                                : df.format(bestBound()),
                         df.format(relativeImprovement()) + " %",
                         df.format(nbFastLowerBoundPruning()),
                         df.format(nbDominancePruning()));

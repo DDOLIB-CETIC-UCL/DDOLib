@@ -191,7 +191,7 @@ public final class SequentialSolver<T> implements Solver {
                     statistics
                             .incrementNbIter()
                             .updateFrontierMaxSize(frontier.size())
-                            .updateLowerBound(frontier.bestInFrontier());
+                            .updateLowerBound(Math.min(bestUB, frontier.bestInFrontier()));
 
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();

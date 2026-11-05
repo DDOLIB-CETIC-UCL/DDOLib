@@ -86,6 +86,14 @@ public class AstarStats extends SearchStatistics {
      * {@inheritDoc}
      */
     @Override
+    public AstarStats updateBestBound(double bound) {
+        return (AstarStats) super.updateBestBound(bound);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public AstarStats updateTime(long time) {
         return (AstarStats) super.updateTime(time);
     }

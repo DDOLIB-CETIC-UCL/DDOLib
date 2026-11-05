@@ -16,11 +16,6 @@ public class DdoStats extends SearchStatistics {
     private int maxExploredDepth = 0;
 
     /**
-     * Best (highest) global lower bound found so far.
-     */
-    private double bestLowerBound = Double.NEGATIVE_INFINITY;
-
-    /**
      * Iteration during which the last lower bound improvement was found.
      */
     private int lastIterationOfLowerBoundImprovement = 0;
@@ -43,7 +38,6 @@ public class DdoStats extends SearchStatistics {
         DdoStats clone = new DdoStats(this._startTime, this._incumbent);
         clone.totalNodes = this.totalNodes;
         clone.maxExploredDepth = this.maxExploredDepth;
-        clone.bestLowerBound = this.bestLowerBound;
         clone.lastIterationOfLowerBoundImprovement = this.lastIterationOfLowerBoundImprovement;
         return clone;
     }
@@ -56,7 +50,6 @@ public class DdoStats extends SearchStatistics {
         DdoStats clone = (DdoStats) super.copy();
         clone.totalNodes = this.totalNodes;
         clone.maxExploredDepth = this.maxExploredDepth;
-        clone.bestLowerBound = this.bestLowerBound;
         clone.lastIterationOfLowerBoundImprovement = this.lastIterationOfLowerBoundImprovement;
         return clone;
     }
@@ -99,6 +92,18 @@ public class DdoStats extends SearchStatistics {
     @Override
     public DdoStats updateGap(double gap) {
         return (DdoStats) super.updateGap(gap);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateBestBound(double bound) {
+        DdoStats toReturn = (DdoStats) super.updateBestBound(bound);
+        if (bound > this._bestBound) {
+            toReturn.lastIterationOfLowerBoundImprovement = this._nbIterations;
+        }
+        return toReturn;
     }
 
     /**
@@ -165,7 +170,7 @@ public class DdoStats extends SearchStatistics {
      * @return the best lower bound
      */
     public double bestLowerBound() {
-        return bestLowerBound;
+        return _bestBound;
     }
 
     /**
@@ -209,8 +214,8 @@ public class DdoStats extends SearchStatistics {
      */
     public DdoStats updateLowerBound(double lb) {
         DdoStats toReturn = this.copy();
-        if (lb > this.bestLowerBound) {
-            toReturn.bestLowerBound = lb;
+        if (lb > this._bestBound) {
+            toReturn._bestBound = lb;
             toReturn.lastIterationOfLowerBoundImprovement = this._nbIterations;
         }
         return toReturn;

@@ -4,6 +4,15 @@ This file documents the DDOLib changes.
 
 ## Unreleased
 
+### Added
+
+- `SearchStatistics.bestBound()`: the best lower bound on the optimal value proved so far, for
+  every solver (A*, AWA*, ACS and DDO, layered and no-layer, and LNS). It is known when the search
+  is stopped early, for instance by a time limit, and does not require an incumbent. It is the
+  incumbent value when the search is `OPTIMAL` and `+∞` when the problem is `UNSAT`. Previously
+  only `DdoStats.bestLowerBound()` existed, so the bound of A* was not available. The bound is
+  also printed by `toString()`.
+
 ### Fixed
 
 - LNS: the dominance checker is now obtained once and cleared before each compilation, as in the

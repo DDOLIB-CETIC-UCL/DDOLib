@@ -156,7 +156,8 @@ public final class AwAstarSolver<T> implements Solver {
         if (problem.isTarget(root.getState())) {
             bestSol = Optional.of(root.getPath());
             statistics =
-                    statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.OPTIMAL);
+                    statistics.updateIncumbent(bestUB, gap())
+                            .updateBestBound(bestBound()).updateStatus(SearchStatus.OPTIMAL);
             return new Solution(bestSolution(), statistics);
         }
 
@@ -174,7 +175,8 @@ public final class AwAstarSolver<T> implements Solver {
                             .incrementNbIter()
                             .updateFrontierMaxSize(open.size())
                             .updateTime(System.currentTimeMillis())
-                            .updateGap(gap());
+                            .updateGap(gap())
+                            .updateBestBound(bestBound());
 
             if (limit.test(statistics)) {
                 return new Solution(
@@ -292,13 +294,27 @@ public final class AwAstarSolver<T> implements Solver {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
                 statistics =
-                        statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                        statistics.updateIncumbent(bestUB, gap())
+                                .updateBestBound(bestBound()).updateStatus(SearchStatus.SAT);
                 onSolution.accept(newPath, statistics);
                 verboseMode.newBest(bestUB);
             }
         }
 
         statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
+    }
+
+    /**
+     * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
+     * nodes, capped by the incumbent. When no node is open, the incumbent is optimal.
+     *
+     * @return a lower bound on the optimal value
+     */
+    private double bestBound() {
+        if (openByF.isEmpty()) {
+            return bestUB;
+        }
+        return Math.min(bestUB, openByF.peek().f());
     }
 
     private double gap() {

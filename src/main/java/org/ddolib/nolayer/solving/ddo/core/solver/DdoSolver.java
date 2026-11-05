@@ -104,7 +104,7 @@ public final class DdoSolver<T> implements Solver {
                     statistics
                             .incrementNbIter()
                             .updateFrontierMaxSize(frontier.size() + 1)
-                            .updateLowerBound(nodeLB)
+                            .updateLowerBound(Math.min(bestUB, nodeLB))
                             .updateTime(System.currentTimeMillis())
                             .updateGap(gap())
                             .updateMaxDepth(sub.getDepth());

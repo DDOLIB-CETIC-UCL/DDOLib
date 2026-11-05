@@ -107,7 +107,8 @@ public final class LnsSolver<T> implements Solver {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
-        DdoStats stats = new DdoStats(start, bestUB);
+        // the fast lower bound at the root bounds the optimal value from the start
+        DdoStats stats = new DdoStats(start, bestUB).updateBestBound(globalLB);
         SubProblem<T> rootPrime;
         double gap = computeGap(bestUB, globalLB);
         // Without solution, the restricted DD compiled from the root is the same at each

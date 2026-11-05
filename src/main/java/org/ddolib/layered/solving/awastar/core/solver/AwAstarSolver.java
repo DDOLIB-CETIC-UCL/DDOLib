@@ -159,7 +159,8 @@ public final class AwAstarSolver<T> implements Solver {
             bestSol = Optional.of(root.getPath());
             bestUB = root.getValue();
             statistics =
-                    statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.OPTIMAL);
+                    statistics.updateIncumbent(bestUB, gap())
+                            .updateBestBound(bestBound()).updateStatus(SearchStatus.OPTIMAL);
             return new Solution(bestSolution(), statistics);
         }
 
@@ -178,7 +179,8 @@ public final class AwAstarSolver<T> implements Solver {
                             .incrementNbIter()
                             .updateFrontierMaxSize(open.size())
                             .updateTime(System.currentTimeMillis())
-                            .updateGap(gap());
+                            .updateGap(gap())
+                            .updateBestBound(bestBound());
 
             if (limit.test(statistics)) { // user-defined stopping criterion
                 return new Solution(
@@ -238,6 +240,19 @@ public final class AwAstarSolver<T> implements Solver {
     @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
+    }
+
+    /**
+     * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
+     * nodes, capped by the incumbent. When no node is open, the incumbent is optimal.
+     *
+     * @return a lower bound on the optimal value
+     */
+    private double bestBound() {
+        if (openByF.isEmpty()) {
+            return bestUB;
+        }
+        return Math.min(bestUB, openByF.peek().f());
     }
 
     private double gap() {
@@ -317,7 +332,8 @@ public final class AwAstarSolver<T> implements Solver {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
                 statistics =
-                        statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                        statistics.updateIncumbent(bestUB, gap())
+                                .updateBestBound(bestBound()).updateStatus(SearchStatus.SAT);
                 onSolution.accept(constructSolution(path), statistics);
                 verboseMode.newBest(bestUB);
             }

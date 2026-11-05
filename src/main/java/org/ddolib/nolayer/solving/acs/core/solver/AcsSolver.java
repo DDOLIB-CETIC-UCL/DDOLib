@@ -135,7 +135,8 @@ public final class AcsSolver<T> implements Solver {
                             .orElse(Double.POSITIVE_INFINITY),
                     gap());
 
-            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
+            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap())
+                    .updateBestBound(bestBound());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -172,6 +173,7 @@ public final class AcsSolver<T> implements Solver {
                             bestUB = sub.getValue();
                             statistics = statistics
                                     .updateIncumbent(bestUB, gap())
+                                    .updateBestBound(bestBound())
                                     .updateStatus(SearchStatus.SAT);
                             onSolution.accept(bestSol.get(), statistics);
                         }
@@ -259,7 +261,8 @@ public final class AcsSolver<T> implements Solver {
             if (problem.isTarget(newState) && newSub.getValue() < bestUB) {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
-                statistics = statistics.updateIncumbent(bestUB, gap()).updateStatus(SearchStatus.SAT);
+                statistics = statistics.updateIncumbent(bestUB, gap())
+                        .updateBestBound(bestBound()).updateStatus(SearchStatus.SAT);
                 onSolution.accept(path, statistics);
                 verboseMode.newBest(bestUB);
             }
@@ -279,6 +282,23 @@ public final class AcsSolver<T> implements Solver {
     @Override
     public List<Integer> bestSolution() {
         return bestSol.orElse(List.of());
+    }
+
+    /**
+     * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
+     * nodes over all the depths, capped by the incumbent. When no node is open, the incumbent is
+     * optimal.
+     *
+     * @return a lower bound on the optimal value
+     */
+    private double bestBound() {
+        double minF =
+                open.stream()
+                        .filter(pq -> !pq.isEmpty())
+                        .mapToDouble(pq -> pq.peek().f())
+                        .min()
+                        .orElse(bestUB);
+        return Math.min(bestUB, minF);
     }
 
     private double gap() {

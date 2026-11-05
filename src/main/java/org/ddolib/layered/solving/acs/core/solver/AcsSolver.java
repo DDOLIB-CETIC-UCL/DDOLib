@@ -220,7 +220,8 @@ public final class AcsSolver<T> implements Solver {
                             .orElse(Double.POSITIVE_INFINITY),
                     gap());
 
-            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());
+            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap())
+                    .updateBestBound(bestBound());
 
             if (limit.test(statistics)) {
                 return new Solution(bestSolution(), statistics);
@@ -263,6 +264,7 @@ public final class AcsSolver<T> implements Solver {
                             bestUB = sub.getValue();
                             statistics = statistics
                                     .updateIncumbent(bestUB, gap())
+                                    .updateBestBound(bestBound())
                                     .updateStatus(SearchStatus.SAT);
                             onSolution.accept(constructSolution(bestSol.get()), statistics);
                         }
@@ -315,6 +317,23 @@ public final class AcsSolver<T> implements Solver {
     @Override
     public Optional<Set<Decision>> bestSolution() {
         return bestSol;
+    }
+
+    /**
+     * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
+     * nodes over all the depths, capped by the incumbent. When no node is open, the incumbent is
+     * optimal.
+     *
+     * @return a lower bound on the optimal value
+     */
+    private double bestBound() {
+        double minF =
+                open.stream()
+                        .filter(pq -> !pq.isEmpty())
+                        .mapToDouble(pq -> pq.peek().f())
+                        .min()
+                        .orElse(bestUB);
+        return Math.min(bestUB, minF);
     }
 
     /**
