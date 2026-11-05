@@ -320,6 +320,22 @@ public final class AcsSolver<T> implements Solver {
     }
 
     /**
+     * Returns a lower bound on the value of the solutions reachable through the given node:
+     * {@code f = g + h} when the model provides a fast lower bound. Otherwise, the cost of the
+     * path {@code g} is a lower bound only if the remaining costs cannot be negative (see {@link
+     * Problem#hasNonNegativeCosts()}); if they can, no lower bound is known.
+     *
+     * @param node an open node
+     * @return a lower bound through the node, or {@link Double#NEGATIVE_INFINITY} if unknown
+     */
+    private double nodeLowerBound(SubProblem<T> node) {
+        if (!defaultLowerBoundValue) {
+            return node.f();
+        }
+        return problem.hasNonNegativeCosts() ? node.getValue() : Double.NEGATIVE_INFINITY;
+    }
+
+    /**
      * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
      * nodes over all the depths, capped by the incumbent. When no node is open, the incumbent is
      * optimal.
@@ -330,7 +346,7 @@ public final class AcsSolver<T> implements Solver {
         double minF =
                 open.stream()
                         .filter(pq -> !pq.isEmpty())
-                        .mapToDouble(pq -> pq.peek().f())
+                        .mapToDouble(pq -> nodeLowerBound(pq.peek()))
                         .min()
                         .orElse(bestUB);
         return Math.min(bestUB, minF);
@@ -351,9 +367,10 @@ public final class AcsSolver<T> implements Solver {
                 open.stream()
                         .filter(pq -> !pq.isEmpty())
                         .mapToDouble(
-                                pq -> defaultLowerBoundValue ? pq.peek().getValue() : pq.peek().f())
+                                pq -> nodeLowerBound(pq.peek()))
                         .min()
                         .orElse(bestUB);
+        globalLB = Math.min(bestUB, globalLB);
 
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
     }

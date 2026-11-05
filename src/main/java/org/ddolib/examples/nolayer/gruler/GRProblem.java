@@ -119,6 +119,16 @@ public record GRProblem(int order) implements Problem<GRState> {
         return solution.get(solution.size() - 1);
     }
 
+    /**
+     * The transition costs are non-negative: each new mark is placed after the last one.
+     *
+     * @return {@code true}
+     */
+    @Override
+    public boolean hasNonNegativeCosts() {
+        return true;
+    }
+
     @Override
     public String toString() {
         return "GRProblem(order:" + order + ")";

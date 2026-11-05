@@ -96,6 +96,16 @@ public class GRProblem implements Problem<GRState> {
     }
 
     /**
+     * The transition costs are non-negative: each new mark is placed after the last one.
+     *
+     * @return {@code true}
+     */
+    @Override
+    public boolean hasNonNegativeCosts() {
+        return true;
+    }
+
+    /**
      * Returns the initial cost (always 0).
      *
      * @return the initial cost value

@@ -243,6 +243,22 @@ public final class AwAstarSolver<T> implements Solver {
     }
 
     /**
+     * Returns a lower bound on the value of the solutions reachable through the given node:
+     * {@code f = g + h} when the model provides a fast lower bound. Otherwise, the cost of the
+     * path {@code g} is a lower bound only if the remaining costs cannot be negative (see {@link
+     * Problem#hasNonNegativeCosts()}); if they can, no lower bound is known.
+     *
+     * @param node an open node
+     * @return a lower bound through the node, or {@link Double#NEGATIVE_INFINITY} if unknown
+     */
+    private double nodeLowerBound(SubProblem<T> node) {
+        if (!defaultLowerBoundValue) {
+            return node.f();
+        }
+        return problem.hasNonNegativeCosts() ? node.getValue() : Double.NEGATIVE_INFINITY;
+    }
+
+    /**
      * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
      * nodes, capped by the incumbent. When no node is open, the incumbent is optimal.
      *
@@ -252,7 +268,7 @@ public final class AwAstarSolver<T> implements Solver {
         if (openByF.isEmpty()) {
             return bestUB;
         }
-        return Math.min(bestUB, openByF.peek().f());
+        return Math.min(bestUB, nodeLowerBound(openByF.peek()));
     }
 
     private double gap() {
@@ -264,7 +280,7 @@ public final class AwAstarSolver<T> implements Solver {
             return 0.0;
         }
 
-        double globalLB = defaultLowerBoundValue ? openByF.peek().getValue() : openByF.peek().f();
+        double globalLB = Math.min(bestUB, nodeLowerBound(openByF.peek()));
         return 100 * Math.abs((bestUB - globalLB) / bestUB);
     }
 

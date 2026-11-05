@@ -6,6 +6,9 @@ This file documents the DDOLib changes.
 
 ### Added
 
+- `Problem.hasNonNegativeCosts()` (layered and no-layer, `false` by default): a model without
+  fast lower bound can declare that its transition costs are non-negative, so that A*, AWA* and
+  ACS can use the cost of the best open node as lower bound.
 - `SearchStatistics.bestBound()`: the best lower bound on the optimal value proved so far, for
   every solver (A*, AWA*, ACS and DDO, layered and no-layer, and LNS). It is known when the search
   is stopped early, for instance by a time limit, and does not require an incumbent. It is the
@@ -15,6 +18,12 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- A*, AWA* and ACS (layered and no-layer): without fast lower bound, the gap was computed with the
+  cost of the best open node, which is not a lower bound when costs can be negative (maximization
+  problems modeled with negated profits): the reported gap could be smaller than the true gap.
+  This cost is now only used when `Problem.hasNonNegativeCosts()` is `true`; otherwise no bound is
+  known and the gap is infinite. The no-layer ACS also did not detect the default fast lower bound
+  (it returns 0, not `Integer.MIN_VALUE`).
 - LNS: the dominance checker is now obtained once and cleared before each compilation, as in the
   DDO solver. Previously the LNS called `LnsModel.dominance()` at each compilation and never
   cleared the checker: when a model returned always the same checker, the states remembered from

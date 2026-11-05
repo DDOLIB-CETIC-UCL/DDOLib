@@ -69,6 +69,23 @@ public interface Problem<T> {
     double transitionCost(final T state, final Decision decision);
 
     /**
+     * Indicates whether all the transition costs are non-negative, i.e. whether the cost of a
+     * partial solution can only increase when it is completed.
+     *
+     * <p>It is only used when the model does not provide a {@link FastLowerBound}: the solvers
+     * that report a lower bound and a gap (A*, AWA*, ACS) then use the cost of the best open node
+     * as lower bound, which is only valid when the remaining costs cannot be negative. With the
+     * default value {@code false}, no lower bound is reported in that case (the gap is infinite).
+     * Maximization problems modeled with negated profits have negative costs and must keep the
+     * default value.
+     *
+     * @return {@code true} if every transition cost is non-negative
+     */
+    default boolean hasNonNegativeCosts() {
+        return false;
+    }
+
+    /**
      * Returns the known optimal value of the problem, if available.
      *
      * <p><b>Note:</b> This value should correspond to the expected output of the solver. For
