@@ -47,6 +47,17 @@ public interface DecisionDiagram<T> {
     boolean isExact();
 
     /**
+     * Indicates whether the compilation was interrupted by its stop criterion (for instance a time
+     * limit) before reaching the last layer. An interrupted DD is incomplete: its solutions,
+     * bounds and exactness must not be used.
+     *
+     * @return {@code true} if the compilation was interrupted
+     */
+    default boolean isInterrupted() {
+        return false;
+    }
+
+    /**
      * Returns the value of the best solution represented in this decision diagram, if it exists.
      *
      * <p>For a relaxed DD, this corresponds to a bound (lower or upper depending on the problem

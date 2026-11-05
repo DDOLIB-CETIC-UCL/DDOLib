@@ -111,6 +111,9 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /** Indicates whether the MDD is exact (true) or contains relaxed/restricted nodes (false). */
     private boolean exact = true;
 
+    /** Indicates whether the compilation was interrupted by the stop criterion. */
+    private boolean interrupted = false;
+
     /** The best node in the terminal layer, if one exists. */
     private Node best = null;
 
@@ -193,6 +196,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         int initialDepth = depthGlobalDD;
 
         while (!variables.isEmpty()) {
+            // The stop criterion (e.g. a time limit) is tested at each layer: the compilation of a
+            // single DD can take much longer than the time between two calls of the solver
+            if (config.stopCriterion != null && config.stopCriterion.getAsBoolean()) {
+                interrupted = true;
+                return;
+            }
             final Integer nextVar =
                     config.variableHeuristic.nextVariable(variables, nextLayer.keySet().iterator());
 
@@ -313,6 +322,11 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public boolean isExact() {
         return exact;
+    }
+
+    @Override
+    public boolean isInterrupted() {
+        return interrupted;
     }
 
     /**

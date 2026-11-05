@@ -2,6 +2,7 @@ package org.ddolib.layered.solving.ddo.core.compilation;
 
 import java.util.Optional;
 import java.util.Random;
+import java.util.function.BooleanSupplier;
 import org.ddolib.common.cache.SimpleCache;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.CutSetType;
@@ -144,6 +145,14 @@ public class CompilationConfig<T> {
     public Random random = null;
 
     /**
+     * Stop criterion tested at each layer of the compilation (for instance a time limit). When it
+     * returns {@code true}, the compilation is interrupted (see {@link
+     * org.ddolib.common.mdd.DecisionDiagram#isInterrupted()}). When {@code null}, the compilation
+     * is never interrupted.
+     */
+    public BooleanSupplier stopCriterion = null;
+
+    /**
      * Constructs a new compilation configuration for the given model.
      *
      * @param model the model containing problem-specific components (heuristics, bounds, dominance,
@@ -197,6 +206,7 @@ public class CompilationConfig<T> {
         compilation.probability = this.probability;
         compilation.useLNS = this.useLNS;
         compilation.random = this.random;
+        compilation.stopCriterion = this.stopCriterion;
         compilation.solution = this.initialSolution;
 
         return compilation;

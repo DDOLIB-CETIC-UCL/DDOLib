@@ -1,5 +1,16 @@
 package org.ddolib.layered.solving.ddo.core.solver;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Paths;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import org.ddolib.common.cache.SimpleCache;
 import org.ddolib.common.compilation.CompilationType;
 import org.ddolib.common.frontier.CutSetType;
@@ -19,17 +30,6 @@ import org.ddolib.layered.solving.ddo.core.SubProblem;
 import org.ddolib.layered.solving.ddo.core.compilation.CompilationConfig;
 import org.ddolib.layered.solving.ddo.core.heuristics.variable.VariableHeuristic;
 import org.ddolib.layered.solving.ddo.core.mdd.LinkedDecisionDiagram;
-
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.Optional;
-import java.util.Set;
-import java.util.function.BiConsumer;
-import java.util.function.Predicate;
 
 /**
  * A sequential implementation of a Branch-and-Bound solver based on Multi-valued Decision Diagrams
@@ -187,24 +187,24 @@ public final class SequentialSolver<T> implements Solver {
                     frontier.bestInFrontier(),
                     gap());
 
+            // the bound and the gap are computed before popping the next subproblem, whose lower
+            // bound may be the smallest of the frontier
             statistics =
                     statistics
                             .incrementNbIter()
                             .updateFrontierMaxSize(frontier.size())
-                            .updateLowerBound(Math.min(bestUB, frontier.bestInFrontier()));
+                            .updateLowerBound(Math.min(bestUB, frontier.bestInFrontier()))
+                            .updateTime(System.currentTimeMillis())
+                            .updateGap(gap());
 
             // 1. RESTRICTION
             SubProblem<T> sub = frontier.pop();
             final double nodeLB = sub.getLowerBound();
 
-            statistics =
-                    statistics
-                            .updateTime(System.currentTimeMillis())
-                            .updateGap(gap())
-                            .updateMaxDepth(sub.getDepth());
+            statistics = statistics.updateMaxDepth(sub.getDepth());
 
             if (limit.test(statistics)) {
-                return new Solution(bestSolution(), statistics);
+                return stopSearch(sub, statistics);
             }
 
             verboseMode.currentSubProblem(statistics.nbIterations(), sub);
@@ -228,9 +228,13 @@ public final class SequentialSolver<T> implements Solver {
             if (this.dominance != null) {
                 this.dominance.clear();
             }
+            compilation.stopCriterion = stopCriterion(limit, statistics);
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
 
             restrictedMdd.compile();
+            if (restrictedMdd.isInterrupted()) {
+                return stopSearch(sub, statistics);
+            }
             statistics = statistics.addNodes(restrictedMdd.nbNodes())
                     .addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
                     .addNbDominancePruning(restrictedMdd.nbDominancePruning());
@@ -264,8 +268,12 @@ public final class SequentialSolver<T> implements Solver {
             if (this.dominance != null) {
                 this.dominance.clear();
             }
+            compilation.stopCriterion = stopCriterion(limit, statistics);
             DecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
             relaxedMdd.compile();
+            if (relaxedMdd.isInterrupted()) {
+                return stopSearch(sub, statistics);
+            }
             statistics = statistics.addNodes(relaxedMdd.nbNodes())
                     .addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
                     .addNbDominancePruning(relaxedMdd.nbDominancePruning());
@@ -314,6 +322,38 @@ public final class SequentialSolver<T> implements Solver {
         }
 
         return new Solution(bestSolution(), statistics);
+    }
+
+    /**
+     * Returns the stop criterion tested at each layer of a compilation: the user-defined limit,
+     * evaluated on the current statistics with the current time.
+     *
+     * @param limit the user-defined stopping criterion
+     * @param statistics the statistics when the compilation starts
+     * @return the stop criterion of the compilation
+     */
+    private static BooleanSupplier stopCriterion(
+            Predicate<SearchStatistics> limit, DdoStats statistics) {
+        return () -> limit.test(statistics.updateTime(System.currentTimeMillis()));
+    }
+
+    /**
+     * Stops the search because the stop criterion is met while the given subproblem is processed.
+     * The subproblem is put back in the frontier so that the reported bound and gap take it into
+     * account, and the best solution found so far is returned.
+     *
+     * @param sub the subproblem being processed
+     * @param statistics the current statistics
+     * @return the best solution found so far
+     */
+    private Solution stopSearch(SubProblem<T> sub, DdoStats statistics) {
+        frontier.push(sub);
+        DdoStats stats =
+                statistics
+                        .updateTime(System.currentTimeMillis())
+                        .updateLowerBound(Math.min(bestUB, frontier.bestInFrontier()))
+                        .updateGap(gap());
+        return new Solution(bestSolution(), stats);
     }
 
     @Override

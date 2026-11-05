@@ -18,6 +18,13 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- DDO: the stop criterion (e.g. a time limit) was only tested between two subproblems, never
+  during the compilation of a decision diagram, so that the limit could be exceeded by the
+  compilation of a single DD (25 s on a TSPTW instance with 233 nodes, width 100 and a 5 s limit).
+  It is now tested at each layer of the restricted and relaxed compilations; an interrupted DD is
+  discarded, its subproblem is put back in the frontier and the best solution found so far is
+  returned. The gap is also computed before the next subproblem is popped from the frontier, so
+  that it no longer ignores the lower bound of that subproblem.
 - A*, AWA* and ACS (layered and no-layer): without fast lower bound, the gap was computed with the
   cost of the best open node, which is not a lower bound when costs can be negative (maximization
   problems modeled with negated profits): the reported gap could be smaller than the true gap.
