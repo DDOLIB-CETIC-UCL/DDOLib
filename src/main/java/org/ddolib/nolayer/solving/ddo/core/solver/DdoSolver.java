@@ -7,6 +7,7 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.layered.solving.ddo.core.Decision;
 import org.ddolib.layered.solving.ddo.core.SubProblem;
@@ -44,6 +45,9 @@ public final class DdoSolver<T> implements Solver {
     private double bestUB;
     private Optional<Set<Decision>> bestSol;
 
+    /** The statistics of the current search, kept to build the result on a memory out. */
+    private DdoStats statistics;
+
     /**
      * Creates a new DDO solver for the given model.
      *
@@ -72,11 +76,37 @@ public final class DdoSolver<T> implements Solver {
         return decisions;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>When the memory runs out, either because the JVM throws an {@link OutOfMemoryError} or
+     * because the frontier reaches the size given to {@link
+     * org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)}, the search
+     * stops and returns the best solution found so far with the status {@link
+     * SearchStatus#MEMOUT}.
+     */
     @Override
     public Solution minimize(
             Predicate<SearchStatistics> limit,
             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
-        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
+        try {
+            return search(limit, onSolution);
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // free the memory of the search before building the result
+            frontier.clear();
+            statistics =
+                    statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateStatus(SearchStatus.MEMOUT);
+            return new Solution(bestSolution(), statistics);
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
+            Predicate<SearchStatistics> limit,
+            BiConsumer<List<Integer>, SearchStatistics> onSolution) {
+        statistics = new DdoStats(System.currentTimeMillis(), bestUB);
         if (bestSol.isPresent()) { // initial solution provided by the model
             statistics = statistics.updateStatus(SearchStatus.SAT);
         }

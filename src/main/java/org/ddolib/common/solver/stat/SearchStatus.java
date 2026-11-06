@@ -9,5 +9,12 @@ public enum SearchStatus {
     /** The search found a feasible solution but did not prove its optimality. */
     SAT,
     /** The search status is unknown (e.g., interrupted before finding any solution). */
-    UNKNOWN
+    UNKNOWN,
+    /**
+     * The search was stopped because it ran out of memory: either the JVM threw an {@link
+     * OutOfMemoryError} or the frontier reached the size given to {@link
+     * org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)}. The solution, if
+     * any, is the best one found before; it is not proved optimal.
+     */
+    MEMOUT
 }

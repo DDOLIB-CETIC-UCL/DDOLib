@@ -2,6 +2,7 @@ package org.ddolib.common.solver.stopcriterion;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.ddolib.common.solver.stat.DdoStats;
@@ -97,8 +98,8 @@ class StopCriterionTest {
 
         assertFalse(criterion.test(stats));
 
-        stats = stats.updateFrontierMaxSize(150);
-        assertTrue(criterion.test(stats));
+        final DdoStats full = stats.updateFrontierMaxSize(150);
+        assertThrows(MemoryLimitException.class, () -> criterion.test(full));
     }
 
     @Test

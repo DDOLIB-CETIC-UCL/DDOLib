@@ -3,6 +3,7 @@ package org.ddolib.layered.solving.startheuristic;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.FastLowerBound;
@@ -64,8 +65,10 @@ public final class DFS<T> {
      *
      * @param limit stopping criterion tested at each iteration
      * @return the first solution found (status {@code SAT}), an empty solution with status {@code
-     * UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
-     * limit was reached first
+     *     UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
+     *     limit was reached first, or an empty solution with status {@code MEMOUT} if the memory
+     *     ran out (see {@link
+     *     org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize})
      */
     public Solution findSolution(Predicate<SearchStatistics> limit) {
         SearchStatistics statistics =
@@ -77,42 +80,58 @@ public final class DFS<T> {
         long nbGenerated = 0;
         frontier.push(new Node<>(problem.initialState(), problem.initialValue(), 0, null, null));
 
-        while (!frontier.isEmpty()) {
+        try {
+            while (!frontier.isEmpty()) {
+                statistics =
+                        statistics
+                                .incrementNbIter()
+                                .updateFrontierMaxSize(frontier.size())
+                                .updateTime(System.currentTimeMillis());
+
+                if (limit.test(statistics)) {
+                    statistics =
+                            statistics
+                                    .updateNodeCounts(nbExpanded, nbGenerated)
+                                    .updateStatus(SearchStatus.UNKNOWN);
+                    return new Solution(Optional.empty(), statistics);
+                }
+
+                Node<T> current = frontier.pop();
+
+                if (current.depth() == problem.nbVars()) {
+                    statistics = statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)
+                            .updateStatus(SearchStatus.SAT);
+                    statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
+                    return new Solution(Optional.of(buildPath(current)), statistics);
+                }
+
+                // Every node popped before at the same depth has had its whole subtree explored
+                // without reaching a solution. Skipping states equal to, or dominated by, such a
+                // node assumes that a dominating state is at least as feasible as the dominated
+                // one.
+                if (!explored.add(new StateAndDepth<>(current.state(), current.depth()))
+                        || dominance.updateDominance(
+                        current.state(), current.depth(), current.value())) {
+                    continue;
+                }
+
+                nbExpanded++; // its successors are computed
+                int sizeBefore = frontier.size();
+                pushChildren(current, frontier);
+                nbGenerated += frontier.size() - sizeBefore; // every successor is pushed
+            }
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // free the memory of the search before building the result
+            frontier.clear();
+            explored.clear();
             statistics =
                     statistics
-                            .incrementNbIter()
-                            .updateFrontierMaxSize(frontier.size())
-                            .updateTime(System.currentTimeMillis());
-
-            if (limit.test(statistics)) {
-                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
-                return new Solution(Optional.empty(), statistics.updateStatus(SearchStatus.UNKNOWN));
-            }
-
-            Node<T> current = frontier.pop();
-
-            if (current.depth() == problem.nbVars()) {
-                statistics = statistics
-                        .updateTime(System.currentTimeMillis())
-                        .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)
-                        .updateStatus(SearchStatus.SAT);
-                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
-                return new Solution(Optional.of(buildPath(current)), statistics);
-            }
-
-            // Every node popped before at the same depth has had its whole subtree explored
-            // without reaching a solution. Skipping states equal to, or dominated by, such a node
-            // assumes that a dominating state is at least as feasible as the dominated one.
-            if (!explored.add(new StateAndDepth<>(current.state(), current.depth()))
-                    || dominance.updateDominance(
-                    current.state(), current.depth(), current.value())) {
-                continue;
-            }
-
-            nbExpanded++; // its successors are computed
-            int sizeBefore = frontier.size();
-            pushChildren(current, frontier);
-            nbGenerated += frontier.size() - sizeBefore; // every successor is pushed
+                            .updateTime(System.currentTimeMillis())
+                            .updateNodeCounts(nbExpanded, nbGenerated)
+                            .updateStatus(SearchStatus.MEMOUT);
+            return new Solution(Optional.empty(), statistics);
         }
 
         statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);

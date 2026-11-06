@@ -3,6 +3,7 @@ package org.ddolib.layered.solving.awastar.core.solver;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.SolverUtil;
 import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.common.util.debug.DebugLevel;
@@ -146,8 +147,37 @@ public final class AwAstarSolver<T> implements Solver {
         this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound<T>;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>When the memory runs out, either because the JVM throws an {@link OutOfMemoryError} or
+     * because the frontier reaches the size given to {@link
+     * org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)}, the search
+     * stops and returns the best solution found so far with the status {@link
+     * SearchStatus#MEMOUT}.
+     */
     @Override
     public Solution minimize(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        try {
+            return search(limit, onSolution);
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // free the memory of the search before building the result
+            open.clear();
+            openByF.clear();
+            present.clear();
+            closed.clear();
+            statistics =
+                    statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateStatus(SearchStatus.MEMOUT)
+                            .updateNodeCounts(nbExpanded, nbGenerated);
+            return new Solution(bestSolution(), statistics);
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
             Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         statistics = new AstarStats(System.currentTimeMillis(), bestUB);
         if (bestSol.isPresent()) { // initial solution provided by the model

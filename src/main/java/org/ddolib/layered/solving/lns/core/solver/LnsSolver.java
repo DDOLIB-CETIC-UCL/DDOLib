@@ -6,6 +6,7 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.DominanceChecker;
@@ -49,6 +50,10 @@ import static org.ddolib.common.util.MathUtil.saturatedAdd;
  *       particular when the search is stopped by its limit. The gap is then computed with the
  *       global lower bound.
  *   <li>{@link SearchStatus#UNKNOWN}: no solution is known and infeasibility is not proved.
+ *   <li>{@link SearchStatus#MEMOUT}: the JVM ran out of memory during a compilation, or the limit
+ *       {@link org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)} was
+ *       reached; the best solution known, if any, is returned. The LNS has no frontier: the size
+ *       it reports is its number of iterations.
  * </ul>
  *
  * <p>An exact DD is only a proof if the states it prunes are dominated by states of the same DD:
@@ -84,6 +89,10 @@ public final class LnsSolver<T> implements Solver {
      * at each call of {@link LnsModel#dominance()} or always the same one.
      */
     private final DominanceChecker<T> dominance;
+
+    /** The statistics of the current search, kept to build the result on a memory out. */
+    private DdoStats stats;
+
     private double bestUB;
     private Optional<Set<Decision>> bestSol;
     private boolean firstRestricted = true;
@@ -119,14 +128,36 @@ public final class LnsSolver<T> implements Solver {
         this.dominance = model.dominance();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * <p>When the memory runs out, either because the JVM throws an {@link OutOfMemoryError} or
+     * because the frontier reaches the size given to {@link
+     * org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)}, the search
+     * stops and returns the best solution found so far with the status {@link
+     * SearchStatus#MEMOUT}.
+     */
     @Override
     public Solution minimize(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        try {
+            return search(limit, onSolution);
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // free the memory of the search before building the result
+            dominance.clear();
+            stats = stats.updateTime(System.currentTimeMillis()).updateStatus(SearchStatus.MEMOUT);
+            return new Solution(bestSolution(), stats);
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
             Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
         long start = System.currentTimeMillis();
         int nbIter = 0;
         int queueMaxSize = 0;
         // the fast lower bound at the root bounds the optimal value from the start
-        DdoStats stats = new DdoStats(start, bestUB).updateBestBound(globalLB);
+        stats = new DdoStats(start, bestUB).updateBestBound(globalLB);
         SubProblem<T> rootPrime;
         double gap = computeGap(bestUB, globalLB);
         // Without solution, the restricted DD compiled from the root is the same at each

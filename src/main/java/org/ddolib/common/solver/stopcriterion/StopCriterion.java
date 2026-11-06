@@ -79,14 +79,26 @@ public interface StopCriterion extends Predicate<SearchStatistics> {
     }
 
     /**
-     * Creates a stop criterion that terminates the search when the frontier size exceeds a
-     * specified limit.
+     * Creates a memory limit that terminates the search when the frontier (or the open list)
+     * reaches a specified size. The solver then returns the best solution found so far with the
+     * status {@link org.ddolib.common.solver.stat.SearchStatus#MEMOUT}.
+     *
+     * <p>The limit is signaled by throwing a {@link MemoryLimitException}, so that the solver can
+     * tell it from the other criteria, even when it is combined with them (for instance {@code
+     * maxTime(t).or(maxFrontierSize(n))}). The solvers catch this exception: it is only seen when
+     * the criterion is tested outside of a solver.
      *
      * @param maxNodes the maximum allowed size of the frontier
      * @return a StopCriterion for maximum frontier size
      */
     static StopCriterion maxFrontierSize(int maxNodes) {
-        return stats -> stats.frontierMaxSize() >= maxNodes;
+        return stats -> {
+            if (stats.frontierMaxSize() >= maxNodes) {
+                throw new MemoryLimitException(
+                        "The frontier reached the maximum size of " + maxNodes + " nodes");
+            }
+            return false;
+        };
     }
 
     /**

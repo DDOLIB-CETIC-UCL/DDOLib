@@ -3,6 +3,7 @@ package org.ddolib.nolayer.solving.startheuristic;
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.nolayer.modeling.FastLowerBound;
 import org.ddolib.nolayer.modeling.Model;
 import org.ddolib.nolayer.modeling.NoLayerDominanceChecker;
@@ -60,8 +61,10 @@ public final class DFS<T> {
      *
      * @param limit stopping criterion tested at each iteration
      * @return the first solution found (status {@code SAT}), an empty solution with status {@code
-     * UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
-     * limit was reached first
+     *     UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
+     *     limit was reached first, or an empty solution with status {@code MEMOUT} if the memory
+     *     ran out (see {@link
+     *     org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize})
      */
     public Solution findSolution(Predicate<SearchStatistics> limit) {
         SearchStatistics statistics =
@@ -73,42 +76,54 @@ public final class DFS<T> {
         long nbGenerated = 0;
         frontier.push(new Node<>(problem.initialState(), problem.initialValue(), -1, null));
 
-        while (!frontier.isEmpty()) {
-            statistics = statistics
-                    .incrementNbIter()
-                    .updateFrontierMaxSize(frontier.size())
-                    .updateTime(System.currentTimeMillis());
-
-            if (limit.test(statistics)) {
-                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
-                return new Solution(List.of(), statistics.updateStatus(SearchStatus.UNKNOWN));
-            }
-
-            Node<T> current = frontier.pop();
-
-            if (problem.isTarget(current.state())) {
+        try {
+            while (!frontier.isEmpty()) {
                 statistics = statistics
-                        .updateTime(System.currentTimeMillis())
-                        .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)
-                        .updateStatus(SearchStatus.SAT);
-                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
-                return new Solution(buildPath(current), statistics);
-            }
+                        .incrementNbIter()
+                        .updateFrontierMaxSize(frontier.size())
+                        .updateTime(System.currentTimeMillis());
 
-            // A state popped before is either fully explored without reaching a target, or an
-            // ancestor of the current node (the current path is a cycle). In both cases, it is
-            // useless to explore it again, which also prevents infinite loops on cycles. Skipping
-            // dominated states assumes that a dominating state is at least as feasible as the
-            // dominated one.
-            if (!explored.add(current.state())
-                    || dominance.updateDominance(current.state(), current.value())) {
-                continue;
-            }
+                if (limit.test(statistics)) {
+                    statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
+                    return new Solution(List.of(), statistics.updateStatus(SearchStatus.UNKNOWN));
+                }
 
-            nbExpanded++; // its successors are computed
-            int sizeBefore = frontier.size();
-            pushChildren(current, frontier);
-            nbGenerated += frontier.size() - sizeBefore; // every successor is pushed
+                Node<T> current = frontier.pop();
+
+                if (problem.isTarget(current.state())) {
+                    statistics = statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)
+                            .updateStatus(SearchStatus.SAT);
+                    statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
+                    return new Solution(buildPath(current), statistics);
+                }
+
+                // A state popped before is either fully explored without reaching a target, or an
+                // ancestor of the current node (the current path is a cycle). In both cases, it is
+                // useless to explore it again, which also prevents infinite loops on cycles.
+                // Skipping dominated states assumes that a dominating state is at least as
+                // feasible as the dominated one.
+                if (!explored.add(current.state())
+                        || dominance.updateDominance(current.state(), current.value())) {
+                    continue;
+                }
+
+                nbExpanded++; // its successors are computed
+                int sizeBefore = frontier.size();
+                pushChildren(current, frontier);
+                nbGenerated += frontier.size() - sizeBefore; // every successor is pushed
+            }
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // free the memory of the search before building the result
+            frontier.clear();
+            explored.clear();
+            statistics =
+                    statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateNodeCounts(nbExpanded, nbGenerated)
+                            .updateStatus(SearchStatus.MEMOUT);
+            return new Solution(List.of(), statistics);
         }
 
         statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);

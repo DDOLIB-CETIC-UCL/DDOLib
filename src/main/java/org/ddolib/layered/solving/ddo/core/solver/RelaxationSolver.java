@@ -6,6 +6,8 @@ import org.ddolib.common.heuristics.width.WidthHeuristic;
 import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
+import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.verbosity.VerboseMode;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.*;
@@ -95,6 +97,9 @@ public final class RelaxationSolver<T> {
      */
     private Optional<Set<Decision>> bestSol;
 
+    /** The statistics of the current search, kept to build the result on a memory out. */
+    private DdoStats statistics;
+
     /**
      * Creates a fully qualified instance. The parameters of this solver are given via a {@link
      * DdoModel}
@@ -117,13 +122,32 @@ public final class RelaxationSolver<T> {
     /**
      * Solves the model by compiling a single relaxed decision diagram.
      *
+     * <p>When the JVM throws an {@link OutOfMemoryError} during the compilation, the search stops
+     * and returns the best solution found so far, if any, with the status {@link
+     * SearchStatus#MEMOUT}.
+     *
      * @param limit      a predicate that can limit or stop the search based on current statistics
      * @param onSolution a callback invoked once with the best solution found, if any
      * @return the statistics of the search after completion
      */
     public Solution minimize(
             Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        DdoStats statistics = new DdoStats(System.currentTimeMillis(), bestUB);
+        try {
+            return search(limit, onSolution);
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // the decision diagram, local to the search, is no longer referenced
+            statistics =
+                    statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateStatus(SearchStatus.MEMOUT);
+            return new Solution(bestSolution(), statistics);
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        statistics = new DdoStats(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();
         int maxWidth = width.maximumWidth(sub.getState());

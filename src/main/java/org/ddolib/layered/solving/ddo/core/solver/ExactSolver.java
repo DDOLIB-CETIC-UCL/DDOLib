@@ -6,6 +6,7 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.ExactModel;
@@ -76,6 +77,9 @@ public final class ExactSolver<T> implements Solver {
      */
     private Optional<Double> bestValue = Optional.empty();
 
+    /** The statistics of the current search, kept to build the result on a memory out. */
+    private DdoStats statistics;
+
     /**
      * Creates a fully-configured ExactSolver instance.
      *
@@ -104,6 +108,10 @@ public final class ExactSolver<T> implements Solver {
      *   <li>Optionally exports the MDD in DOT format.
      * </ul>
      *
+     * <p>When the JVM throws an {@link OutOfMemoryError} during the compilation, the search stops
+     * and returns the best solution found so far, if any, with the status {@link
+     * SearchStatus#MEMOUT}.
+     *
      * @param limit      a predicate that may be used to limit the search based on statistics
      * @param onSolution a callback invoked when a solution is found
      * @return statistics about the search process, including the best value found
@@ -111,9 +119,23 @@ public final class ExactSolver<T> implements Solver {
     @Override
     public Solution minimize(
             Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
-        // declared first on purpose: it records the start time of the search
-        @SuppressWarnings("checkstyle:VariableDeclarationUsageDistance")
-        DdoStats statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
+        try {
+            return search(limit, onSolution);
+        } catch (OutOfMemoryError | MemoryLimitException e) {
+            // the decision diagram, local to the search, is no longer referenced
+            statistics =
+                    statistics
+                            .updateTime(System.currentTimeMillis())
+                            .updateStatus(SearchStatus.MEMOUT);
+            return new Solution(bestSolution(), statistics);
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
+            Predicate<SearchStatistics> limit, BiConsumer<int[], SearchStatistics> onSolution) {
+        // set first on purpose: it records the start time of the search
+        statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);
 
         final SubProblem<T> root =
                 new SubProblem<>(

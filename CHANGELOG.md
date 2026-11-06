@@ -6,6 +6,15 @@ This file documents the DDOLib changes.
 
 ### Added
 
+- `SearchStatus.MEMOUT`: when the memory runs out, every solver (A*, AWA*, ACS, DDO, LNS, exact,
+  DFS, layered and no-layer) now returns the best solution found so far with this status, its
+  statistics (bound, gap, node counts) and frees its frontier, instead of letting the
+  `OutOfMemoryError` escape (the solution was then only saved by the `onSolution` callback).
+  `StopCriterion.maxFrontierSize(n)` is now an optional memory limit: when the frontier (or the
+  open list) reaches `n` nodes, the search stops with the status `MEMOUT`, also when the limit is
+  combined with other criteria. It is signaled by the new `MemoryLimitException`, caught by the
+  solvers; previously the search stopped with the status `SAT` or `UNKNOWN`, like a time limit.
+  For the LNS, which has no frontier, the size is its number of iterations.
 - `SearchStatistics.nbExpandedNodes()` and `nbGeneratedNodes()` for every solver (A*, AWA*, ACS,
   DDO, LNS, exact, DFS, layered and no-layer), to compare the search effort of the solvers, for
   instance with the `expanded` / `generated` counts of DIDP. A node is expanded when its
