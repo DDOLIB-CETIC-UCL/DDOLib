@@ -254,6 +254,7 @@ public final class RelaxationSolver<T> {
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
         compilation.reductionStrategy = model.relaxStrategy();
+        compilation.useLNS = false;
 
         return compilation;
     }

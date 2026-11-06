@@ -260,6 +260,7 @@ public final class RestrictionSolver<T> {
         compilation.exportAsDot = exportAsDot;
         compilation.debugLevel = model.debugMode();
         compilation.reductionStrategy = model.restrictStrategy();
+        compilation.useLNS = false;
 
         return compilation;
     }

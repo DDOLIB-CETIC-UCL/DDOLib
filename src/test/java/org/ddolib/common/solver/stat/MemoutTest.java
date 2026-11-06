@@ -235,6 +235,8 @@ public class MemoutTest {
             (p, l, s) -> Solvers.minimizeLns(lnsModel(p), l.or(st -> st.nbIterations() > 50), s);
     private static final Run DFS = (p, l, s) -> new DFS<>(awAstarModel(p)).findSolution(l);
     private static final Run EXACT = (p, l, s) -> Solvers.minimizeExact(exactModel(p), s);
+    private static final Run RELAXED = (p, l, s) -> Solvers.relaxedDdo(ddoModel(p), l, s);
+    private static final Run RESTRICTED = (p, l, s) -> Solvers.restrictedDdo(ddoModel(p), l, s);
 
     static Stream<Arguments> searches() {
         return Stream.of(
@@ -247,9 +249,12 @@ public class MemoutTest {
     }
 
     static Stream<Arguments> allSolvers() {
-        // Solvers.relaxedDdo and Solvers.restrictedDdo are not tested: they do not set
-        // CompilationConfig.useLNS and fail with a NullPointerException
-        return Stream.concat(searches(), Stream.of(Arguments.of("Exact", EXACT)));
+        return Stream.concat(
+                searches(),
+                Stream.of(
+                        Arguments.of("Exact", EXACT),
+                        Arguments.of("Relaxed", RELAXED),
+                        Arguments.of("Restricted", RESTRICTED)));
     }
 
     private static KSProblem knapsack() throws IOException {

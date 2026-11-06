@@ -35,6 +35,9 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- `Solvers.relaxedDdo` and `Solvers.restrictedDdo` always failed with a `NullPointerException`:
+  `RelaxationSolver` and `RestrictionSolver` did not set `CompilationConfig.useLNS`. They now
+  set it to `false`, like the DDO solver.
 - DDO: the stop criterion (e.g. a time limit) was only tested between two subproblems, never
   during the compilation of a decision diagram, so that the limit could be exceeded by the
   compilation of a single DD (25 s on a TSPTW instance with 233 nodes, width 100 and a 5 s limit).
