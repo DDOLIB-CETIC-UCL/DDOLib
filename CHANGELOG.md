@@ -43,6 +43,12 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- Talent scheduling: the reader of `TSProblem` failed with a `NumberFormatException` on the
+  numbers of scenes and actors written on one line, and on lines starting with spaces (e.g. the
+  `Shaw2020` and `Warwick1201` files of ddo), two variants accepted by ddo and DIDP. After the
+  first line (name and optional optimum), the file is now read as a sequence of integers
+  separated by any whitespace, so that both forms of the header, the leading spaces and the blank
+  lines are accepted. A truncated or invalid file now raises an `IOException` naming the file.
 - MSCT: `MSCTDominance.getKey()` returned `0`, so that each state was compared with all the
   states of its layer, although only states with the same remaining jobs can dominate each other.
   The key is now the set of remaining jobs, like `SMICDominance`. The pruning is unchanged; DDO

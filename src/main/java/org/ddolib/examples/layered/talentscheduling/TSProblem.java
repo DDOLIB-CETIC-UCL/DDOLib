@@ -3,9 +3,12 @@ package org.ddolib.examples.layered.talentscheduling;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.ddolib.common.util.InvalidSolutionException;
 import org.ddolib.layered.modeling.Problem;
@@ -82,63 +85,68 @@ public class TSProblem implements Problem<TSState> {
     /**
      * Constructs a TSP instance by reading a file in the standard dataset format.
      *
+     * <p>The first line gives the name of the instance, optionally followed by two tokens, the last
+     * one being the optimal value. The rest of the file is read as a sequence of integers separated
+     * by any whitespace, so that the line breaks, the blank lines and the leading spaces do not
+     * matter: the number of scenes and the number of actors (on one line or on two lines, both
+     * forms are used by the datasets), then for each actor one 0/1 value per scene followed by the
+     * cost of the actor, then the duration of each scene.
+     *
      * @param fname path to the input file
-     * @throws IOException if an I/O error occurs while reading the file
+     * @throws IOException if an I/O error occurs while reading the file, or if the file does not
+     *     contain the expected numbers
      */
     public TSProblem(String fname) throws IOException {
-        int nbScenes = 0;
-        int nbActors = 0;
-        int[] cost = new int[0];
-        int[] duration = new int[0];
-        BitSet[] actors = new BitSet[0];
         Optional<Double> opti = Optional.empty();
-
+        List<String> numbers = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(fname))) {
             String line;
-
-            int lineCount = 0;
-            int skip = 0;
+            boolean header = true;
             while ((line = br.readLine()) != null) {
-                if (line.isEmpty()) {
-                    skip++;
-                } else if (lineCount == 0) {
-                    String[] tokens = line.split("\\s+");
+                String trimmed = line.trim();
+                if (trimmed.isEmpty()) {
+                    continue;
+                }
+                String[] tokens = trimmed.split("\\s+");
+                if (header) {
+                    header = false;
                     if (tokens.length == 3) {
                         opti = Optional.of(Double.parseDouble(tokens[2]));
                     }
-                } else if (lineCount == 1) {
-                    nbScenes = Integer.parseInt(line);
-                    duration = new int[nbScenes];
-                } else if (lineCount == 2) {
-                    nbActors = Integer.parseInt(line);
-                    cost = new int[nbActors];
-                    actors = new BitSet[nbScenes];
-                    for (int i = 0; i < nbScenes; i++) {
-                        actors[i] = new BitSet(nbActors);
-                    }
-                } else if (lineCount - skip - 3 < nbActors) {
-                    int actor = lineCount - skip - 3;
-                    String[] tokens = line.split("\\s+");
-                    cost[actor] = Integer.parseInt(tokens[nbScenes]);
-                    for (int i = 0; i < nbScenes; i++) {
-                        if (Integer.parseInt(tokens[i]) == 1) {
-                            actors[i].set(actor);
-                        }
-                    }
                 } else {
-                    String[] tokens = line.split("\\s+");
-                    for (int i = 0; i < nbScenes; i++) {
-                        duration[i] = Integer.parseInt(tokens[i]);
-                    }
+                    numbers.addAll(Arrays.asList(tokens));
                 }
-                lineCount++;
             }
         }
-        this.nbScene = nbScenes;
-        this.nbActors = nbActors;
-        this.costs = cost;
-        this.duration = duration;
-        this.actors = actors;
+        Iterator<String> it = numbers.iterator();
+        try {
+            int nbScenes = Integer.parseInt(it.next());
+            int nbActors = Integer.parseInt(it.next());
+            int[] cost = new int[nbActors];
+            int[] duration = new int[nbScenes];
+            BitSet[] actors = new BitSet[nbScenes];
+            for (int i = 0; i < nbScenes; i++) {
+                actors[i] = new BitSet(nbActors);
+            }
+            for (int actor = 0; actor < nbActors; actor++) {
+                for (int i = 0; i < nbScenes; i++) {
+                    if (Integer.parseInt(it.next()) == 1) {
+                        actors[i].set(actor);
+                    }
+                }
+                cost[actor] = Integer.parseInt(it.next());
+            }
+            for (int i = 0; i < nbScenes; i++) {
+                duration[i] = Integer.parseInt(it.next());
+            }
+            this.nbScene = nbScenes;
+            this.nbActors = nbActors;
+            this.costs = cost;
+            this.duration = duration;
+            this.actors = actors;
+        } catch (NoSuchElementException | NumberFormatException e) {
+            throw new IOException("Invalid talent scheduling instance: " + fname, e);
+        }
         this.optimal = opti;
         this.name = Optional.of(fname);
     }
