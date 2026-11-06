@@ -18,4 +18,17 @@ public interface WidthHeuristic<T> {
      * @return the maximum width for the layer
      */
     int maximumWidth(final T state);
+
+    /**
+     * Computes the maximum width allowed for the decision diagrams compiled from a subproblem,
+     * given its state and its depth (the number of variables already assigned). The solvers call
+     * this method; by default, it ignores the depth and returns {@link #maximumWidth(Object)}.
+     *
+     * @param state the state of the subproblem
+     * @param depth the depth of the subproblem, i.e. its number of assigned variables
+     * @return the maximum width for the layers of the decision diagrams
+     */
+    default int maximumWidth(final T state, final int depth) {
+        return maximumWidth(state);
+    }
 }

@@ -150,7 +150,7 @@ public final class RelaxationSolver<T> {
         statistics = new DdoStats(System.currentTimeMillis(), bestUB);
 
         SubProblem<T> sub = root();
-        int maxWidth = width.maximumWidth(sub.getState());
+        int maxWidth = width.maximumWidth(sub.getState(), sub.getDepth());
         CompilationConfig<T> compilation = configureCompilation(sub, maxWidth, model.exportDot());
 
         LinkedDecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);

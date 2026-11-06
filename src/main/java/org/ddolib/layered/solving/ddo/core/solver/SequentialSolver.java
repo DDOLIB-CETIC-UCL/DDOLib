@@ -250,7 +250,7 @@ public final class SequentialSolver<T> implements Solver {
                 return new Solution(bestSolution(), statistics);
             }
 
-            int maxWidth = width.maximumWidth(sub.getState());
+            int maxWidth = width.maximumWidth(sub.getState(), sub.getDepth());
             CompilationConfig<T> compilation =
                     configureCompilation(
                             CompilationType.Restricted,

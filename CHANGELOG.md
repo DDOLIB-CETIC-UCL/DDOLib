@@ -6,6 +6,12 @@ This file documents the DDOLib changes.
 
 ### Added
 
+- `NbUnassignedWidth`: the default width heuristic of ddo, equal to the number of unassigned
+  variables of the subproblem (times an optional factor). The solvers now call the new method
+  `WidthHeuristic.maximumWidth(state, depth)` with the depth of the subproblem; by default it
+  returns `maximumWidth(state)`, so that the existing heuristics are unchanged. On the 50 TSPTW
+  AFG instances (DDO, 20 s), it proves 4 instances, against 10 with a fixed width of 100: these
+  instances have at most 51 variables, so that the width is always smaller than 100.
 - `MispDominanceChecker`: a dominance checker for the layered MISP, used by its examples. The
   dominance by inclusion forbids grouping the states by a key, so that `SimpleDominanceChecker`
   compares each new state with all the states of its layer. This checker groups them by their

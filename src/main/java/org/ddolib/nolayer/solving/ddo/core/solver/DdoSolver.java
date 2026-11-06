@@ -154,7 +154,7 @@ public final class DdoSolver<T> implements Solver {
                 return new Solution(bestSolution(), statistics);
             }
 
-            int maxWidth = model.widthHeuristic().maximumWidth(sub.getState());
+            int maxWidth = model.widthHeuristic().maximumWidth(sub.getState(), sub.getDepth());
 
             // 1. RELAXATION
             if (model.dominance() != null) {

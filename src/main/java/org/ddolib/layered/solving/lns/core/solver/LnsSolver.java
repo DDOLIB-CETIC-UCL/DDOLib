@@ -201,7 +201,7 @@ public final class LnsSolver<T> implements Solver {
 
             verboseMode.currentSubProblem(nbIter, sub);
 
-            int maxWidth = width.maximumWidth(sub.getState());
+            int maxWidth = width.maximumWidth(sub.getState(), sub.getDepth());
             if (Double.isInfinite(bestUB)) {
                 maxWidth = (int) Math.min(Integer.MAX_VALUE, maxWidth * widthFactor);
             }
