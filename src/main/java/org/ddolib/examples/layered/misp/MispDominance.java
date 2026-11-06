@@ -18,11 +18,19 @@ public class MispDominance implements Dominance<BitSet> {
     /**
      * Returns a key for the dominance relation.
      *
-     * <p>This implementation always returns {@code 0} since no partitioning of states is needed
-     * based on a specific key.
+     * <p>This implementation always returns {@code 0}: all the states of a layer share the same
+     * key. A key groups the states that can be compared, and must thus be equal for a state and
+     * the states dominating it. With a dominance by inclusion, such states do not share any
+     * property that could be used as key (neither the set of vertices nor its size), so that a
+     * single group is needed.
+     *
+     * <p>This has a cost: with a {@link org.ddolib.layered.modeling.SimpleDominanceChecker}, each
+     * new state is compared with all the non-dominated states of its layer, i.e. a number of
+     * comparisons quadratic in the number of states of a layer, each comparison taking a time
+     * linear in the number of vertices.
      *
      * @param state the current state
-     * @return a key for the dominance relation
+     * @return a key for the dominance relation, always {@code 0}
      */
     @Override
     public Integer getKey(BitSet state) {

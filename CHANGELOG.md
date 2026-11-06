@@ -35,6 +35,13 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- MSCT: `MSCTDominance.getKey()` returned `0`, so that each state was compared with all the
+  states of its layer, although only states with the same remaining jobs can dominate each other.
+  The key is now the set of remaining jobs, like `SMICDominance`. The pruning is unchanged; DDO
+  (width 100, 20 s) is 1.6 to 2.4 times faster on the instances it solves (14 tasks: 12.6 s to
+  5.3 s) and does 1.3 to 7 times more iterations on the others, with a smaller gap. The number of
+  solved instances is unchanged. `MispDominance.getKey()` keeps a single key, required by a
+  dominance by inclusion; its Javadoc documents the cost of this choice.
 - `Solvers.restrictedDdo` stopped the JVM (`System.exit(0)`) when the restricted DD contained no
   solution. It now returns an empty solution, with the status `UNSAT` if the DD is exact (the
   problem is infeasible) or `UNKNOWN` otherwise (the restriction dropped the feasible nodes).

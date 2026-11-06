@@ -1,5 +1,6 @@
 package org.ddolib.examples.layered.msct;
 
+import java.util.Set;
 import org.ddolib.layered.modeling.Dominance;
 
 /**
@@ -34,16 +35,16 @@ public class MSCTDominance implements Dominance<MSCTState> {
     /**
      * Returns a key used for grouping states before applying dominance checks.
      *
-     * <p>In this simple implementation, all states share the same key (always {@code 0}), meaning
-     * that the dominance check can potentially compare any two states. This can be customized for
-     * efficiency in larger problems.
+     * <p>Only states with the same set of remaining jobs can dominate each other (see {@link
+     * #isDominatedOrEqual}), so this set is the key: each state is only compared with the states
+     * having the same remaining jobs, instead of all the states of its layer.
      *
      * @param state the state from which to extract the key
-     * @return an integer key representing the group of comparable states (always {@code 0} here)
+     * @return the set of remaining jobs of the state
      */
     @Override
-    public Integer getKey(MSCTState state) {
-        return 0;
+    public Set<Integer> getKey(MSCTState state) {
+        return state.remainingJobs();
     }
 
     /**
