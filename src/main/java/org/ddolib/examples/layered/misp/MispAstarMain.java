@@ -21,7 +21,7 @@ import java.util.BitSet;
  *   <li>The problem instance {@link MispProblem} read from a file.
  *   <li>A dominance checker {@link MispDominanceChecker} with {@link MispDominance} to prune
  *       dominated states.
- *   <li>A fast lower bound {@link MispFastLowerBound} to guide the A* search.
+ *   <li>A fast lower bound {@link MispCliqueCoverLowerBound} to guide the A* search.
  *   <li>Debug mode enabled through {@link DebugLevel#ON}.
  * </ul>
  *
@@ -54,8 +54,8 @@ public final class MispAstarMain {
                     }
 
                     @Override
-                    public MispFastLowerBound lowerBound() {
-                        return new MispFastLowerBound(problem);
+                    public MispCliqueCoverLowerBound lowerBound() {
+                        return new MispCliqueCoverLowerBound(problem);
                     }
 
                     @Override

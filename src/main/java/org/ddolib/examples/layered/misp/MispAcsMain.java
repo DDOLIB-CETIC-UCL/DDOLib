@@ -21,7 +21,7 @@ import org.ddolib.layered.solver.Solution;
  *   <li>The problem instance {@link MispProblem} read from a file.
  *   <li>A dominance checker {@link MispDominanceChecker} using {@link MispDominance} to prune
  *       dominated states.
- *   <li>A fast lower bound implementation {@link MispFastLowerBound} to guide the search.
+ *   <li>A fast lower bound implementation {@link MispCliqueCoverLowerBound} to guide the search.
  * </ul>
  *
  * <p>The solution and search statistics are printed to the standard output.
@@ -52,8 +52,8 @@ public final class MispAcsMain {
                     }
 
                     @Override
-                    public MispFastLowerBound lowerBound() {
-                        return new MispFastLowerBound(problem);
+                    public MispCliqueCoverLowerBound lowerBound() {
+                        return new MispCliqueCoverLowerBound(problem);
                     }
 
                     @Override

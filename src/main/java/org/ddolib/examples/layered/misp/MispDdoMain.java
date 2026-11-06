@@ -23,7 +23,7 @@ import org.ddolib.layered.solver.Solution;
  *   <li>A ranking {@link MispRanking} to order states within the DDO search.
  *   <li>A dominance checker {@link MispDominanceChecker} with {@link MispDominance} to prune
  *       dominated states.
- *   <li>A fast lower bound {@link MispFastLowerBound} to guide the search.
+ *   <li>A fast lower bound {@link MispCliqueCoverLowerBound} to guide the search.
  * </ul>
  *
  * <p>The best solutions and search statistics are printed to the standard output.
@@ -54,8 +54,8 @@ public final class MispDdoMain {
                     }
 
                     @Override
-                    public MispFastLowerBound lowerBound() {
-                        return new MispFastLowerBound(problem);
+                    public MispCliqueCoverLowerBound lowerBound() {
+                        return new MispCliqueCoverLowerBound(problem);
                     }
 
                     @Override

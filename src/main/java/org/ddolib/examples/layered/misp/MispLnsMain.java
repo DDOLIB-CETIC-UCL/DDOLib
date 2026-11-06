@@ -42,7 +42,8 @@ import org.ddolib.layered.solver.Solution;
  *
  * <ul>
  *   <li>{@link MispProblem} – defines the graph structure
- *   <li>{@link MispFastLowerBound} – provides a fast lower bound on the independent set size
+ *   <li>{@link MispCliqueCoverLowerBound} – provides a fast lower bound on the weight of the
+ *       independent set
  *   <li>{@link MispDominance} – defines dominance relations between states
  *   <li>{@link MispDominanceChecker} – applies dominance pruning
  *   <li>{@link MispRanking} – ranks states during decision diagram compilation
@@ -69,7 +70,7 @@ import org.ddolib.layered.solver.Solution;
  * </ul>
  *
  * @see MispProblem
- * @see MispFastLowerBound
+ * @see MispCliqueCoverLowerBound
  * @see MispDominance
  * @see MispRanking
  * @see LnsModel
@@ -108,8 +109,8 @@ public class MispLnsMain {
                     }
 
                     @Override
-                    public MispFastLowerBound lowerBound() {
-                        return new MispFastLowerBound(problem);
+                    public MispCliqueCoverLowerBound lowerBound() {
+                        return new MispCliqueCoverLowerBound(problem);
                     }
 
                     @Override

@@ -27,8 +27,12 @@ public class MispFastLowerBound implements FastLowerBound<BitSet> {
     /**
      * Computes a fast lower bound for the given state and set of remaining variables.
      *
-     * <p>The method sums the weights of all vertices already selected in the current {@code state}
-     * and returns its negation, which corresponds to the maximal independent set assumption.
+     * <p>The state contains the vertices that can still be selected (the unassigned vertices that
+     * are not neighbors of a selected vertex). The method sums their weights and returns its
+     * negation: this is the cost of selecting all of them, a lower bound on the cost of the
+     * remaining decisions since the costs are the negated weights. This bound is weak, since it
+     * ignores the edges between the selectable vertices; {@link MispCliqueCoverLowerBound} is
+     * tighter for the same cost per node.
      *
      * @param state the current state of the solution as a {@link BitSet}
      * @param variables the set of remaining variable indices (unused in this implementation)

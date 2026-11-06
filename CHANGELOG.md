@@ -6,6 +6,14 @@ This file documents the DDOLib changes.
 
 ### Added
 
+- `MispCliqueCoverLowerBound`: a fast lower bound for the layered MISP based on a clique cover of
+  the graph (a coloring of its complement), computed once greedily. An independent set contains
+  at most one vertex per clique, so that the bound is minus the sum, over the cliques, of the
+  largest weight still selectable in the clique. It is admissible, at least as tight as
+  `MispFastLowerBound` (which ignores the edges between the selectable vertices) and costs the
+  same per node. It replaces `MispFastLowerBound` in the MISP examples and tests. On `data/MISP`
+  (20 s), A*, ACS and DDO now prove 14/15 instances instead of 13/15; `B_100_150_2000` is solved
+  in 30 ms to 140 ms instead of not at all, and A* finds no solution on 1 instance instead of 2.
 - `NbUnassignedWidth`: the default width heuristic of ddo, equal to the number of unassigned
   variables of the subproblem (times an optional factor). The solvers now call the new method
   `WidthHeuristic.maximumWidth(state, depth)` with the depth of the subproblem; by default it

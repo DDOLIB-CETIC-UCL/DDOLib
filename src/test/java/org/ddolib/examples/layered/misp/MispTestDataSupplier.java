@@ -58,8 +58,8 @@ public class MispTestDataSupplier extends TestDataSupplier<BitSet, MispProblem> 
             }
 
             @Override
-            public MispFastLowerBound lowerBound() {
-                return new MispFastLowerBound(problem);
+            public MispCliqueCoverLowerBound lowerBound() {
+                return new MispCliqueCoverLowerBound(problem);
             }
 
             @Override
