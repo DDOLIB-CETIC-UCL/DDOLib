@@ -35,6 +35,9 @@ This file documents the DDOLib changes.
 
 ### Fixed
 
+- `Solvers.restrictedDdo` stopped the JVM (`System.exit(0)`) when the restricted DD contained no
+  solution. It now returns an empty solution, with the status `UNSAT` if the DD is exact (the
+  problem is infeasible) or `UNKNOWN` otherwise (the restriction dropped the feasible nodes).
 - `Solvers.relaxedDdo` and `Solvers.restrictedDdo` always failed with a `NullPointerException`:
   `RelaxationSolver` and `RestrictionSolver` did not set `CompilationConfig.useLNS`. They now
   set it to `false`, like the DDO solver.

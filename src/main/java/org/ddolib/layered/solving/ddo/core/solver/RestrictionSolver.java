@@ -122,6 +122,10 @@ public final class RestrictionSolver<T> {
     /**
      * Solves the model by compiling a single restricted decision diagram.
      *
+     * <p>The status is {@link SearchStatus#SAT} when the restricted DD contains a solution.
+     * Otherwise, the solution is empty and the status is {@link SearchStatus#UNSAT} if the DD is
+     * exact (no node was dropped), or {@link SearchStatus#UNKNOWN} if it is not.
+     *
      * <p>When the JVM throws an {@link OutOfMemoryError} during the compilation, the search stops
      * and returns the best solution found so far, if any, with the status {@link
      * SearchStatus#MEMOUT}.
@@ -165,12 +169,17 @@ public final class RestrictionSolver<T> {
                         .addNbDominancePruning(restrictedMdd.nbDominancePruning());
         maybeUpdateBest(restrictedMdd, exportAsDot);
 
-        if (!restrictedMdd.bestValue().isPresent()) {
-            System.out.println(restrictedMdd.bestSolution());
-            System.exit(0);
+        statistics = statistics.updateTime(System.currentTimeMillis());
+        if (restrictedMdd.bestValue().isEmpty()) {
+            // no solution in the restricted DD: the problem is infeasible only if no node was
+            // dropped, i.e. if the DD is exact
+            SearchStatus status =
+                    restrictedMdd.isExact() ? SearchStatus.UNSAT : SearchStatus.UNKNOWN;
+            statistics = statistics.updateStatus(status);
+            return new Solution(bestSolution(), statistics);
         }
 
-        statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);
+        statistics = statistics.updateIncumbent(bestUB, 100);
         statistics = statistics.updateStatus(SearchStatus.SAT);
         return new Solution(bestSolution(), statistics);
     }
