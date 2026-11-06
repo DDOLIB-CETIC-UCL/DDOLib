@@ -7,7 +7,6 @@ import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.AcsModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
 
@@ -20,7 +19,7 @@ import org.ddolib.layered.solver.Solution;
  *
  * <ul>
  *   <li>The problem instance {@link MispProblem} read from a file.
- *   <li>A dominance checker {@link SimpleDominanceChecker} using {@link MispDominance} to prune
+ *   <li>A dominance checker {@link MispDominanceChecker} using {@link MispDominance} to prune
  *       dominated states.
  *   <li>A fast lower bound implementation {@link MispFastLowerBound} to guide the search.
  * </ul>
@@ -59,7 +58,7 @@ public final class MispAcsMain {
 
                     @Override
                     public DominanceChecker<BitSet> dominance() {
-                        return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+                        return new MispDominanceChecker(problem.nbVars());
                     }
                 };
 

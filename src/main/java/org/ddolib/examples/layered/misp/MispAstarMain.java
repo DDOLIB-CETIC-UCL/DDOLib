@@ -19,7 +19,7 @@ import java.util.BitSet;
  *
  * <ul>
  *   <li>The problem instance {@link MispProblem} read from a file.
- *   <li>A dominance checker {@link SimpleDominanceChecker} with {@link MispDominance} to prune
+ *   <li>A dominance checker {@link MispDominanceChecker} with {@link MispDominance} to prune
  *       dominated states.
  *   <li>A fast lower bound {@link MispFastLowerBound} to guide the A* search.
  *   <li>Debug mode enabled through {@link DebugLevel#ON}.
@@ -60,7 +60,7 @@ public final class MispAstarMain {
 
                     @Override
                     public DominanceChecker<BitSet> dominance() {
-                        return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+                        return new MispDominanceChecker(problem.nbVars());
                     }
                 };
 

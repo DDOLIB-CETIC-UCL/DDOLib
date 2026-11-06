@@ -11,7 +11,6 @@ import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.testbench.TestDataSupplier;
 
 /**
@@ -65,7 +64,7 @@ public class MispTestDataSupplier extends TestDataSupplier<BitSet, MispProblem> 
 
             @Override
             public DominanceChecker<BitSet> dominance() {
-                return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+                return new MispDominanceChecker(problem.nbVars());
             }
 
             @Override

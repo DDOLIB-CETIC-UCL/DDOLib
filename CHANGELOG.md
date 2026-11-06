@@ -6,6 +6,14 @@ This file documents the DDOLib changes.
 
 ### Added
 
+- `MispDominanceChecker`: a dominance checker for the layered MISP, used by its examples. The
+  dominance by inclusion forbids grouping the states by a key, so that `SimpleDominanceChecker`
+  compares each new state with all the states of its layer. This checker groups them by their
+  number of remaining vertices, like `MispNoLayerDominanceChecker`: a state is only compared with
+  the states that can dominate it or that it can dominate. It prunes exactly the same states. On
+  the two largest instances of `data/MISP` (100 vertices, DDO, 20 s), DDO does 1.7 and 1.8 times
+  more iterations, with a gap 2 to 3 points smaller; the other instances are solved in a few
+  milliseconds either way.
 - `SearchStatus.MEMOUT`: when the memory runs out, every solver (A*, AWA*, ACS, DDO, LNS, exact,
   DFS, layered and no-layer) now returns the best solution found so far with this status, its
   statistics (bound, gap, node counts) and frees its frontier, instead of letting the

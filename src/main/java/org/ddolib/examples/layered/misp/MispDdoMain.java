@@ -7,7 +7,6 @@ import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
 
@@ -22,7 +21,7 @@ import org.ddolib.layered.solver.Solution;
  *   <li>The problem instance {@link MispProblem} read from a file.
  *   <li>A relaxation {@link MispRelax} to merge multiple states during the DDO search.
  *   <li>A ranking {@link MispRanking} to order states within the DDO search.
- *   <li>A dominance checker {@link SimpleDominanceChecker} with {@link MispDominance} to prune
+ *   <li>A dominance checker {@link MispDominanceChecker} with {@link MispDominance} to prune
  *       dominated states.
  *   <li>A fast lower bound {@link MispFastLowerBound} to guide the search.
  * </ul>
@@ -61,7 +60,7 @@ public final class MispDdoMain {
 
                     @Override
                     public DominanceChecker<BitSet> dominance() {
-                        return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+                        return new MispDominanceChecker(problem.nbVars());
                     }
 
                     @Override

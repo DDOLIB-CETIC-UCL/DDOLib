@@ -28,6 +28,8 @@ public class MispDominance implements Dominance<BitSet> {
      * new state is compared with all the non-dominated states of its layer, i.e. a number of
      * comparisons quadratic in the number of states of a layer, each comparison taking a time
      * linear in the number of vertices.
+     * {@link MispDominanceChecker} reduces this cost by grouping the states by their number of
+     * remaining vertices.
      *
      * @param state the current state
      * @return a key for the dominance relation, always {@code 0}

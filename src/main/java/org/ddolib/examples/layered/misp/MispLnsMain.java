@@ -7,7 +7,6 @@ import org.ddolib.common.util.io.SolutionPrinter;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.LnsModel;
 import org.ddolib.layered.modeling.Problem;
-import org.ddolib.layered.modeling.SimpleDominanceChecker;
 import org.ddolib.layered.modeling.Solvers;
 import org.ddolib.layered.solver.Solution;
 
@@ -45,7 +44,7 @@ import org.ddolib.layered.solver.Solution;
  *   <li>{@link MispProblem} – defines the graph structure
  *   <li>{@link MispFastLowerBound} – provides a fast lower bound on the independent set size
  *   <li>{@link MispDominance} – defines dominance relations between states
- *   <li>{@link SimpleDominanceChecker} – applies dominance pruning
+ *   <li>{@link MispDominanceChecker} – applies dominance pruning
  *   <li>{@link MispRanking} – ranks states during decision diagram compilation
  * </ul>
  *
@@ -115,7 +114,7 @@ public class MispLnsMain {
 
                     @Override
                     public DominanceChecker<BitSet> dominance() {
-                        return new SimpleDominanceChecker<>(new MispDominance(), problem.nbVars());
+                        return new MispDominanceChecker(problem.nbVars());
                     }
 
                     @Override
