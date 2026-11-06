@@ -49,6 +49,12 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     private Node<T> targetNode = null;
     private boolean exact = true;
     private int nbFastLowerBoundPruning = 0;
+
+    /** Number of nodes whose successors were computed. */
+    private long nbExpandedNodes = 0;
+
+    /** Number of transitions applied (successors computed). */
+    private long nbGeneratedNodes = 0;
     private int nbDominancePruning = 0;
 
     /**
@@ -181,10 +187,12 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
                 continue;
             }
 
+            nbExpandedNodes++;
             Iterator<Integer> labels = problem.domain(n.state);
             while (labels.hasNext()) {
                 int l = labels.next();
                 T nextState = problem.transition(n.state, l);
+                nbGeneratedNodes++;
                 double cost = problem.transitionCost(n.state, l);
                 double ep = saturatedAdd(n.bound, cost);
                 double flb = model.lowerBound().fastLowerBound(nextState);
@@ -479,6 +487,16 @@ public class NoLayerDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public int nbNodes() {
         return stateMap.size();
+    }
+
+    @Override
+    public long nbExpandedNodes() {
+        return nbExpandedNodes;
+    }
+
+    @Override
+    public long nbGeneratedNodes() {
+        return nbGeneratedNodes;
     }
 
     @Override

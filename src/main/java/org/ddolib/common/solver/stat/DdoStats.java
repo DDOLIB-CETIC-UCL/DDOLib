@@ -98,6 +98,22 @@ public class DdoStats extends SearchStatistics {
      * {@inheritDoc}
      */
     @Override
+    public DdoStats updateNodeCounts(long nbExpanded, long nbGenerated) {
+        return (DdoStats) super.updateNodeCounts(nbExpanded, nbGenerated);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats addNodeCounts(long nbExpanded, long nbGenerated) {
+        return (DdoStats) super.addNodeCounts(nbExpanded, nbGenerated);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public DdoStats updateBestBound(double bound) {
         DdoStats toReturn = (DdoStats) super.updateBestBound(bound);
         if (bound > this._bestBound) {

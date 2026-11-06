@@ -57,6 +57,10 @@ public final class AcsSolver<T> implements Solver {
      * The problem we want to minimize.
      */
     private final Problem<T> problem;
+    /** Number of nodes whose successors were computed since the beginning of the search. */
+    private long nbExpanded = 0;
+    /** Number of successors computed (before any pruning) since the beginning of the search. */
+    private long nbGenerated = 0;
 
     /**
      * A suitable lb for the problem we want to minimize.
@@ -201,6 +205,8 @@ public final class AcsSolver<T> implements Solver {
         if (bestSol.isPresent()) { // initial solution provided by the model
             statistics = statistics.updateStatus(SearchStatus.SAT);
         }
+        nbExpanded = 0;
+        nbGenerated = 0;
         open.getFirst().add(root);
         present.put(new StateAndDepth<>(root.getState(), root.getDepth()), root.f());
 
@@ -221,9 +227,11 @@ public final class AcsSolver<T> implements Solver {
                     gap());
 
             statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap())
-                    .updateBestBound(bestBound());
+                    .updateBestBound(bestBound())
+                    .updateNodeCounts(nbExpanded, nbGenerated);
 
             if (limit.test(statistics)) {
+                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
                 return new Solution(bestSolution(), statistics);
             }
 
@@ -265,6 +273,7 @@ public final class AcsSolver<T> implements Solver {
                             statistics = statistics
                                     .updateIncumbent(bestUB, gap())
                                     .updateBestBound(bestBound())
+                                    .updateNodeCounts(nbExpanded, nbGenerated)
                                     .updateStatus(SearchStatus.SAT);
                             onSolution.accept(constructSolution(bestSol.get()), statistics);
                         }
@@ -291,6 +300,7 @@ public final class AcsSolver<T> implements Solver {
             statistics = statistics.updateStatus(SearchStatus.UNSAT);
         }
 
+        statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
         return new Solution(bestSolution(), statistics);
     }
 
@@ -406,6 +416,7 @@ public final class AcsSolver<T> implements Solver {
         T state = subProblem.getState();
         int var = subProblem.getPath().size();
         final Iterator<Integer> domain = problem.domain(state, var);
+        nbExpanded++;
         int nbGeneratedChildren = 0;
         int nbSelectedChildren = 0;
         while (domain.hasNext()) {
@@ -455,6 +466,7 @@ public final class AcsSolver<T> implements Solver {
                 }
             }
         }
+        nbGenerated += nbGeneratedChildren;
         statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 

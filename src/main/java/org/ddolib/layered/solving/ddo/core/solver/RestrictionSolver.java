@@ -134,8 +134,13 @@ public final class RestrictionSolver<T> {
 
         LinkedDecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
         restrictedMdd.compile();
-        statistics = statistics.addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
-                .addNbDominancePruning(restrictedMdd.nbDominancePruning());
+        // node counts of the compiled DD
+        statistics =
+                statistics.addNodes(restrictedMdd.nbNodes())
+                        .addNodeCounts(
+                                restrictedMdd.nbExpandedNodes(), restrictedMdd.nbGeneratedNodes())
+                        .addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
+                        .addNbDominancePruning(restrictedMdd.nbDominancePruning());
         maybeUpdateBest(restrictedMdd, exportAsDot);
 
         if (!restrictedMdd.bestValue().isPresent()) {

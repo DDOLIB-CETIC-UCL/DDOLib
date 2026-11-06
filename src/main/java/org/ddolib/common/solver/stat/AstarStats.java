@@ -86,6 +86,22 @@ public class AstarStats extends SearchStatistics {
      * {@inheritDoc}
      */
     @Override
+    public AstarStats updateNodeCounts(long nbExpanded, long nbGenerated) {
+        return (AstarStats) super.updateNodeCounts(nbExpanded, nbGenerated);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats addNodeCounts(long nbExpanded, long nbGenerated) {
+        return (AstarStats) super.addNodeCounts(nbExpanded, nbGenerated);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public AstarStats updateBestBound(double bound) {
         return (AstarStats) super.updateBestBound(bound);
     }

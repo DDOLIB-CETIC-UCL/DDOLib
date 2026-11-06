@@ -6,6 +6,14 @@ This file documents the DDOLib changes.
 
 ### Added
 
+- `SearchStatistics.nbExpandedNodes()` and `nbGeneratedNodes()` for every solver (A*, AWA*, ACS,
+  DDO, LNS, exact, DFS, layered and no-layer), to compare the search effort of the solvers, for
+  instance with the `expanded` / `generated` counts of DIDP. A node is expanded when its
+  successors are computed, and one node is generated per successor computed (one per transition
+  applied, before any pruning). For the DD-based solvers, they are counted in the compiled
+  decision diagrams (`DecisionDiagram.nbExpandedNodes()` and `nbGeneratedNodes()`). Previously
+  only `DdoStats.totalNodes()` (distinct nodes created in the DDs) was available. Both counts are
+  also printed by `toString()`.
 - `Problem.hasNonNegativeCosts()` (layered and no-layer, `false` by default): a model without
   fast lower bound can declare that its transition costs are non-negative, so that A*, AWA* and
   ACS can use the cost of the best open node as lower bound.

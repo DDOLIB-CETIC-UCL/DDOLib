@@ -141,6 +141,7 @@ public final class DdoSolver<T> implements Solver {
 
             relaxedMdd.compile();
             statistics = statistics.addNodes(relaxedMdd.nbNodes())
+                    .addNodeCounts(relaxedMdd.nbExpandedNodes(), relaxedMdd.nbGeneratedNodes())
                     .addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
                     .addNbDominancePruning(relaxedMdd.nbDominancePruning());
 
@@ -174,6 +175,8 @@ public final class DdoSolver<T> implements Solver {
 
                 restrictedMdd.compile();
                 statistics = statistics.addNodes(restrictedMdd.nbNodes())
+                        .addNodeCounts(
+                                restrictedMdd.nbExpandedNodes(), restrictedMdd.nbGeneratedNodes())
                         .addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
                         .addNbDominancePruning(restrictedMdd.nbDominancePruning());
 

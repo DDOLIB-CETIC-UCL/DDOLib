@@ -131,8 +131,12 @@ public final class RelaxationSolver<T> {
 
         LinkedDecisionDiagram<T> relaxedMdd = new LinkedDecisionDiagram<>(compilation);
         relaxedMdd.compile();
-        statistics = statistics.addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
-                .addNbDominancePruning(relaxedMdd.nbDominancePruning());
+        // node counts of the compiled DD
+        statistics =
+                statistics.addNodes(relaxedMdd.nbNodes())
+                        .addNodeCounts(relaxedMdd.nbExpandedNodes(), relaxedMdd.nbGeneratedNodes())
+                        .addNbFastLowerBoundPruning(relaxedMdd.nbFastLowerBoundPruning())
+                        .addNbDominancePruning(relaxedMdd.nbDominancePruning());
         maybeUpdateBest(relaxedMdd, exportAsDot);
 
         statistics = statistics.updateTime(System.currentTimeMillis()).updateIncumbent(bestUB, 100);

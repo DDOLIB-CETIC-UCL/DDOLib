@@ -72,6 +72,16 @@ public abstract class SearchStatistics {
     protected double _bestBound = Double.NEGATIVE_INFINITY;
 
     /**
+     * Number of nodes expanded so far (nodes whose successors were computed).
+     */
+    protected long _nbExpandedNodes = 0;
+
+    /**
+     * Number of nodes generated so far (successors computed, before any pruning).
+     */
+    protected long _nbGeneratedNodes = 0;
+
+    /**
      * Maximum size reached by the search frontier.
      */
     protected int _frontierMaxSize = 0;
@@ -175,6 +185,34 @@ public abstract class SearchStatistics {
     }
 
     /**
+     * Returns the number of nodes expanded so far: the nodes whose successors were computed. For
+     * A*, AWA*, ACS and DFS, a node removed from the open list but then discarded (dominated,
+     * already closed or pruned by the bound) is not expanded. For the DD-based solvers (DDO, LNS,
+     * exact), it is the number of DD nodes whose children were generated, over all the compiled
+     * DDs (restricted and relaxed).
+     *
+     * <p>With {@link #nbGeneratedNodes()}, it allows to compare the search effort of different
+     * solvers, for instance with the {@code expanded} and {@code generated} counts of DIDP.
+     *
+     * @return the number of expanded nodes
+     */
+    public long nbExpandedNodes() {
+        return _nbExpandedNodes;
+    }
+
+    /**
+     * Returns the number of nodes generated so far: one per successor computed when a node is
+     * expanded (one per transition applied), before any pruning by the bound, the dominance or a
+     * duplicate. For the DD-based solvers, a transition leading to an existing node of the next
+     * layer is also counted. The root is not counted.
+     *
+     * @return the number of generated nodes
+     */
+    public long nbGeneratedNodes() {
+        return _nbGeneratedNodes;
+    }
+
+    /**
      * Returns the best lower bound on the optimal value proved so far (all the problems are
      * minimized). It is known even when the search is stopped before the end, for instance by a
      * time limit, and does not require an incumbent.
@@ -266,6 +304,8 @@ public abstract class SearchStatistics {
         clone._prevIncumbent = this._prevIncumbent;
         clone._gap = this._gap;
         clone._bestBound = this._bestBound;
+        clone._nbExpandedNodes = this._nbExpandedNodes;
+        clone._nbGeneratedNodes = this._nbGeneratedNodes;
         clone._frontierMaxSize = this._frontierMaxSize;
         clone._relativeImprovement = this._relativeImprovement;
         clone._nbFastLowerBoundPruning = this._nbFastLowerBoundPruning;
@@ -367,6 +407,34 @@ public abstract class SearchStatistics {
     }
 
     /**
+     * Returns a new SearchStatistics instance with the given numbers of expanded and generated
+     * nodes (totals since the beginning of the search).
+     *
+     * @param nbExpanded the number of expanded nodes
+     * @param nbGenerated the number of generated nodes
+     * @return a new instance with the updated node counts
+     */
+    public SearchStatistics updateNodeCounts(long nbExpanded, long nbGenerated) {
+        SearchStatistics toReturn = this.copy();
+        toReturn._nbExpandedNodes = nbExpanded;
+        toReturn._nbGeneratedNodes = nbGenerated;
+        return toReturn;
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with the given numbers of expanded and generated
+     * nodes added to the current ones.
+     *
+     * @param nbExpanded the number of expanded nodes to add
+     * @param nbGenerated the number of generated nodes to add
+     * @return a new instance with the updated node counts
+     */
+    public SearchStatistics addNodeCounts(long nbExpanded, long nbGenerated) {
+        return updateNodeCounts(
+                _nbExpandedNodes + nbExpanded, _nbGeneratedNodes + nbGenerated);
+    }
+
+    /**
      * Returns a new SearchStatistics instance with an updated current time.
      *
      * @param time the current time (in milliseconds)
@@ -418,6 +486,8 @@ public abstract class SearchStatistics {
                         "Incumbent",
                         "Gap",
                         "Best bound",
+                        "Expanded nodes",
+                        "Generated nodes",
                         "Relative improvement",
                         "Nb FastLowerBound pruning",
                         "Nb Dominance pruning");
@@ -433,6 +503,8 @@ public abstract class SearchStatistics {
                         Double.isInfinite(bestBound())
                                 ? (bestBound() > 0 ? "∞" : "-∞")
                                 : df.format(bestBound()),
+                        df.format(_nbExpandedNodes),
+                        df.format(_nbGeneratedNodes),
                         df.format(relativeImprovement()) + " %",
                         df.format(nbFastLowerBoundPruning()),
                         df.format(nbDominancePruning()));

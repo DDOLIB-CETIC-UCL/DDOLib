@@ -33,6 +33,10 @@ import java.util.function.Predicate;
 public final class AcsSolver<T> implements Solver {
 
     private final Problem<T> problem;
+    /** Number of nodes whose successors were computed since the beginning of the search. */
+    private long nbExpanded = 0;
+    /** Number of successors computed (before any pruning) since the beginning of the search. */
+    private long nbGenerated = 0;
     private final FastLowerBound<T> lb;
     private final NoLayerDominanceChecker<T> dominance;
     private final HashMap<T, Double> closed;
@@ -116,6 +120,8 @@ public final class AcsSolver<T> implements Solver {
         if (bestSol.isPresent()) { // initial solution provided by the model
             statistics = statistics.updateStatus(SearchStatus.SAT);
         }
+        nbExpanded = 0;
+        nbGenerated = 0;
         open.get(0).add(root);
         present.put(root.getState(), root.f());
 
@@ -137,9 +143,11 @@ public final class AcsSolver<T> implements Solver {
                     gap());
 
             statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap())
-                    .updateBestBound(bestBound());
+                    .updateBestBound(bestBound())
+                    .updateNodeCounts(nbExpanded, nbGenerated);
 
             if (limit.test(statistics)) {
+                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
                 return new Solution(bestSolution(), statistics);
             }
 
@@ -175,6 +183,7 @@ public final class AcsSolver<T> implements Solver {
                             statistics = statistics
                                     .updateIncumbent(bestUB, gap())
                                     .updateBestBound(bestBound())
+                                    .updateNodeCounts(nbExpanded, nbGenerated)
                                     .updateStatus(SearchStatus.SAT);
                             onSolution.accept(bestSol.get(), statistics);
                         }
@@ -200,6 +209,7 @@ public final class AcsSolver<T> implements Solver {
             statistics = statistics.updateStatus(SearchStatus.UNSAT);
         }
 
+        statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
         return new Solution(bestSolution(), statistics);
     }
 
@@ -208,6 +218,7 @@ public final class AcsSolver<T> implements Solver {
             BiConsumer<List<Integer>, SearchStatistics> onSolution) {
         T state = subProblem.getState();
         Iterator<Integer> domain = problem.domain(state);
+        nbExpanded++;
         int nbGeneratedChildren = 0;
         int nbSelectedChildren = 0;
         while (domain.hasNext()) {
@@ -263,11 +274,14 @@ public final class AcsSolver<T> implements Solver {
                 bestSol = Optional.of(newSub.getPath());
                 bestUB = newSub.getValue();
                 statistics = statistics.updateIncumbent(bestUB, gap())
-                        .updateBestBound(bestBound()).updateStatus(SearchStatus.SAT);
+                        .updateBestBound(bestBound())
+                        .updateNodeCounts(nbExpanded, nbGenerated)
+                        .updateStatus(SearchStatus.SAT);
                 onSolution.accept(path, statistics);
                 verboseMode.newBest(bestUB);
             }
         }
+        nbGenerated += nbGeneratedChildren;
         statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 

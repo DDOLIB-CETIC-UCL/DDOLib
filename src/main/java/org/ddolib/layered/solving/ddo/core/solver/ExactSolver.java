@@ -141,8 +141,12 @@ public final class ExactSolver<T> implements Solver {
 
         DecisionDiagram<T> mdd = new LinkedDecisionDiagram<>(compilation);
         mdd.compile();
-        statistics = statistics.addNbFastLowerBoundPruning(mdd.nbFastLowerBoundPruning())
-                .addNbDominancePruning(mdd.nbDominancePruning());
+        // node counts of the compiled DD
+        statistics =
+                statistics.addNodes(mdd.nbNodes())
+                        .addNodeCounts(mdd.nbExpandedNodes(), mdd.nbGeneratedNodes())
+                        .addNbFastLowerBoundPruning(mdd.nbFastLowerBoundPruning())
+                        .addNbDominancePruning(mdd.nbDominancePruning());
         extractBest(mdd);
         if (exportAsDot) {
             String problemName = problem.getClass().getSimpleName().replace("Problem", "");

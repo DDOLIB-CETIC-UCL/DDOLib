@@ -126,6 +126,12 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     /** Total number of nodes created in this diagram. */
     private int nodesCount = 0;
 
+    /** Number of nodes whose children were generated. */
+    private long nbExpandedNodes = 0;
+
+    /** Number of transitions applied (successors computed). */
+    private long nbGeneratedNodes = 0;
+
     /** Number of nodes pruned because their lower bound cannot improve the best known solution. */
     private int nbFastLowerBoundPruning = 0;
 
@@ -327,6 +333,16 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
     @Override
     public boolean isInterrupted() {
         return interrupted;
+    }
+
+    @Override
+    public long nbExpandedNodes() {
+        return nbExpandedNodes;
+    }
+
+    @Override
+    public long nbGeneratedNodes() {
+        return nbGeneratedNodes;
     }
 
     /**
@@ -540,6 +556,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
      * @param nextVar the associated decision variable
      */
     private void genChildren(NodeSubProblem<T> n, int nextVar) {
+        nbExpandedNodes++;
         lowerBound = Math.min(lowerBound, n.lb);
         final Iterator<Integer> domain = config.problem.domain(n.state, nextVar);
         while (domain.hasNext()) {
@@ -795,6 +812,7 @@ public final class LinkedDecisionDiagram<T> implements DecisionDiagram<T> {
         }
 
         T state = problem.transition(node.state, decision);
+        nbGeneratedNodes++;
         double cost = problem.transitionCost(node.state, decision);
         double value = saturatedAdd(node.node.value, cost);
 

@@ -39,6 +39,10 @@ import org.ddolib.nolayer.util.debug.DebugUtil;
 public final class AwAstarSolver<T> implements Solver {
     // The problem we want to minimize
     private final Problem<T> problem;
+    /** Number of nodes whose successors were computed since the beginning of the search. */
+    private long nbExpanded = 0;
+    /** Number of successors computed (before any pruning) since the beginning of the search. */
+    private long nbGenerated = 0;
     // A suitable lb for the problem we want to minimize
     private final FastLowerBound<T> lb;
     // HashMap mapping (state,depth) to the f value
@@ -150,6 +154,8 @@ public final class AwAstarSolver<T> implements Solver {
             statistics = statistics.updateStatus(SearchStatus.SAT);
         }
         open.add(root);
+        nbExpanded = 0;
+        nbGenerated = 0;
         openByF.add(root);
         present.put(root.getState(), root.f());
 
@@ -157,7 +163,10 @@ public final class AwAstarSolver<T> implements Solver {
             bestSol = Optional.of(root.getPath());
             statistics =
                     statistics.updateIncumbent(bestUB, gap())
-                            .updateBestBound(bestBound()).updateStatus(SearchStatus.OPTIMAL);
+                            .updateBestBound(bestBound())
+                            .updateNodeCounts(nbExpanded, nbGenerated)
+                            .updateStatus(SearchStatus.OPTIMAL);
+            statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
             return new Solution(bestSolution(), statistics);
         }
 
@@ -176,7 +185,8 @@ public final class AwAstarSolver<T> implements Solver {
                             .updateFrontierMaxSize(open.size())
                             .updateTime(System.currentTimeMillis())
                             .updateGap(gap())
-                            .updateBestBound(bestBound());
+                            .updateBestBound(bestBound())
+                            .updateNodeCounts(nbExpanded, nbGenerated);
 
             if (limit.test(statistics)) {
                 return new Solution(
@@ -223,6 +233,7 @@ public final class AwAstarSolver<T> implements Solver {
             statistics = statistics.updateStatus(SearchStatus.UNSAT);
         }
 
+        statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
         return new Solution(bestSolution(), statistics);
     }
 
@@ -241,6 +252,7 @@ public final class AwAstarSolver<T> implements Solver {
         T state = sub.getState();
 
         final Iterator<Integer> domain = problem.domain(state);
+        nbExpanded++;
         int nbGeneratedChildren = 0;
         int nbSelectedChildren = 0;
 
@@ -295,12 +307,15 @@ public final class AwAstarSolver<T> implements Solver {
                 bestUB = newSub.getValue();
                 statistics =
                         statistics.updateIncumbent(bestUB, gap())
-                                .updateBestBound(bestBound()).updateStatus(SearchStatus.SAT);
+                                .updateBestBound(bestBound())
+                                .updateNodeCounts(nbExpanded, nbGenerated)
+                                .updateStatus(SearchStatus.SAT);
                 onSolution.accept(newPath, statistics);
                 verboseMode.newBest(bestUB);
             }
         }
 
+        nbGenerated += nbGeneratedChildren;
         statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);
     }
 

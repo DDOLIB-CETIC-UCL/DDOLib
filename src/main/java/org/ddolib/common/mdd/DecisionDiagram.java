@@ -122,6 +122,26 @@ public interface DecisionDiagram<T> {
     int nbNodes();
 
     /**
+     * Returns the number of nodes expanded during the compilation: the nodes whose successors were
+     * computed.
+     *
+     * @return the number of expanded nodes
+     */
+    default long nbExpandedNodes() {
+        return 0;
+    }
+
+    /**
+     * Returns the number of successors computed during the compilation (one per transition
+     * applied, before any pruning or merge with an existing node).
+     *
+     * @return the number of generated nodes
+     */
+    default long nbGeneratedNodes() {
+        return 0;
+    }
+
+    /**
      * Returns the number of nodes pruned during the compilation of this decision diagram because
      * their fast lower bound could not improve the best known solution.
      *

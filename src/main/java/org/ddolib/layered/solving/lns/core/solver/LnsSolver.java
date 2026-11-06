@@ -188,8 +188,14 @@ public final class LnsSolver<T> implements Solver {
             dominance.clear();
             DecisionDiagram<T> restrictedMdd = new LinkedDecisionDiagram<>(compilation);
             restrictedMdd.compile();
-            stats = stats.addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
-                    .addNbDominancePruning(restrictedMdd.nbDominancePruning());
+            // node counts of the compiled DD
+            stats =
+                    stats.addNodes(restrictedMdd.nbNodes())
+                            .addNodeCounts(
+                                    restrictedMdd.nbExpandedNodes(),
+                                    restrictedMdd.nbGeneratedNodes())
+                            .addNbFastLowerBoundPruning(restrictedMdd.nbFastLowerBoundPruning())
+                            .addNbDominancePruning(restrictedMdd.nbDominancePruning());
 
             boolean newbest = maybeUpdateBest(restrictedMdd, exportAsDot && firstRestricted);
             if (Double.isInfinite(bestUB) && widthFactor < Integer.MAX_VALUE) {

@@ -69,6 +69,8 @@ public final class DFS<T> {
         Deque<Node<T>> frontier = new ArrayDeque<>();
         Set<T> explored = new HashSet<>();
 
+        long nbExpanded = 0;
+        long nbGenerated = 0;
         frontier.push(new Node<>(problem.initialState(), problem.initialValue(), -1, null));
 
         while (!frontier.isEmpty()) {
@@ -78,6 +80,7 @@ public final class DFS<T> {
                     .updateTime(System.currentTimeMillis());
 
             if (limit.test(statistics)) {
+                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
                 return new Solution(List.of(), statistics.updateStatus(SearchStatus.UNKNOWN));
             }
 
@@ -88,6 +91,7 @@ public final class DFS<T> {
                         .updateTime(System.currentTimeMillis())
                         .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)
                         .updateStatus(SearchStatus.SAT);
+                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
                 return new Solution(buildPath(current), statistics);
             }
 
@@ -101,9 +105,13 @@ public final class DFS<T> {
                 continue;
             }
 
+            nbExpanded++; // its successors are computed
+            int sizeBefore = frontier.size();
             pushChildren(current, frontier);
+            nbGenerated += frontier.size() - sizeBefore; // every successor is pushed
         }
 
+        statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);
         return new Solution(List.of(), statistics.updateStatus(SearchStatus.UNSAT));
     }
 
