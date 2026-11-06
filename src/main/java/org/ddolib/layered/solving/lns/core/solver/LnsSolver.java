@@ -37,6 +37,24 @@ import static org.ddolib.common.util.MathUtil.saturatedAdd;
  * decision diagram on the residual subproblem, and accepts strict improvements on the objective
  * value.
  *
+ * <p><b>Statuses.</b> LNS is a heuristic: it only reports a proof when it has a global dual
+ * bound.
+ *
+ * <ul>
+ *   <li>{@link SearchStatus#OPTIMAL}: either the restricted DD compiled from the root (no fixed
+ *       decision) is exact, i.e. it enumerated the whole search space, or the incumbent reaches
+ *       the global lower bound (the fast lower bound at the root).
+ *   <li>{@link SearchStatus#UNSAT}: the exact DD compiled from the root has no solution.
+ *   <li>{@link SearchStatus#SAT}: a solution is known but its optimality is not proved, in
+ *       particular when the search is stopped by its limit. The gap is then computed with the
+ *       global lower bound.
+ *   <li>{@link SearchStatus#UNKNOWN}: no solution is known and infeasibility is not proved.
+ * </ul>
+ *
+ * <p>An exact DD is only a proof if the states it prunes are dominated by states of the same DD:
+ * the dominance checker of the model is thus cleared before each compilation, whether the model
+ * returns a new checker at each call of {@link LnsModel#dominance()} or always the same one.
+ *
  * @param <T> type of states manipulated by the underlying problem
  */
 public final class LnsSolver<T> implements Solver {
@@ -193,8 +211,10 @@ public final class LnsSolver<T> implements Solver {
             }
             firstRestricted = false;
 
-            // The incumbent is optimal when the restricted DD compiled from the root (no fixed
-            // decision) is exact or when it reaches the global lower bound. Note that d cannot
+            // Proofs only rely on global dual bounds (see the statuses in the class Javadoc): the
+            // incumbent is optimal when the restricted DD compiled from the root (no fixed
+            // decision) is exact or when it reaches the global lower bound. The exact DD is a proof
+            // because the dominance checker was cleared before its compilation. Note that d cannot
             // be used here since it has already been updated by maybeUpdateBest.
             boolean compiledFromRoot = sub.getPath().isEmpty();
             if (compiledFromRoot && restrictedMdd.isExact() && Double.isInfinite(bestUB)) {

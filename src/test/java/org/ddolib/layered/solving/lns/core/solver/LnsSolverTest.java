@@ -404,8 +404,8 @@ public class LnsSolverTest {
     }
 
     private static LnsModel<TSPTWState> tsptwModelWithDominance(
-            TSPTWProblem problem, Supplier<DominanceChecker<TSPTWState>> dominance) {
-        LnsModel<TSPTWState> base = tsptwModel(problem, 1);
+            TSPTWProblem problem, int width, Supplier<DominanceChecker<TSPTWState>> dominance) {
+        LnsModel<TSPTWState> base = tsptwModel(problem, width);
         return new LnsModel<>() {
             @Override
             public Problem<TSPTWState> problem() {
@@ -449,15 +449,48 @@ public class LnsSolverTest {
                 Solvers.minimizeLns(
                         tsptwModelWithDominance(
                                 problem,
+                                1,
                                 () ->
                                         new SimpleDominanceChecker<>(
                                                 new TSPTWDominance(), problem.nbVars())),
                         s -> s.nbIterations() > 60);
         Solution shared =
                 Solvers.minimizeLns(
-                        tsptwModelWithDominance(problem, () -> single), s -> s.nbIterations() > 60);
+                        tsptwModelWithDominance(problem, 1, () -> single),
+                        s -> s.nbIterations() > 60);
 
         assertFalse(Double.isInfinite(shared.value()));
+        assertEquals(fresh.value(), shared.value(), 1e-9);
+        assertEquals(fresh.statistics().status(), shared.statistics().status());
+    }
+
+    @Test
+    void testSharedDominanceCheckerDoesNotGiveAFalseOptimalityProof() throws IOException {
+        // With a dominance checker shared by the compilations and never cleared, states were
+        // pruned by states of previous DDs whose children had been dropped by the restriction:
+        // on rbg021.6 (optimum 4492), the LNS reported 7220 as OPTIMAL.
+        final TSPTWProblem problem =
+                new TSPTWProblem(Path.of("data", "TSPTW", "AFG", "rbg021.6.tw").toString());
+        DominanceChecker<TSPTWState> single =
+                new SimpleDominanceChecker<>(new TSPTWDominance(), problem.nbVars());
+
+        Solution shared =
+                Solvers.minimizeLns(
+                        tsptwModelWithDominance(problem, 20, () -> single),
+                        s -> s.nbIterations() > 300);
+        Solution fresh =
+                Solvers.minimizeLns(
+                        tsptwModelWithDominance(
+                                problem,
+                                20,
+                                () ->
+                                        new SimpleDominanceChecker<>(
+                                                new TSPTWDominance(), problem.nbVars())),
+                        s -> s.nbIterations() > 300);
+
+        if (shared.statistics().status() == SearchStatus.OPTIMAL) {
+            assertEquals(4492.0, shared.value(), 1e-9);
+        }
         assertEquals(fresh.value(), shared.value(), 1e-9);
         assertEquals(fresh.statistics().status(), shared.statistics().status());
     }

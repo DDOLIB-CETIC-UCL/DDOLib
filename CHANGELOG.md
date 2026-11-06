@@ -36,7 +36,10 @@ This file documents the DDOLib changes.
   cleared the checker: when a model returned always the same checker, the states remembered from
   other neighborhoods pruned the states of the next DDs (a state seen before with the same value
   was dominated by its own copy). The LNS could then report a non-optimal solution as optimal or a
-  feasible problem as `UNSAT`. The result no longer depends on how the model provides its checker.
+  feasible problem as `UNSAT` (e.g. TSPTW `rbg021.6`: 7220 reported as optimal, the optimum is
+  4492). The result no longer depends on how the model provides its checker. The statuses of the
+  LNS are documented: `OPTIMAL` and `UNSAT` are only reported with a global dual bound (exact DD
+  compiled from the root, or incumbent reaching the fast lower bound at the root).
 - A*-family stats: the moving average behind `validChildrenPercent` now also takes into account
   the expanded nodes whose children are all pruned or redundant. Previously these nodes were
   ignored, so the indicator decreased far too slowly to signal stagnation.
