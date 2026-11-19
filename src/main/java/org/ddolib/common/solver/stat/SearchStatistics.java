@@ -96,8 +96,13 @@ public abstract class SearchStatistics {
      */
     protected int _lastIterationOfGapImprovement = 0;
 
+    /**
+     * Number of nodes pruned because their fast lower bound shows that they cannot improve the
+     * best solution found so far.
+     */
     protected int _nbFastLowerBoundPruning = 0;
 
+    /** Number of nodes pruned because their state is dominated by the state of another node. */
     protected int _nbDominancePruning = 0;
 
     /**
@@ -279,10 +284,22 @@ public abstract class SearchStatistics {
         return 100 * _relativeImprovement;
     }
 
+    /**
+     * Returns the number of nodes pruned because their fast lower bound shows that they cannot
+     * improve the best solution found so far.
+     *
+     * @return the number of nodes pruned by the fast lower bound
+     */
     public int nbFastLowerBoundPruning() {
         return _nbFastLowerBoundPruning;
     }
 
+    /**
+     * Returns the number of nodes pruned because their state is dominated by the state of another
+     * node.
+     *
+     * @return the number of nodes pruned by the dominance
+     */
     public int nbDominancePruning() {
         return _nbDominancePruning;
     }
@@ -446,24 +463,50 @@ public abstract class SearchStatistics {
         return toReturn;
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with one more node pruned by the fast
+     * lower bound.
+     *
+     * @return a new instance with the incremented number of fast lower bound prunings
+     */
     public SearchStatistics incrementNbFastLowerBoundPruning() {
         SearchStatistics toReturn = this.copy();
         toReturn._nbFastLowerBoundPruning++;
         return toReturn;
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with one more node pruned by the
+     * dominance.
+     *
+     * @return a new instance with the incremented number of dominance prunings
+     */
     public SearchStatistics incrementNbDominancePruning() {
         SearchStatistics toReturn = this.copy();
         toReturn._nbDominancePruning++;
         return toReturn;
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with additional nodes pruned by the
+     * fast lower bound, for instance those pruned during the compilation of a decision diagram.
+     *
+     * @param nbPruning the number of nodes pruned by the fast lower bound to add
+     * @return a new instance with the updated number of fast lower bound prunings
+     */
     public SearchStatistics addNbFastLowerBoundPruning(int nbPruning) {
         SearchStatistics toReturn = this.copy();
         toReturn._nbFastLowerBoundPruning += nbPruning;
         return toReturn;
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with additional nodes pruned by the
+     * dominance, for instance those pruned during the compilation of a decision diagram.
+     *
+     * @param nbPruning the number of nodes pruned by the dominance to add
+     * @return a new instance with the updated number of dominance prunings
+     */
     public SearchStatistics addNbDominancePruning(int nbPruning) {
         SearchStatistics toReturn = this.copy();
         toReturn._nbDominancePruning += nbPruning;
