@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispCliqueCoverLowerBound.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.misp</a> &gt; <span class="el_source">MispCliqueCoverLowerBound.java</span></div><h1>MispCliqueCoverLowerBound.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.misp;
+
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.Set;
+import java.util.stream.IntStream;
+import org.ddolib.layered.modeling.FastLowerBound;
+
+/**
+ * Fast lower bound for the Maximum Independent Set Problem (MISP) based on a clique cover of the
+ * graph (i.e. a coloring of its complement).
+ *
+ * &lt;p&gt;The costs of the MISP are the negated weights of the selected vertices. An independent set
+ * contains at most one vertex of each clique, so that the weight that can still be selected from a
+ * state is at most the sum, over the cliques of the cover, of the largest weight of a vertex of the
+ * clique still selectable in the state. The bound is minus this sum. It is admissible, and at least
+ * as tight as {@link MispFastLowerBound}, which sums the weights of all the selectable vertices
+ * (it is the bound of the cover made of single vertices).
+ *
+ * &lt;p&gt;The cover is computed once, greedily: the vertices are taken by decreasing weight, and each
+ * one is added to the first clique all of whose vertices are its neighbors, or starts a new
+ * clique. The bound of a state is then computed in a time linear in its number of vertices, like
+ * {@link MispFastLowerBound}.
+ */
+public class MispCliqueCoverLowerBound implements FastLowerBound&lt;BitSet&gt; {
+
+    private final int[] weight;
+
+    /** For each vertex, the index of its clique in the cover. */
+    private final int[] cliqueOf;
+
+    /** The number of cliques of the cover. */
+    private final int nbCliques;
+
+    /**
+     * Computes the clique cover of the graph of the given problem.
+     *
+     * @param problem the MISP instance
+     */
+<span class="fc" id="L40">    public MispCliqueCoverLowerBound(MispProblem problem) {</span>
+<span class="fc" id="L41">        int n = problem.weight.length;</span>
+<span class="fc" id="L42">        this.weight = problem.weight;</span>
+<span class="fc" id="L43">        this.cliqueOf = new int[n];</span>
+<span class="fc" id="L44">        Integer[] order =</span>
+<span class="fc" id="L45">                IntStream.range(0, n)</span>
+<span class="fc" id="L46">                        .boxed()</span>
+<span class="fc" id="L47">                        .sorted(Comparator.comparingInt((Integer v) -&gt; -weight[v]))</span>
+<span class="fc" id="L48">                        .toArray(Integer[]::new);</span>
+        // for each clique, the vertices that are adjacent to all its vertices
+<span class="fc" id="L50">        BitSet[] candidates = new BitSet[n];</span>
+<span class="fc" id="L51">        int k = 0;</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">        for (int v : order) {</span>
+<span class="fc" id="L53">            int clique = -1;</span>
+<span class="fc bfc" id="L54" title="All 4 branches covered.">            for (int c = 0; c &lt; k &amp;&amp; clique &lt; 0; c++) {</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">                if (candidates[c].get(v)) {</span>
+<span class="fc" id="L56">                    clique = c;</span>
+                }
+            }
+<span class="fc bfc" id="L59" title="All 2 branches covered.">            if (clique &lt; 0) {</span>
+<span class="fc" id="L60">                clique = k++;</span>
+<span class="fc" id="L61">                candidates[clique] = (BitSet) problem.neighbors[v].clone();</span>
+            } else {
+<span class="fc" id="L63">                candidates[clique].and(problem.neighbors[v]);</span>
+            }
+<span class="fc" id="L65">            cliqueOf[v] = clique;</span>
+        }
+<span class="fc" id="L67">        this.nbCliques = k;</span>
+<span class="fc" id="L68">    }</span>
+
+    /**
+     * Returns the number of cliques of the cover.
+     *
+     * @return the number of cliques
+     */
+    public int nbCliques() {
+<span class="fc" id="L76">        return nbCliques;</span>
+    }
+
+    /**
+     * Returns minus the sum, over the cliques of the cover, of the largest weight of a vertex of
+     * the clique still selectable in the state.
+     *
+     * @param state the vertices that can still be selected
+     * @param variables the unassigned variables (unused: the selectable vertices are unassigned)
+     * @return a lower bound on the cost of the remaining decisions
+     */
+    @Override
+    public double fastLowerBound(BitSet state, Set&lt;Integer&gt; variables) {
+<span class="fc" id="L89">        int[] best = new int[nbCliques];</span>
+<span class="fc bfc" id="L90" title="All 2 branches covered.">        for (int v = state.nextSetBit(0); v &gt;= 0; v = state.nextSetBit(v + 1)) {</span>
+<span class="fc" id="L91">            best[cliqueOf[v]] = Math.max(best[cliqueOf[v]], weight[v]);</span>
+        }
+<span class="fc" id="L93">        long sum = 0;</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">        for (int w : best) {</span>
+<span class="fc" id="L95">            sum += w;</span>
+        }
+<span class="fc" id="L97">        return -sum;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

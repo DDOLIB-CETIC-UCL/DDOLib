@@ -16,14 +16,9 @@ public class DdoStats extends SearchStatistics {
 <span class="fc" id="L16">    private int maxExploredDepth = 0;</span>
 
     /**
-     * Best (highest) global lower bound found so far.
-     */
-<span class="fc" id="L21">    private double bestLowerBound = Double.NEGATIVE_INFINITY;</span>
-
-    /**
      * Iteration during which the last lower bound improvement was found.
      */
-<span class="fc" id="L26">    private int lastIterationOfLowerBoundImprovement = 0;</span>
+<span class="fc" id="L21">    private int lastIterationOfLowerBoundImprovement = 0;</span>
 
     /**
      * Constructs a new SearchStatistics instance.
@@ -32,20 +27,19 @@ public class DdoStats extends SearchStatistics {
      * @param initValue the initial value for the incumbent
      */
     public DdoStats(long startTime, double initValue) {
-<span class="fc" id="L35">        super(startTime, initValue);</span>
-<span class="fc" id="L36">    }</span>
+<span class="fc" id="L30">        super(startTime, initValue);</span>
+<span class="fc" id="L31">    }</span>
 
     /**
      * {@inheritDoc}
      */
     @Override
     protected DdoStats createSpecificInstance() {
-<span class="fc" id="L43">        DdoStats clone = new DdoStats(this._startTime, this._incumbent);</span>
-<span class="fc" id="L44">        clone.totalNodes = this.totalNodes;</span>
-<span class="fc" id="L45">        clone.maxExploredDepth = this.maxExploredDepth;</span>
-<span class="fc" id="L46">        clone.bestLowerBound = this.bestLowerBound;</span>
-<span class="fc" id="L47">        clone.lastIterationOfLowerBoundImprovement = this.lastIterationOfLowerBoundImprovement;</span>
-<span class="fc" id="L48">        return clone;</span>
+<span class="fc" id="L38">        DdoStats clone = new DdoStats(this._startTime, this._incumbent);</span>
+<span class="fc" id="L39">        clone.totalNodes = this.totalNodes;</span>
+<span class="fc" id="L40">        clone.maxExploredDepth = this.maxExploredDepth;</span>
+<span class="fc" id="L41">        clone.lastIterationOfLowerBoundImprovement = this.lastIterationOfLowerBoundImprovement;</span>
+<span class="fc" id="L42">        return clone;</span>
     }
 
     /**
@@ -53,12 +47,11 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats copy() {
-<span class="fc" id="L56">        DdoStats clone = (DdoStats) super.copy();</span>
-<span class="fc" id="L57">        clone.totalNodes = this.totalNodes;</span>
-<span class="fc" id="L58">        clone.maxExploredDepth = this.maxExploredDepth;</span>
-<span class="fc" id="L59">        clone.bestLowerBound = this.bestLowerBound;</span>
-<span class="fc" id="L60">        clone.lastIterationOfLowerBoundImprovement = this.lastIterationOfLowerBoundImprovement;</span>
-<span class="fc" id="L61">        return clone;</span>
+<span class="fc" id="L50">        DdoStats clone = (DdoStats) super.copy();</span>
+<span class="fc" id="L51">        clone.totalNodes = this.totalNodes;</span>
+<span class="fc" id="L52">        clone.maxExploredDepth = this.maxExploredDepth;</span>
+<span class="fc" id="L53">        clone.lastIterationOfLowerBoundImprovement = this.lastIterationOfLowerBoundImprovement;</span>
+<span class="fc" id="L54">        return clone;</span>
     }
 
     /**
@@ -66,7 +59,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats updateIncumbent(double incumbent, double gap) {
-<span class="fc" id="L69">        return (DdoStats) super.updateIncumbent(incumbent, gap);</span>
+<span class="fc" id="L62">        return (DdoStats) super.updateIncumbent(incumbent, gap);</span>
     }
 
     /**
@@ -74,7 +67,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats updateStatus(SearchStatus status) {
-<span class="fc" id="L77">        return (DdoStats) super.updateStatus(status);</span>
+<span class="fc" id="L70">        return (DdoStats) super.updateStatus(status);</span>
     }
 
     /**
@@ -82,7 +75,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats incrementNbIter() {
-<span class="fc" id="L85">        return (DdoStats) super.incrementNbIter();</span>
+<span class="fc" id="L78">        return (DdoStats) super.incrementNbIter();</span>
     }
 
     /**
@@ -90,7 +83,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats updateFrontierMaxSize(int frontierSize) {
-<span class="fc" id="L93">        return (DdoStats) super.updateFrontierMaxSize(frontierSize);</span>
+<span class="fc" id="L86">        return (DdoStats) super.updateFrontierMaxSize(frontierSize);</span>
     }
 
     /**
@@ -98,7 +91,35 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats updateGap(double gap) {
-<span class="fc" id="L101">        return (DdoStats) super.updateGap(gap);</span>
+<span class="fc" id="L94">        return (DdoStats) super.updateGap(gap);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateNodeCounts(long nbExpanded, long nbGenerated) {
+<span class="fc" id="L102">        return (DdoStats) super.updateNodeCounts(nbExpanded, nbGenerated);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats addNodeCounts(long nbExpanded, long nbGenerated) {
+<span class="fc" id="L110">        return (DdoStats) super.addNodeCounts(nbExpanded, nbGenerated);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public DdoStats updateBestBound(double bound) {
+<span class="fc" id="L118">        DdoStats toReturn = (DdoStats) super.updateBestBound(bound);</span>
+<span class="pc bpc" id="L119" title="1 of 2 branches missed.">        if (bound &gt; this._bestBound) {</span>
+<span class="fc" id="L120">            toReturn.lastIterationOfLowerBoundImprovement = this._nbIterations;</span>
+        }
+<span class="fc" id="L122">        return toReturn;</span>
     }
 
     /**
@@ -106,7 +127,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats updateTime(long time) {
-<span class="fc" id="L109">        return (DdoStats) super.updateTime(time);</span>
+<span class="fc" id="L130">        return (DdoStats) super.updateTime(time);</span>
     }
 
     /**
@@ -114,7 +135,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats incrementNbFastLowerBoundPruning() {
-<span class="nc" id="L117">        return (DdoStats) super.incrementNbFastLowerBoundPruning();</span>
+<span class="nc" id="L138">        return (DdoStats) super.incrementNbFastLowerBoundPruning();</span>
     }
 
     /**
@@ -122,7 +143,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats incrementNbDominancePruning() {
-<span class="nc" id="L125">        return (DdoStats) super.incrementNbDominancePruning();</span>
+<span class="nc" id="L146">        return (DdoStats) super.incrementNbDominancePruning();</span>
     }
 
     /**
@@ -130,7 +151,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats addNbFastLowerBoundPruning(int nbPruning) {
-<span class="fc" id="L133">        return (DdoStats) super.addNbFastLowerBoundPruning(nbPruning);</span>
+<span class="fc" id="L154">        return (DdoStats) super.addNbFastLowerBoundPruning(nbPruning);</span>
     }
 
     /**
@@ -138,7 +159,7 @@ public class DdoStats extends SearchStatistics {
      */
     @Override
     public DdoStats addNbDominancePruning(int nbPruning) {
-<span class="fc" id="L141">        return (DdoStats) super.addNbDominancePruning(nbPruning);</span>
+<span class="fc" id="L162">        return (DdoStats) super.addNbDominancePruning(nbPruning);</span>
     }
 
     /**
@@ -147,7 +168,7 @@ public class DdoStats extends SearchStatistics {
      * @return the total number of nodes
      */
     public long totalNodes() {
-<span class="fc" id="L150">        return totalNodes;</span>
+<span class="fc" id="L171">        return totalNodes;</span>
     }
 
     /**
@@ -156,7 +177,7 @@ public class DdoStats extends SearchStatistics {
      * @return the maximum depth
      */
     public int maxExploredDepth() {
-<span class="fc" id="L159">        return maxExploredDepth;</span>
+<span class="fc" id="L180">        return maxExploredDepth;</span>
     }
 
     /**
@@ -165,7 +186,7 @@ public class DdoStats extends SearchStatistics {
      * @return the best lower bound
      */
     public double bestLowerBound() {
-<span class="nc" id="L168">        return bestLowerBound;</span>
+<span class="nc" id="L189">        return _bestBound;</span>
     }
 
     /**
@@ -174,7 +195,7 @@ public class DdoStats extends SearchStatistics {
      * @return the last iteration of lower bound improvement
      */
     public int lastIterationOfLowerBoundImprovement() {
-<span class="fc" id="L177">        return lastIterationOfLowerBoundImprovement;</span>
+<span class="fc" id="L198">        return lastIterationOfLowerBoundImprovement;</span>
     }
 
     /**
@@ -184,9 +205,9 @@ public class DdoStats extends SearchStatistics {
      * @return a new DdoStats instance with updated totalNodes
      */
     public DdoStats addNodes(int nodes) {
-<span class="fc" id="L187">        DdoStats toReturn = this.copy();</span>
-<span class="fc" id="L188">        toReturn.totalNodes += nodes;</span>
-<span class="fc" id="L189">        return toReturn;</span>
+<span class="fc" id="L208">        DdoStats toReturn = this.copy();</span>
+<span class="fc" id="L209">        toReturn.totalNodes += nodes;</span>
+<span class="fc" id="L210">        return toReturn;</span>
     }
 
     /**
@@ -196,9 +217,9 @@ public class DdoStats extends SearchStatistics {
      * @return a new DdoStats instance with updated maxExploredDepth
      */
     public DdoStats updateMaxDepth(int depth) {
-<span class="fc" id="L199">        DdoStats toReturn = this.copy();</span>
-<span class="fc" id="L200">        toReturn.maxExploredDepth = Math.max(this.maxExploredDepth, depth);</span>
-<span class="fc" id="L201">        return toReturn;</span>
+<span class="fc" id="L220">        DdoStats toReturn = this.copy();</span>
+<span class="fc" id="L221">        toReturn.maxExploredDepth = Math.max(this.maxExploredDepth, depth);</span>
+<span class="fc" id="L222">        return toReturn;</span>
     }
 
     /**
@@ -208,12 +229,12 @@ public class DdoStats extends SearchStatistics {
      * @return a new DdoStats instance with updated bestLowerBound
      */
     public DdoStats updateLowerBound(double lb) {
-<span class="fc" id="L211">        DdoStats toReturn = this.copy();</span>
-<span class="fc bfc" id="L212" title="All 2 branches covered.">        if (lb &gt; this.bestLowerBound) {</span>
-<span class="fc" id="L213">            toReturn.bestLowerBound = lb;</span>
-<span class="fc" id="L214">            toReturn.lastIterationOfLowerBoundImprovement = this._nbIterations;</span>
+<span class="fc" id="L232">        DdoStats toReturn = this.copy();</span>
+<span class="fc bfc" id="L233" title="All 2 branches covered.">        if (lb &gt; this._bestBound) {</span>
+<span class="fc" id="L234">            toReturn._bestBound = lb;</span>
+<span class="fc" id="L235">            toReturn.lastIterationOfLowerBoundImprovement = this._nbIterations;</span>
         }
-<span class="fc" id="L216">        return toReturn;</span>
+<span class="fc" id="L237">        return toReturn;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

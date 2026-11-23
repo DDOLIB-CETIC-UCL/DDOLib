@@ -6,6 +6,7 @@ import org.ddolib.common.mdd.DecisionDiagram;
 import org.ddolib.common.solver.stat.DdoStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.verbosity.VerbosityLevel;
 import org.ddolib.layered.modeling.DdoModel;
 import org.ddolib.layered.modeling.ExactModel;
@@ -74,7 +75,10 @@ public final class ExactSolver&lt;T&gt; implements Solver {
     /**
      * Optional value of the best solution found so far.
      */
-<span class="fc" id="L77">    private Optional&lt;Double&gt; bestValue = Optional.empty();</span>
+<span class="fc" id="L78">    private Optional&lt;Double&gt; bestValue = Optional.empty();</span>
+
+    /** The statistics of the current search, kept to build the result on a memory out. */
+    private DdoStats statistics;
 
     /**
      * Creates a fully-configured ExactSolver instance.
@@ -83,13 +87,13 @@ public final class ExactSolver&lt;T&gt; implements Solver {
      *              configure the solver, including the problem, relaxation, ranking, variable heuristic,
      *              lower bound, dominance checker, caching, and verbosity settings.
      */
-<span class="fc" id="L86">    public ExactSolver(ExactModel&lt;T&gt; model) {</span>
-<span class="fc" id="L87">        this.problem = model.problem();</span>
-<span class="fc" id="L88">        this.bestSol = Optional.empty();</span>
-<span class="fc" id="L89">        this.verbosityLevel = model.verbosityLevel();</span>
-<span class="fc" id="L90">        this.exportAsDot = model.exportDot();</span>
-<span class="fc" id="L91">        this.model = model;</span>
-<span class="fc" id="L92">    }</span>
+<span class="fc" id="L90">    public ExactSolver(ExactModel&lt;T&gt; model) {</span>
+<span class="fc" id="L91">        this.problem = model.problem();</span>
+<span class="fc" id="L92">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L93">        this.verbosityLevel = model.verbosityLevel();</span>
+<span class="fc" id="L94">        this.exportAsDot = model.exportDot();</span>
+<span class="fc" id="L95">        this.model = model;</span>
+<span class="fc" id="L96">    }</span>
 
     /**
      * Minimizes the problem by compiling an exact decision diagram (MDD).
@@ -104,6 +108,10 @@ public final class ExactSolver&lt;T&gt; implements Solver {
      *   &lt;li&gt;Optionally exports the MDD in DOT format.
      * &lt;/ul&gt;
      *
+     * &lt;p&gt;When the JVM throws an {@link OutOfMemoryError} during the compilation, the search stops
+     * and returns the best solution found so far, if any, with the status {@link
+     * SearchStatus#MEMOUT}.
+     *
      * @param limit      a predicate that may be used to limit the search based on statistics
      * @param onSolution a callback invoked when a solution is found
      * @return statistics about the search process, including the best value found
@@ -111,60 +119,78 @@ public final class ExactSolver&lt;T&gt; implements Solver {
     @Override
     public Solution minimize(
             Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-        // declared first on purpose: it records the start time of the search
-        @SuppressWarnings(&quot;checkstyle:VariableDeclarationUsageDistance&quot;)
-<span class="fc" id="L116">        DdoStats statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);</span>
-
-<span class="fc" id="L118">        final SubProblem&lt;T&gt; root =</span>
-                new SubProblem&lt;&gt;(
-<span class="fc" id="L120">                        problem.initialState(),</span>
-<span class="fc" id="L121">                        problem.initialValue(),</span>
-                        Double.POSITIVE_INFINITY,
-<span class="fc" id="L123">                        Collections.emptySet());</span>
-
-<span class="fc" id="L125">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
-<span class="fc" id="L126">        compilation.compilationType = CompilationType.Exact;</span>
-<span class="fc" id="L127">        compilation.problem = this.problem;</span>
-<span class="fc" id="L128">        compilation.relaxation = model.relaxation();</span>
-<span class="fc" id="L129">        compilation.variableHeuristic = model.variableHeuristic();</span>
-<span class="fc" id="L130">        compilation.stateRanking = model.ranking();</span>
-<span class="fc" id="L131">        compilation.residual = root;</span>
-<span class="fc" id="L132">        compilation.maxWidth = Integer.MAX_VALUE;</span>
-<span class="fc" id="L133">        compilation.flb = model.lowerBound();</span>
-<span class="fc" id="L134">        compilation.dominance = model.dominance();</span>
-<span class="fc" id="L135">        compilation.cache = Optional.empty();</span>
-<span class="fc" id="L136">        compilation.bestUB = Double.POSITIVE_INFINITY;</span>
-<span class="fc" id="L137">        compilation.cutSetType = CutSetType.LastExactLayer;</span>
-<span class="fc" id="L138">        compilation.exportAsDot = this.exportAsDot;</span>
-<span class="fc" id="L139">        compilation.debugLevel = model.debugMode();</span>
-<span class="fc" id="L140">        compilation.useLNS = false;</span>
-
-<span class="fc" id="L142">        DecisionDiagram&lt;T&gt; mdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
-<span class="fc" id="L143">        mdd.compile();</span>
-<span class="fc" id="L144">        statistics = statistics.addNbFastLowerBoundPruning(mdd.nbFastLowerBoundPruning())</span>
-<span class="fc" id="L145">                .addNbDominancePruning(mdd.nbDominancePruning());</span>
-<span class="fc" id="L146">        extractBest(mdd);</span>
-<span class="pc bpc" id="L147" title="1 of 2 branches missed.">        if (exportAsDot) {</span>
-<span class="nc" id="L148">            String problemName = problem.getClass().getSimpleName().replace(&quot;Problem&quot;, &quot;&quot;);</span>
-<span class="nc" id="L149">            exportDot(</span>
-<span class="nc" id="L150">                    mdd.exportAsDot(), Paths.get(&quot;output&quot;, problemName + &quot;_exact.dot&quot;).toString());</span>
-        }
-
-<span class="fc" id="L153">        statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();</span>
-
-<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (bestValue.isPresent()) {</span>
-<span class="fc" id="L156">            statistics =</span>
+        try {
+<span class="fc" id="L123">            return search(limit, onSolution);</span>
+<span class="fc" id="L124">        } catch (OutOfMemoryError | MemoryLimitException e) {</span>
+            // the decision diagram, local to the search, is no longer referenced
+<span class="fc" id="L126">            statistics =</span>
                     statistics
-<span class="fc" id="L158">                            .updateIncumbent(bestValue.get(), 0.0)</span>
-<span class="fc" id="L159">                            .updateStatus(SearchStatus.OPTIMAL);</span>
-        } else {
-<span class="fc" id="L161">            statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
+<span class="fc" id="L128">                            .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L129">                            .updateStatus(SearchStatus.MEMOUT);</span>
+<span class="fc" id="L130">            return new Solution(bestSolution(), statistics);</span>
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
+            Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+        // set first on purpose: it records the start time of the search
+<span class="fc" id="L138">        statistics = new DdoStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);</span>
+
+<span class="fc" id="L140">        final SubProblem&lt;T&gt; root =</span>
+                new SubProblem&lt;&gt;(
+<span class="fc" id="L142">                        problem.initialState(),</span>
+<span class="fc" id="L143">                        problem.initialValue(),</span>
+                        Double.POSITIVE_INFINITY,
+<span class="fc" id="L145">                        Collections.emptySet());</span>
+
+<span class="fc" id="L147">        CompilationConfig&lt;T&gt; compilation = new CompilationConfig&lt;&gt;(model);</span>
+<span class="fc" id="L148">        compilation.compilationType = CompilationType.Exact;</span>
+<span class="fc" id="L149">        compilation.problem = this.problem;</span>
+<span class="fc" id="L150">        compilation.relaxation = model.relaxation();</span>
+<span class="fc" id="L151">        compilation.variableHeuristic = model.variableHeuristic();</span>
+<span class="fc" id="L152">        compilation.stateRanking = model.ranking();</span>
+<span class="fc" id="L153">        compilation.residual = root;</span>
+<span class="fc" id="L154">        compilation.maxWidth = Integer.MAX_VALUE;</span>
+<span class="fc" id="L155">        compilation.flb = model.lowerBound();</span>
+<span class="fc" id="L156">        compilation.dominance = model.dominance();</span>
+<span class="fc" id="L157">        compilation.cache = Optional.empty();</span>
+<span class="fc" id="L158">        compilation.bestUB = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L159">        compilation.cutSetType = CutSetType.LastExactLayer;</span>
+<span class="fc" id="L160">        compilation.exportAsDot = this.exportAsDot;</span>
+<span class="fc" id="L161">        compilation.debugLevel = model.debugMode();</span>
+<span class="fc" id="L162">        compilation.useLNS = false;</span>
+
+<span class="fc" id="L164">        DecisionDiagram&lt;T&gt; mdd = new LinkedDecisionDiagram&lt;&gt;(compilation);</span>
+<span class="fc" id="L165">        mdd.compile();</span>
+        // node counts of the compiled DD
+<span class="fc" id="L167">        statistics =</span>
+<span class="fc" id="L168">                statistics.addNodes(mdd.nbNodes())</span>
+<span class="fc" id="L169">                        .addNodeCounts(mdd.nbExpandedNodes(), mdd.nbGeneratedNodes())</span>
+<span class="fc" id="L170">                        .addNbFastLowerBoundPruning(mdd.nbFastLowerBoundPruning())</span>
+<span class="fc" id="L171">                        .addNbDominancePruning(mdd.nbDominancePruning());</span>
+<span class="fc" id="L172">        extractBest(mdd);</span>
+<span class="pc bpc" id="L173" title="1 of 2 branches missed.">        if (exportAsDot) {</span>
+<span class="nc" id="L174">            String problemName = problem.getClass().getSimpleName().replace(&quot;Problem&quot;, &quot;&quot;);</span>
+<span class="nc" id="L175">            exportDot(</span>
+<span class="nc" id="L176">                    mdd.exportAsDot(), Paths.get(&quot;output&quot;, problemName + &quot;_exact.dot&quot;).toString());</span>
         }
 
-<span class="fc" id="L164">        final SearchStatistics finalStats = statistics;</span>
+<span class="fc" id="L179">        statistics = statistics.updateTime(System.currentTimeMillis()).incrementNbIter();</span>
 
-<span class="fc" id="L166">        bestSol.ifPresent(sol -&gt; onSolution.accept(constructSolution(bestSol.get()), finalStats));</span>
-<span class="fc" id="L167">        return new Solution(bestSolution(), finalStats);</span>
+<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (bestValue.isPresent()) {</span>
+<span class="fc" id="L182">            statistics =</span>
+                    statistics
+<span class="fc" id="L184">                            .updateIncumbent(bestValue.get(), 0.0)</span>
+<span class="fc" id="L185">                            .updateStatus(SearchStatus.OPTIMAL);</span>
+        } else {
+<span class="fc" id="L187">            statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
+        }
+
+<span class="fc" id="L190">        final SearchStatistics finalStats = statistics;</span>
+
+<span class="fc" id="L192">        bestSol.ifPresent(sol -&gt; onSolution.accept(constructSolution(bestSol.get()), finalStats));</span>
+<span class="fc" id="L193">        return new Solution(bestSolution(), finalStats);</span>
     }
 
     /**
@@ -174,7 +200,7 @@ public final class ExactSolver&lt;T&gt; implements Solver {
      */
     @Override
     public Optional&lt;Double&gt; bestValue() {
-<span class="nc" id="L177">        return bestValue;</span>
+<span class="nc" id="L203">        return bestValue;</span>
     }
 
     /**
@@ -184,7 +210,7 @@ public final class ExactSolver&lt;T&gt; implements Solver {
      */
     @Override
     public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
-<span class="fc" id="L187">        return bestSol;</span>
+<span class="fc" id="L213">        return bestSol;</span>
     }
 
     /**
@@ -193,16 +219,16 @@ public final class ExactSolver&lt;T&gt; implements Solver {
      * @param mdd the compiled {@link DecisionDiagram} from which to extract the best solution
      */
     private void extractBest(DecisionDiagram&lt;T&gt; mdd) {
-<span class="fc" id="L196">        Optional&lt;Double&gt; ddval = mdd.bestValue();</span>
-<span class="fc bfc" id="L197" title="All 2 branches covered.">        if (ddval.isPresent()) {</span>
-<span class="fc" id="L198">            bestSol = mdd.bestSolution();</span>
-<span class="fc" id="L199">            bestValue = ddval;</span>
-<span class="fc" id="L200">            DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
-<span class="pc bpc" id="L201" title="1 of 2 branches missed.">            if (verbosityLevel != VerbosityLevel.SILENT) {</span>
-<span class="nc" id="L202">                System.out.printf(&quot;best solution found: %s\n&quot;, df.format(ddval.get()));</span>
+<span class="fc" id="L222">        Optional&lt;Double&gt; ddval = mdd.bestValue();</span>
+<span class="fc bfc" id="L223" title="All 2 branches covered.">        if (ddval.isPresent()) {</span>
+<span class="fc" id="L224">            bestSol = mdd.bestSolution();</span>
+<span class="fc" id="L225">            bestValue = ddval;</span>
+<span class="fc" id="L226">            DecimalFormat df = new DecimalFormat(&quot;#.##########&quot;);</span>
+<span class="pc bpc" id="L227" title="1 of 2 branches missed.">            if (verbosityLevel != VerbosityLevel.SILENT) {</span>
+<span class="nc" id="L228">                System.out.printf(&quot;best solution found: %s\n&quot;, df.format(ddval.get()));</span>
             }
         }
-<span class="fc" id="L205">    }</span>
+<span class="fc" id="L231">    }</span>
 
     /**
      * Exports a DOT representation of the MDD to a file.
@@ -211,11 +237,11 @@ public final class ExactSolver&lt;T&gt; implements Solver {
      * @param fileName the output file path
      */
     private void exportDot(String dot, String fileName) {
-<span class="nc" id="L214">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {</span>
-<span class="nc" id="L215">            bw.write(dot);</span>
-<span class="nc" id="L216">        } catch (IOException e) {</span>
-<span class="nc" id="L217">            throw new RuntimeException(e);</span>
-<span class="nc" id="L218">        }</span>
-<span class="nc" id="L219">    }</span>
+<span class="nc" id="L240">        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName))) {</span>
+<span class="nc" id="L241">            bw.write(dot);</span>
+<span class="nc" id="L242">        } catch (IOException e) {</span>
+<span class="nc" id="L243">            throw new RuntimeException(e);</span>
+<span class="nc" id="L244">        }</span>
+<span class="nc" id="L245">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

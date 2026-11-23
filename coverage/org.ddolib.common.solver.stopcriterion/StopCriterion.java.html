@@ -79,14 +79,26 @@ public interface StopCriterion extends Predicate&lt;SearchStatistics&gt; {
     }
 
     /**
-     * Creates a stop criterion that terminates the search when the frontier size exceeds a
-     * specified limit.
+     * Creates a memory limit that terminates the search when the frontier (or the open list)
+     * reaches a specified size. The solver then returns the best solution found so far with the
+     * status {@link org.ddolib.common.solver.stat.SearchStatus#MEMOUT}.
+     *
+     * &lt;p&gt;The limit is signaled by throwing a {@link MemoryLimitException}, so that the solver can
+     * tell it from the other criteria, even when it is combined with them (for instance {@code
+     * maxTime(t).or(maxFrontierSize(n))}). The solvers catch this exception: it is only seen when
+     * the criterion is tested outside of a solver.
      *
      * @param maxNodes the maximum allowed size of the frontier
      * @return a StopCriterion for maximum frontier size
      */
     static StopCriterion maxFrontierSize(int maxNodes) {
-<span class="fc bfc" id="L89" title="All 2 branches covered.">        return stats -&gt; stats.frontierMaxSize() &gt;= maxNodes;</span>
+<span class="fc" id="L95">        return stats -&gt; {</span>
+<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (stats.frontierMaxSize() &gt;= maxNodes) {</span>
+<span class="fc" id="L97">                throw new MemoryLimitException(</span>
+                        &quot;The frontier reached the maximum size of &quot; + maxNodes + &quot; nodes&quot;);
+            }
+<span class="fc" id="L100">            return false;</span>
+        };
     }
 
     /**
@@ -97,7 +109,7 @@ public interface StopCriterion extends Predicate&lt;SearchStatistics&gt; {
      * @return a StopCriterion based on iterations since last gap improvement
      */
     static StopCriterion maxIterWithoutGapImprovement(int maxIter) {
-<span class="fc bfc" id="L100" title="All 2 branches covered.">        return stats -&gt; (stats.nbIterations() - stats.lastIterationOfGapImprovement()) &gt;= maxIter;</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">        return stats -&gt; (stats.nbIterations() - stats.lastIterationOfGapImprovement()) &gt;= maxIter;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

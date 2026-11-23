@@ -18,15 +18,25 @@ public class MispDominance implements Dominance&lt;BitSet&gt; {
     /**
      * Returns a key for the dominance relation.
      *
-     * &lt;p&gt;This implementation always returns {@code 0} since no partitioning of states is needed
-     * based on a specific key.
+     * &lt;p&gt;This implementation always returns {@code 0}: all the states of a layer share the same
+     * key. A key groups the states that can be compared, and must thus be equal for a state and
+     * the states dominating it. With a dominance by inclusion, such states do not share any
+     * property that could be used as key (neither the set of vertices nor its size), so that a
+     * single group is needed.
+     *
+     * &lt;p&gt;This has a cost: with a {@link org.ddolib.layered.modeling.SimpleDominanceChecker}, each
+     * new state is compared with all the non-dominated states of its layer, i.e. a number of
+     * comparisons quadratic in the number of states of a layer, each comparison taking a time
+     * linear in the number of vertices.
+     * {@link MispDominanceChecker} reduces this cost by grouping the states by their number of
+     * remaining vertices.
      *
      * @param state the current state
-     * @return a key for the dominance relation
+     * @return a key for the dominance relation, always {@code 0}
      */
     @Override
     public Integer getKey(BitSet state) {
-<span class="fc" id="L29">        return 0;</span>
+<span class="fc" id="L39">        return 0;</span>
     }
 
     /**
@@ -42,7 +52,7 @@ public class MispDominance implements Dominance&lt;BitSet&gt; {
      */
     @Override
     public boolean isDominatedOrEqual(BitSet state1, BitSet state2) {
-<span class="fc" id="L45">        return state1.stream().allMatch(state2::get);</span>
+<span class="fc" id="L55">        return state1.stream().allMatch(state2::get);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -96,13 +96,23 @@ import org.ddolib.layered.solving.ddo.core.Decision;
     }
 
     /**
+     * The transition costs are non-negative: each new mark is placed after the last one.
+     *
+     * @return {@code true}
+     */
+    @Override
+    public boolean hasNonNegativeCosts() {
+<span class="fc" id="L105">        return true;</span>
+    }
+
+    /**
      * Returns the initial cost (always 0).
      *
      * @return the initial cost value
      */
     @Override
     public double initialValue() {
-<span class="fc" id="L105">        return 0;</span>
+<span class="fc" id="L115">        return 0;</span>
     }
 
     /**
@@ -118,15 +128,15 @@ import org.ddolib.layered.solving.ddo.core.Decision;
      */
     @Override
     public Iterator&lt;Integer&gt; domain(GRState state, int var) {
-<span class="fc" id="L121">        int nextMark = state.getLastMark() + 1;</span>
-<span class="fc" id="L122">        int n2 = nbMarks * nbMarks;</span>
-<span class="fc" id="L123">        return IntStream.range(nextMark, n2)</span>
-<span class="fc" id="L124">                .filter(</span>
+<span class="fc" id="L131">        int nextMark = state.getLastMark() + 1;</span>
+<span class="fc" id="L132">        int n2 = nbMarks * nbMarks;</span>
+<span class="fc" id="L133">        return IntStream.range(nextMark, n2)</span>
+<span class="fc" id="L134">                .filter(</span>
                         i -&gt;
-<span class="fc" id="L126">                                state.getMarks().stream()</span>
-<span class="fc" id="L127">                                        .noneMatch(j -&gt; state.getDistances().get(i - j)))</span>
-<span class="fc" id="L128">                .boxed()</span>
-<span class="fc" id="L129">                .iterator();</span>
+<span class="fc" id="L136">                                state.getMarks().stream()</span>
+<span class="fc" id="L137">                                        .noneMatch(j -&gt; state.getDistances().get(i - j)))</span>
+<span class="fc" id="L138">                .boxed()</span>
+<span class="fc" id="L139">                .iterator();</span>
     }
 
     /**
@@ -140,22 +150,22 @@ import org.ddolib.layered.solving.ddo.core.Decision;
      */
     @Override
     public GRState transition(GRState state, Decision decision) {
-<span class="fc" id="L143">        GRState newState = state.copy();</span>
-<span class="fc" id="L144">        int newMark = decision.value();</span>
+<span class="fc" id="L153">        GRState newState = state.copy();</span>
+<span class="fc" id="L154">        int newMark = decision.value();</span>
         // add distances between new mark and previous marks
-<span class="fc" id="L146">        BitSet newDistances = new BitSet();</span>
-<span class="fc" id="L147">        for (int i = state.getMarks().nextSetBit(0);</span>
-<span class="fc bfc" id="L148" title="All 2 branches covered.">                i &gt;= 0;</span>
-<span class="fc" id="L149">                i = state.getMarks().nextSetBit(i + 1)) {</span>
-<span class="pc bpc" id="L150" title="1 of 2 branches missed.">            assert !newDistances.get(newMark - i);</span>
-<span class="pc bpc" id="L151" title="1 of 2 branches missed.">            if (newMark &gt; i) {</span>
-<span class="fc" id="L152">                newDistances.set(newMark - i);</span>
+<span class="fc" id="L156">        BitSet newDistances = new BitSet();</span>
+<span class="fc" id="L157">        for (int i = state.getMarks().nextSetBit(0);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">                i &gt;= 0;</span>
+<span class="fc" id="L159">                i = state.getMarks().nextSetBit(i + 1)) {</span>
+<span class="pc bpc" id="L160" title="1 of 2 branches missed.">            assert !newDistances.get(newMark - i);</span>
+<span class="pc bpc" id="L161" title="1 of 2 branches missed.">            if (newMark &gt; i) {</span>
+<span class="fc" id="L162">                newDistances.set(newMark - i);</span>
             }
         }
-<span class="pc bpc" id="L155" title="1 of 2 branches missed.">        assert (newMark &gt;= newState.getLastMark());</span>
-<span class="fc" id="L156">        newState.getMarks().set(newMark);</span>
-<span class="fc" id="L157">        newState.getDistances().or(newDistances);</span>
-<span class="fc" id="L158">        return new GRState(newState.getMarks(), newState.getDistances(), newMark);</span>
+<span class="pc bpc" id="L165" title="1 of 2 branches missed.">        assert (newMark &gt;= newState.getLastMark());</span>
+<span class="fc" id="L166">        newState.getMarks().set(newMark);</span>
+<span class="fc" id="L167">        newState.getDistances().or(newDistances);</span>
+<span class="fc" id="L168">        return new GRState(newState.getMarks(), newState.getDistances(), newMark);</span>
     }
 
     /**
@@ -169,7 +179,7 @@ import org.ddolib.layered.solving.ddo.core.Decision;
      */
     @Override
     public double transitionCost(GRState state, Decision decision) {
-<span class="fc" id="L172">        return decision.value() - state.getLastMark();</span>
+<span class="fc" id="L182">        return decision.value() - state.getLastMark();</span>
     }
 
     /**
@@ -180,46 +190,46 @@ import org.ddolib.layered.solving.ddo.core.Decision;
      */
     @Override
     public Optional&lt;Double&gt; optimalValue() {
-<span class="fc" id="L183">        return optimal;</span>
+<span class="fc" id="L193">        return optimal;</span>
     }
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
-<span class="pc bpc" id="L188" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
-<span class="nc" id="L189">            throw new InvalidSolutionException(</span>
-<span class="nc" id="L190">                    String.format(</span>
+<span class="pc bpc" id="L198" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L199">            throw new InvalidSolutionException(</span>
+<span class="nc" id="L200">                    String.format(</span>
                             &quot;The solution %s does not match &quot; + &quot;the number %d variables&quot;,
-<span class="nc" id="L192">                            Arrays.toString(solution), nbVars()));</span>
+<span class="nc" id="L202">                            Arrays.toString(solution), nbVars()));</span>
         }
-<span class="fc bfc" id="L194" title="All 2 branches covered.">        if (nbVars() == 0) {</span>
-<span class="fc" id="L195">            return 0;</span>
-        }
-
-<span class="fc" id="L198">        Map&lt;Integer, Integer[]&gt; distance = new HashMap&lt;&gt;();</span>
-
-<span class="fc bfc" id="L200" title="All 2 branches covered.">        for (int j = 0; j &lt; solution.length; j++) {</span>
-<span class="fc" id="L201">            distance.put(solution[j], new Integer[] {0, j + 1});</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">        if (nbVars() == 0) {</span>
+<span class="fc" id="L205">            return 0;</span>
         }
 
-<span class="fc bfc" id="L204" title="All 2 branches covered.">        for (int i = 1; i &lt; nbMarks; i++) {</span>
-<span class="fc bfc" id="L205" title="All 2 branches covered.">            for (int j = i + 1; j &lt; nbMarks; j++) {</span>
-<span class="fc" id="L206">                int from = solution[i - 1];</span>
-<span class="fc" id="L207">                int to = solution[j - 1];</span>
-<span class="fc" id="L208">                int d = to - from;</span>
-<span class="pc bpc" id="L209" title="1 of 2 branches missed.">                if (distance.containsKey(d)) {</span>
-<span class="nc" id="L210">                    Integer[] pair = distance.get(d);</span>
-<span class="nc" id="L211">                    String msg =</span>
-<span class="nc" id="L212">                            String.format(</span>
+<span class="fc" id="L208">        Map&lt;Integer, Integer[]&gt; distance = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L210" title="All 2 branches covered.">        for (int j = 0; j &lt; solution.length; j++) {</span>
+<span class="fc" id="L211">            distance.put(solution[j], new Integer[] {0, j + 1});</span>
+        }
+
+<span class="fc bfc" id="L214" title="All 2 branches covered.">        for (int i = 1; i &lt; nbMarks; i++) {</span>
+<span class="fc bfc" id="L215" title="All 2 branches covered.">            for (int j = i + 1; j &lt; nbMarks; j++) {</span>
+<span class="fc" id="L216">                int from = solution[i - 1];</span>
+<span class="fc" id="L217">                int to = solution[j - 1];</span>
+<span class="fc" id="L218">                int d = to - from;</span>
+<span class="pc bpc" id="L219" title="1 of 2 branches missed.">                if (distance.containsKey(d)) {</span>
+<span class="nc" id="L220">                    Integer[] pair = distance.get(d);</span>
+<span class="nc" id="L221">                    String msg =</span>
+<span class="nc" id="L222">                            String.format(</span>
                                     &quot;The marks %d &amp; %d have the same distance (%d) &quot;
                                             + &quot;than the marks %d &amp; %d&quot;,
-<span class="nc" id="L215">                                    i, j, d, pair[0], pair[1]);</span>
-<span class="nc" id="L216">                    throw new InvalidSolutionException(msg);</span>
+<span class="nc" id="L225">                                    i, j, d, pair[0], pair[1]);</span>
+<span class="nc" id="L226">                    throw new InvalidSolutionException(msg);</span>
                 }
 
-<span class="fc" id="L219">                distance.put(d, new Integer[] {i, j});</span>
+<span class="fc" id="L229">                distance.put(d, new Integer[] {i, j});</span>
             }
         }
-<span class="fc" id="L222">        return solution[solution.length - 1];</span>
+<span class="fc" id="L232">        return solution[solution.length - 1];</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

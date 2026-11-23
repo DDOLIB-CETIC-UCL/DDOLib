@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MSCTDominance.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.msct</a> &gt; <span class="el_source">MSCTDominance.java</span></div><h1>MSCTDominance.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.msct;
 
+import java.util.Set;
 import org.ddolib.layered.modeling.Dominance;
 
 /**
@@ -29,21 +30,21 @@ import org.ddolib.layered.modeling.Dominance;
 public class MSCTDominance implements Dominance&lt;MSCTState&gt; {
 
     /** Creates a new instance of this dominance relation. */
-<span class="fc" id="L32">    public MSCTDominance() {}</span>
+<span class="fc" id="L33">    public MSCTDominance() {}</span>
 
     /**
      * Returns a key used for grouping states before applying dominance checks.
      *
-     * &lt;p&gt;In this simple implementation, all states share the same key (always {@code 0}), meaning
-     * that the dominance check can potentially compare any two states. This can be customized for
-     * efficiency in larger problems.
+     * &lt;p&gt;Only states with the same set of remaining jobs can dominate each other (see {@link
+     * #isDominatedOrEqual}), so this set is the key: each state is only compared with the states
+     * having the same remaining jobs, instead of all the states of its layer.
      *
      * @param state the state from which to extract the key
-     * @return an integer key representing the group of comparable states (always {@code 0} here)
+     * @return the set of remaining jobs of the state
      */
     @Override
-    public Integer getKey(MSCTState state) {
-<span class="fc" id="L46">        return 0;</span>
+    public Set&lt;Integer&gt; getKey(MSCTState state) {
+<span class="fc" id="L47">        return state.remainingJobs();</span>
     }
 
     /**
@@ -67,8 +68,8 @@ public class MSCTDominance implements Dominance&lt;MSCTState&gt; {
      */
     @Override
     public boolean isDominatedOrEqual(MSCTState state1, MSCTState state2) {
-<span class="fc bfc" id="L70" title="All 2 branches covered.">        return state1.remainingJobs().equals(state2.remainingJobs())</span>
-<span class="fc bfc" id="L71" title="All 2 branches covered.">                &amp;&amp; state2.currentTime() &lt;= state1.currentTime();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        return state1.remainingJobs().equals(state2.remainingJobs())</span>
+<span class="fc bfc" id="L72" title="All 2 branches covered.">                &amp;&amp; state2.currentTime() &lt;= state1.currentTime();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DecisionDiagram.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.common.mdd</a> &gt; <span class="el_source">DecisionDiagram.java</span></div><h1>DecisionDiagram.java</h1><pre class="source lang-java linenums">package org.ddolib.common.mdd;
+
+import java.util.Iterator;
+import java.util.Optional;
+import java.util.Set;
+import org.ddolib.layered.solving.ddo.core.Decision;
+import org.ddolib.layered.solving.ddo.core.SubProblem;
+
+/**
+ * Defines the abstraction of a reusable &lt;b&gt;Decision Diagram (DD)&lt;/b&gt; used to model and solve
+ * combinatorial optimization problems.
+ *
+ * &lt;p&gt;A decision diagram is a layered graph-based representation of the solution space of a problem.
+ * Depending on how it is compiled, the DD can be:
+ *
+ * &lt;ul&gt;
+ *   &lt;li&gt;&lt;b&gt;Exact&lt;/b&gt; — representing all feasible solutions of the original problem (no relaxation);
+ *   &lt;li&gt;&lt;b&gt;Relaxed&lt;/b&gt; — merging nodes to reduce the diagram width, potentially omitting some
+ *       constraints while preserving valid lower or upper bounds on the optimal value.
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;This interface defines the basic operations available on a compiled DD, including: triggering
+ * compilation, accessing the best value or solution, iterating over nodes in the cutset, and
+ * exporting the structure for visualization.
+ *
+ * @param &lt;T&gt; the type representing the problem state at a given layer in the diagram
+ */
+public interface DecisionDiagram&lt;T&gt; {
+    /**
+     * Triggers the compilation of the decision diagram according to the configuration parameters
+     * provided by the user (e.g., width, relaxation, variable heuristic, etc.).
+     *
+     * &lt;p&gt;The compilation builds the layered graph structure that encodes the feasible (or relaxed)
+     * state space of the problem. Depending on the configuration, this process may yield either an
+     * &lt;em&gt;exact&lt;/em&gt; or a &lt;em&gt;relaxed&lt;/em&gt; DD.
+     */
+    void compile();
+
+    /**
+     * Indicates whether the compiled decision diagram is exact.
+     *
+     * &lt;p&gt;An exact DD represents the full solution space of the original problem, meaning that the
+     * best path in the DD corresponds exactly to the true optimal solution.
+     *
+     * @return {@code true} if the compiled DD is exact; {@code false} if it is relaxed
+     */
+    boolean isExact();
+
+    /**
+     * Indicates whether the compilation was interrupted by its stop criterion (for instance a time
+     * limit) before reaching the last layer. An interrupted DD is incomplete: its solutions,
+     * bounds and exactness must not be used.
+     *
+     * @return {@code true} if the compilation was interrupted
+     */
+    default boolean isInterrupted() {
+<span class="nc" id="L57">        return false;</span>
+    }
+
+    /**
+     * Returns the value of the best solution represented in this decision diagram, if it exists.
+     *
+     * &lt;p&gt;For a relaxed DD, this corresponds to a bound (lower or upper depending on the problem
+     * formulation). For an exact DD, it is the exact optimal value.
+     *
+     * @return an {@link Optional} containing the best objective value, or an empty {@link Optional}
+     *     if no solution is available
+     */
+    Optional&lt;Double&gt; bestValue();
+
+    /**
+     * Returns the sequence of decisions leading to the best solution represented in this DD.
+     *
+     * &lt;p&gt;The returned solution corresponds to the path in the diagram that achieves the best
+     * (lowest or highest) objective value. If the DD is relaxed, the returned set may not
+     * correspond to a fully feasible solution.
+     *
+     * @return an {@link Optional} containing the set of {@link Decision} objects defining the best
+     *     solution, or an empty {@link Optional} if none exists
+     */
+    Optional&lt;Set&lt;Decision&gt;&gt; bestSolution();
+
+    /**
+     * Provides an iterator over the nodes belonging to the &lt;em&gt;exact cutset&lt;/em&gt; of the diagram.
+     *
+     * &lt;p&gt;The exact cutset is the set of subproblems (nodes) that exactly represent the state space
+     * at a specific layer, usually the last layer before relaxation or completion. It can be used
+     * to guide recomputation, heuristic extensions, or incremental compilation.
+     *
+     * @return an {@link Iterator} over the {@link SubProblem} elements forming the exact cutset
+     */
+    Iterator&lt;SubProblem&lt;T&gt;&gt; exactCutset();
+
+    /**
+     * Checks whether the best path found in the relaxed decision diagram is exact.
+     *
+     * &lt;p&gt;This can occur when the relaxation did not alter the structure along the optimal path,
+     * meaning the computed best value is equal to the true optimum even though the DD is relaxed.
+     *
+     * @return {@code true} if the relaxed best path corresponds to an exact feasible solution;
+     *     {@code false} otherwise
+     */
+    boolean relaxedBestPathIsExact();
+
+    /**
+     * Exports the compiled decision diagram as a Graphviz-compatible &lt;a
+     * href=&quot;https://graphviz.org/doc/info/lang.html&quot;&gt;DOT&lt;/a&gt; formatted string.
+     *
+     * &lt;p&gt;This method is typically used for visualization or debugging purposes. The resulting DOT
+     * string can be rendered using Graphviz tools (e.g., {@code dot}, {@code neato}, or web-based
+     * renderers).
+     *
+     * @return a {@link String} containing the DOT representation of the compiled decision diagram
+     */
+    String exportAsDot();
+
+    /**
+     * Returns the total number of nodes created during the compilation of this decision diagram.
+     *
+     * @return the number of nodes
+     */
+    int nbNodes();
+
+    /**
+     * Returns the number of nodes expanded during the compilation: the nodes whose successors were
+     * computed.
+     *
+     * @return the number of expanded nodes
+     */
+    default long nbExpandedNodes() {
+<span class="nc" id="L131">        return 0;</span>
+    }
+
+    /**
+     * Returns the number of successors computed during the compilation (one per transition
+     * applied, before any pruning or merge with an existing node).
+     *
+     * @return the number of generated nodes
+     */
+    default long nbGeneratedNodes() {
+<span class="nc" id="L141">        return 0;</span>
+    }
+
+    /**
+     * Returns the number of nodes pruned during the compilation of this decision diagram because
+     * their fast lower bound could not improve the best known solution.
+     *
+     * @return the number of nodes pruned by the fast lower bound
+     */
+    int nbFastLowerBoundPruning();
+
+    /**
+     * Returns the number of nodes pruned during the compilation of this decision diagram because
+     * they were dominated.
+     *
+     * @return the number of nodes pruned by dominance
+     */
+    int nbDominancePruning();
+
+    /**
+     * Returns the minimum lower bound among the nodes expanded during the compilation of this
+     * decision diagram, mainly used to compute the optimality gap during a large neighborhood
+     * search.
+     *
+     * @return the minimum lower bound of the expanded nodes
+     */
+    double minLowerBound();
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

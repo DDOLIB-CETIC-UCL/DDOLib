@@ -3,6 +3,7 @@
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.SolverUtil;
 import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.common.util.debug.DebugLevel;
@@ -57,6 +58,10 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      * The problem we want to minimize.
      */
     private final Problem&lt;T&gt; problem;
+    /** Number of nodes whose successors were computed since the beginning of the search. */
+<span class="fc" id="L62">    private long nbExpanded = 0;</span>
+    /** Number of successors computed (before any pruning) since the beginning of the search. */
+<span class="fc" id="L64">    private long nbGenerated = 0;</span>
 
     /**
      * A suitable lb for the problem we want to minimize.
@@ -124,52 +129,52 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      *
      * @param model provides all parameters needed to configure the solver
      */
-<span class="fc" id="L127">    public AcsSolver(AcsModel&lt;T&gt; model) {</span>
-<span class="fc" id="L128">        this.problem = model.problem();</span>
-<span class="fc" id="L129">        this.varh = model.variableHeuristic();</span>
-<span class="fc" id="L130">        this.lb = model.lowerBound();</span>
-<span class="fc" id="L131">        this.dominance = model.dominance();</span>
-<span class="fc" id="L132">        Optional&lt;Solution&gt; init = Solver.initialSolution(model);</span>
-<span class="fc" id="L133">        this.bestUB = init.map(Solution::value).orElse(Double.POSITIVE_INFINITY);</span>
-<span class="fc" id="L134">        this.bestSol = init.map(Solution::decisions);</span>
-<span class="fc" id="L135">        this.columnWidth = model.columnWidth();</span>
+<span class="fc" id="L132">    public AcsSolver(AcsModel&lt;T&gt; model) {</span>
+<span class="fc" id="L133">        this.problem = model.problem();</span>
+<span class="fc" id="L134">        this.varh = model.variableHeuristic();</span>
+<span class="fc" id="L135">        this.lb = model.lowerBound();</span>
+<span class="fc" id="L136">        this.dominance = model.dominance();</span>
+<span class="fc" id="L137">        Optional&lt;Solution&gt; init = Solver.initialSolution(model);</span>
+<span class="fc" id="L138">        this.bestUB = init.map(Solution::value).orElse(Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L139">        this.bestSol = init.map(Solution::decisions);</span>
+<span class="fc" id="L140">        this.columnWidth = model.columnWidth();</span>
 
-<span class="fc" id="L137">        this.closed = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L138">        this.present = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L142">        this.closed = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L143">        this.present = new HashMap&lt;&gt;();</span>
 
-<span class="fc" id="L140">        this.open = new ArrayList&lt;&gt;(problem.nbVars() + 1);</span>
-<span class="fc bfc" id="L141" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.nbVars() + 1; i++) {</span>
-<span class="fc" id="L142">            this.open.add(new PriorityQueue&lt;&gt;(Comparator.comparingDouble(SubProblem&lt;T&gt;::f)));</span>
+<span class="fc" id="L145">        this.open = new ArrayList&lt;&gt;(problem.nbVars() + 1);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.nbVars() + 1; i++) {</span>
+<span class="fc" id="L147">            this.open.add(new PriorityQueue&lt;&gt;(Comparator.comparingDouble(SubProblem&lt;T&gt;::f)));</span>
         }
 
-<span class="fc" id="L145">        this.verboseMode = new VerboseMode(model.verbosityLevel(), 500);</span>
-<span class="fc" id="L146">        this.debugLevel = model.debugMode();</span>
+<span class="fc" id="L150">        this.verboseMode = new VerboseMode(model.verbosityLevel(), 500);</span>
+<span class="fc" id="L151">        this.debugLevel = model.debugMode();</span>
 
-<span class="fc" id="L148">        this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);</span>
-<span class="fc" id="L149">        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound&lt;T&gt;;</span>
-<span class="fc" id="L150">    }</span>
+<span class="fc" id="L153">        this.root = constructRoot(problem.initialState(), problem.initialValue(), 0);</span>
+<span class="fc" id="L154">        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound&lt;T&gt;;</span>
+<span class="fc" id="L155">    }</span>
 
-<span class="fc" id="L152">    private AcsSolver(AcsModel&lt;T&gt; model, StateAndDepth&lt;T&gt; rootKey) {</span>
-<span class="fc" id="L153">        this.problem = model.problem();</span>
-<span class="fc" id="L154">        this.varh = model.variableHeuristic();</span>
-<span class="fc" id="L155">        this.lb = model.lowerBound();</span>
-<span class="fc" id="L156">        this.dominance = model.dominance();</span>
-<span class="fc" id="L157">        this.bestUB = Double.POSITIVE_INFINITY;</span>
-<span class="fc" id="L158">        this.bestSol = Optional.empty();</span>
-<span class="fc" id="L159">        this.columnWidth = model.columnWidth();</span>
+<span class="fc" id="L157">    private AcsSolver(AcsModel&lt;T&gt; model, StateAndDepth&lt;T&gt; rootKey) {</span>
+<span class="fc" id="L158">        this.problem = model.problem();</span>
+<span class="fc" id="L159">        this.varh = model.variableHeuristic();</span>
+<span class="fc" id="L160">        this.lb = model.lowerBound();</span>
+<span class="fc" id="L161">        this.dominance = model.dominance();</span>
+<span class="fc" id="L162">        this.bestUB = Double.POSITIVE_INFINITY;</span>
+<span class="fc" id="L163">        this.bestSol = Optional.empty();</span>
+<span class="fc" id="L164">        this.columnWidth = model.columnWidth();</span>
 
-<span class="fc" id="L161">        this.closed = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L162">        this.present = new HashMap&lt;&gt;();</span>
-<span class="fc" id="L163">        this.open = new ArrayList&lt;&gt;(problem.nbVars() + 1);</span>
-<span class="fc bfc" id="L164" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.nbVars() + 1; i++) {</span>
-<span class="fc" id="L165">            this.open.add(new PriorityQueue&lt;&gt;(Comparator.comparingDouble(SubProblem&lt;T&gt;::f)));</span>
+<span class="fc" id="L166">        this.closed = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L167">        this.present = new HashMap&lt;&gt;();</span>
+<span class="fc" id="L168">        this.open = new ArrayList&lt;&gt;(problem.nbVars() + 1);</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">        for (int i = 0; i &lt; problem.nbVars() + 1; i++) {</span>
+<span class="fc" id="L170">            this.open.add(new PriorityQueue&lt;&gt;(Comparator.comparingDouble(SubProblem&lt;T&gt;::f)));</span>
         }
 
-<span class="fc" id="L168">        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);</span>
-<span class="fc" id="L169">        this.debugLevel = DebugLevel.OFF;</span>
-<span class="fc" id="L170">        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());</span>
-<span class="fc" id="L171">        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound&lt;T&gt;;</span>
-<span class="fc" id="L172">    }</span>
+<span class="fc" id="L173">        this.verboseMode = new VerboseMode(VerbosityLevel.SILENT, 500);</span>
+<span class="fc" id="L174">        this.debugLevel = DebugLevel.OFF;</span>
+<span class="fc" id="L175">        this.root = constructRoot(rootKey.state(), 0, rootKey.depth());</span>
+<span class="fc" id="L176">        this.defaultLowerBoundValue = this.lb instanceof DefaultFastLowerBound&lt;T&gt;;</span>
+<span class="fc" id="L177">    }</span>
 
     /**
      * Checks if all columns are empty, i.e., no open subproblems remain.
@@ -177,16 +182,22 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      * @return true if all open queues are empty, false otherwise
      */
     private boolean allEmpty() {
-<span class="fc bfc" id="L180" title="All 2 branches covered.">        for (PriorityQueue&lt;SubProblem&lt;T&gt;&gt; q : open) {</span>
-<span class="fc bfc" id="L181" title="All 2 branches covered.">            if (!q.isEmpty()) {</span>
-<span class="fc" id="L182">                return false;</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">        for (PriorityQueue&lt;SubProblem&lt;T&gt;&gt; q : open) {</span>
+<span class="fc bfc" id="L186" title="All 2 branches covered.">            if (!q.isEmpty()) {</span>
+<span class="fc" id="L187">                return false;</span>
             }
-<span class="fc" id="L184">        }</span>
-<span class="fc" id="L185">        return true;</span>
+<span class="fc" id="L189">        }</span>
+<span class="fc" id="L190">        return true;</span>
     }
 
     /**
      * Minimizes the problem using the ACS strategy.
+     *
+     * &lt;p&gt;When the memory runs out, either because the JVM throws an {@link OutOfMemoryError} or
+     * because the frontier reaches the size given to {@link
+     * org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)}, the search
+     * stops and returns the best solution found so far with the status {@link
+     * SearchStatus#MEMOUT}.
      *
      * @param limit      a predicate to stop the search based on current {@link SearchStatistics}
      * @param onSolution a consumer invoked on each new solution found (solution array and
@@ -196,100 +207,127 @@ public final class AcsSolver&lt;T&gt; implements Solver {
     @Override
     public Solution minimize(
             Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
+        try {
+<span class="fc" id="L211">            return search(limit, onSolution);</span>
+<span class="fc" id="L212">        } catch (OutOfMemoryError | MemoryLimitException e) {</span>
+            // free the memory of the search before building the result
+<span class="fc" id="L214">            open.forEach(PriorityQueue::clear);</span>
+<span class="fc" id="L215">            present.clear();</span>
+<span class="fc" id="L216">            closed.clear();</span>
+<span class="fc" id="L217">            statistics =</span>
+                    statistics
+<span class="fc" id="L219">                            .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L220">                            .updateStatus(SearchStatus.MEMOUT)</span>
+<span class="fc" id="L221">                            .updateNodeCounts(nbExpanded, nbGenerated);</span>
+<span class="fc" id="L222">            return new Solution(bestSolution(), statistics);</span>
+        }
+    }
+
+    /** Runs the search, see {@link #minimize}. */
+    private Solution search(
+            Predicate&lt;SearchStatistics&gt; limit, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
         // set first on purpose: it records the start time of the search
-<span class="fc" id="L200">        statistics = new AstarStats(System.currentTimeMillis(), bestUB);</span>
-<span class="fc bfc" id="L201" title="All 2 branches covered.">        if (bestSol.isPresent()) { // initial solution provided by the model</span>
-<span class="fc" id="L202">            statistics = statistics.updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L230">        statistics = new AstarStats(System.currentTimeMillis(), bestUB);</span>
+<span class="fc bfc" id="L231" title="All 2 branches covered.">        if (bestSol.isPresent()) { // initial solution provided by the model</span>
+<span class="fc" id="L232">            statistics = statistics.updateStatus(SearchStatus.SAT);</span>
         }
-<span class="fc" id="L204">        open.getFirst().add(root);</span>
-<span class="fc" id="L205">        present.put(new StateAndDepth&lt;&gt;(root.getState(), root.getDepth()), root.f());</span>
+<span class="fc" id="L234">        nbExpanded = 0;</span>
+<span class="fc" id="L235">        nbGenerated = 0;</span>
+<span class="fc" id="L236">        open.getFirst().add(root);</span>
+<span class="fc" id="L237">        present.put(new StateAndDepth&lt;&gt;(root.getState(), root.getDepth()), root.f());</span>
 
-<span class="fc bfc" id="L207" title="All 2 branches covered.">        if (root.f() == Integer.MIN_VALUE) {</span>
-<span class="fc" id="L208">            defaultLowerBoundValue = true;</span>
+<span class="fc bfc" id="L239" title="All 2 branches covered.">        if (root.f() == Integer.MIN_VALUE) {</span>
+<span class="fc" id="L240">            defaultLowerBoundValue = true;</span>
         }
-<span class="fc" id="L210">        ArrayList&lt;SubProblem&lt;T&gt;&gt; candidates = new ArrayList&lt;&gt;();</span>
-<span class="fc bfc" id="L211" title="All 2 branches covered.">        while (!allEmpty()) {</span>
-<span class="fc" id="L212">            verboseMode.detailedSearchState(</span>
-<span class="fc" id="L213">                    statistics.nbIterations(),</span>
-<span class="fc" id="L214">                    open.stream().map(PriorityQueue::size).mapToInt(x -&gt; x).sum(),</span>
+<span class="fc" id="L242">        ArrayList&lt;SubProblem&lt;T&gt;&gt; candidates = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">        while (!allEmpty()) {</span>
+<span class="fc" id="L244">            verboseMode.detailedSearchState(</span>
+<span class="fc" id="L245">                    statistics.nbIterations(),</span>
+<span class="fc" id="L246">                    open.stream().map(PriorityQueue::size).mapToInt(x -&gt; x).sum(),</span>
                     bestUB,
-<span class="fc" id="L216">                    open.stream()</span>
-<span class="fc bfc" id="L217" title="All 2 branches covered.">                            .filter(pq -&gt; !pq.isEmpty())</span>
-<span class="fc" id="L218">                            .mapToDouble(pq -&gt; pq.peek().getLowerBound())</span>
-<span class="fc" id="L219">                            .min()</span>
-<span class="fc" id="L220">                            .orElse(Double.POSITIVE_INFINITY),</span>
-<span class="fc" id="L221">                    gap());</span>
+<span class="fc" id="L248">                    open.stream()</span>
+<span class="fc bfc" id="L249" title="All 2 branches covered.">                            .filter(pq -&gt; !pq.isEmpty())</span>
+<span class="fc" id="L250">                            .mapToDouble(pq -&gt; pq.peek().getLowerBound())</span>
+<span class="fc" id="L251">                            .min()</span>
+<span class="fc" id="L252">                            .orElse(Double.POSITIVE_INFINITY),</span>
+<span class="fc" id="L253">                    gap());</span>
 
-<span class="fc" id="L223">            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap());</span>
+<span class="fc" id="L255">            statistics = statistics.updateTime(System.currentTimeMillis()).updateGap(gap())</span>
+<span class="fc" id="L256">                    .updateBestBound(bestBound())</span>
+<span class="fc" id="L257">                    .updateNodeCounts(nbExpanded, nbGenerated);</span>
 
-<span class="fc bfc" id="L225" title="All 2 branches covered.">            if (limit.test(statistics)) {</span>
-<span class="fc" id="L226">                return new Solution(bestSolution(), statistics);</span>
+<span class="fc bfc" id="L259" title="All 2 branches covered.">            if (limit.test(statistics)) {</span>
+<span class="fc" id="L260">                statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);</span>
+<span class="fc" id="L261">                return new Solution(bestSolution(), statistics);</span>
             }
 
-<span class="fc bfc" id="L229" title="All 2 branches covered.">            for (int i = 0; i &lt; problem.nbVars() + 1; i++) { // for each layer</span>
-<span class="fc" id="L230">                candidates.clear();</span>
-<span class="fc" id="L231">                int l = min(columnWidth, open.get(i).size());</span>
-<span class="fc" id="L232">                for (int j = 0;</span>
-<span class="fc bfc" id="L233" title="All 2 branches covered.">                     j &lt; l;</span>
-<span class="fc" id="L234">                     j++) { // expand the layer by expanding the best columnWidth best nodes</span>
-<span class="fc" id="L235">                    SubProblem&lt;T&gt; sub = open.get(i).poll();</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">            for (int i = 0; i &lt; problem.nbVars() + 1; i++) { // for each layer</span>
+<span class="fc" id="L265">                candidates.clear();</span>
+<span class="fc" id="L266">                int l = min(columnWidth, open.get(i).size());</span>
+<span class="fc" id="L267">                for (int j = 0;</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">                     j &lt; l;</span>
+<span class="fc" id="L269">                     j++) { // expand the layer by expanding the best columnWidth best nodes</span>
+<span class="fc" id="L270">                    SubProblem&lt;T&gt; sub = open.get(i).poll();</span>
                     // if the new state is dominated, we skip it
-<span class="pc bpc" id="L237" title="1 of 2 branches missed.">                    if (sub.getState() != null</span>
-<span class="fc bfc" id="L238" title="All 2 branches covered.">                            &amp;&amp; dominance.updateDominance(</span>
-<span class="fc" id="L239">                            sub.getState(), sub.getDepth(), sub.getValue())) {</span>
-<span class="fc" id="L240">                        statistics = statistics.incrementNbDominancePruning();</span>
-<span class="fc" id="L241">                        continue;</span>
+<span class="pc bpc" id="L272" title="1 of 2 branches missed.">                    if (sub.getState() != null</span>
+<span class="fc bfc" id="L273" title="All 2 branches covered.">                            &amp;&amp; dominance.updateDominance(</span>
+<span class="fc" id="L274">                            sub.getState(), sub.getDepth(), sub.getValue())) {</span>
+<span class="fc" id="L275">                        statistics = statistics.incrementNbDominancePruning();</span>
+<span class="fc" id="L276">                        continue;</span>
                     }
-<span class="fc" id="L243">                    StateAndDepth&lt;T&gt; subKey = new StateAndDepth&lt;&gt;(sub.getState(), sub.getDepth());</span>
-<span class="fc" id="L244">                    present.remove(subKey);</span>
-<span class="fc bfc" id="L245" title="All 2 branches covered.">                    if (sub.f() &lt; bestUB) {</span>
-<span class="fc" id="L246">                        candidates.add(sub);</span>
+<span class="fc" id="L278">                    StateAndDepth&lt;T&gt; subKey = new StateAndDepth&lt;&gt;(sub.getState(), sub.getDepth());</span>
+<span class="fc" id="L279">                    present.remove(subKey);</span>
+<span class="fc bfc" id="L280" title="All 2 branches covered.">                    if (sub.f() &lt; bestUB) {</span>
+<span class="fc" id="L281">                        candidates.add(sub);</span>
                     } else {
                         // all the next ones will be worse since f is a lower-bound, so the
                         // polled node and every node left in the column are pruned
-<span class="fc" id="L250">                        statistics = statistics.addNbFastLowerBoundPruning(1 + open.get(i).size());</span>
-<span class="fc" id="L251">                        open.get(i).clear();</span>
-<span class="fc" id="L252">                        break;</span>
+<span class="fc" id="L285">                        statistics = statistics.addNbFastLowerBoundPruning(1 + open.get(i).size());</span>
+<span class="fc" id="L286">                        open.get(i).clear();</span>
+<span class="fc" id="L287">                        break;</span>
                     }
                 }
-<span class="fc bfc" id="L255" title="All 2 branches covered.">                for (SubProblem&lt;T&gt; sub : candidates) {</span>
-<span class="fc" id="L256">                    statistics = statistics.incrementNbIter();</span>
-<span class="fc" id="L257">                    StateAndDepth&lt;T&gt; subKey = new StateAndDepth&lt;&gt;(sub.getState(), sub.getDepth());</span>
-<span class="fc" id="L258">                    this.closed.put(subKey, sub.f());</span>
-<span class="fc bfc" id="L259" title="All 2 branches covered.">                    if (sub.getPath().size() == problem.nbVars()) {</span>
+<span class="fc bfc" id="L290" title="All 2 branches covered.">                for (SubProblem&lt;T&gt; sub : candidates) {</span>
+<span class="fc" id="L291">                    statistics = statistics.incrementNbIter();</span>
+<span class="fc" id="L292">                    StateAndDepth&lt;T&gt; subKey = new StateAndDepth&lt;&gt;(sub.getState(), sub.getDepth());</span>
+<span class="fc" id="L293">                    this.closed.put(subKey, sub.f());</span>
+<span class="fc bfc" id="L294" title="All 2 branches covered.">                    if (sub.getPath().size() == problem.nbVars()) {</span>
                         // new incumbent
-<span class="fc bfc" id="L261" title="All 2 branches covered.">                        if (bestUB &gt; sub.getValue()) {</span>
-<span class="fc" id="L262">                            bestSol = Optional.of(sub.getPath());</span>
-<span class="fc" id="L263">                            bestUB = sub.getValue();</span>
-<span class="fc" id="L264">                            statistics = statistics</span>
-<span class="fc" id="L265">                                    .updateIncumbent(bestUB, gap())</span>
-<span class="fc" id="L266">                                    .updateStatus(SearchStatus.SAT);</span>
-<span class="fc" id="L267">                            onSolution.accept(constructSolution(bestSol.get()), statistics);</span>
+<span class="fc bfc" id="L296" title="All 2 branches covered.">                        if (bestUB &gt; sub.getValue()) {</span>
+<span class="fc" id="L297">                            bestSol = Optional.of(sub.getPath());</span>
+<span class="fc" id="L298">                            bestUB = sub.getValue();</span>
+<span class="fc" id="L299">                            statistics = statistics</span>
+<span class="fc" id="L300">                                    .updateIncumbent(bestUB, gap())</span>
+<span class="fc" id="L301">                                    .updateBestBound(bestBound())</span>
+<span class="fc" id="L302">                                    .updateNodeCounts(nbExpanded, nbGenerated)</span>
+<span class="fc" id="L303">                                    .updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L304">                            onSolution.accept(constructSolution(bestSol.get()), statistics);</span>
                         }
-<span class="fc" id="L269">                        verboseMode.newBest(bestUB);</span>
+<span class="fc" id="L306">                        verboseMode.newBest(bestUB);</span>
                     } else {
-<span class="fc" id="L271">                        verboseMode.currentSubProblem(statistics.nbIterations(), sub);</span>
-<span class="fc" id="L272">                        addChildren(sub);</span>
+<span class="fc" id="L308">                        verboseMode.currentSubProblem(statistics.nbIterations(), sub);</span>
+<span class="fc" id="L309">                        addChildren(sub);</span>
                     }
-<span class="fc" id="L274">                }</span>
+<span class="fc" id="L311">                }</span>
             }
-<span class="fc" id="L276">            statistics = statistics.updateFrontierMaxSize(</span>
-<span class="fc" id="L277">                    open.stream().mapToInt(PriorityQueue::size).sum());</span>
+<span class="fc" id="L313">            statistics = statistics.updateFrontierMaxSize(</span>
+<span class="fc" id="L314">                    open.stream().mapToInt(PriorityQueue::size).sum());</span>
         }
 
-<span class="fc bfc" id="L280" title="All 2 branches covered.">        if (debugLevel != DebugLevel.OFF) {</span>
-<span class="fc" id="L281">            checkAdmissibility();</span>
+<span class="fc bfc" id="L317" title="All 2 branches covered.">        if (debugLevel != DebugLevel.OFF) {</span>
+<span class="fc" id="L318">            checkAdmissibility();</span>
         }
 
-<span class="fc" id="L284">        statistics = statistics.updateTime(System.currentTimeMillis());</span>
+<span class="fc" id="L321">        statistics = statistics.updateTime(System.currentTimeMillis());</span>
 
-<span class="fc bfc" id="L286" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
-<span class="fc" id="L287">            statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);</span>
+<span class="fc bfc" id="L323" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
+<span class="fc" id="L324">            statistics = statistics.updateStatus(SearchStatus.OPTIMAL).updateIncumbent(bestUB, 0);</span>
         } else {
-<span class="fc" id="L289">            statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
+<span class="fc" id="L326">            statistics = statistics.updateStatus(SearchStatus.UNSAT);</span>
         }
 
-<span class="fc" id="L292">        return new Solution(bestSolution(), statistics);</span>
+<span class="fc" id="L329">        statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);</span>
+<span class="fc" id="L330">        return new Solution(bestSolution(), statistics);</span>
     }
 
     /**
@@ -299,10 +337,10 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      */
     @Override
     public Optional&lt;Double&gt; bestValue() {
-<span class="fc bfc" id="L302" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
-<span class="fc" id="L303">            return Optional.of(bestUB);</span>
+<span class="fc bfc" id="L340" title="All 2 branches covered.">        if (bestSol.isPresent()) {</span>
+<span class="fc" id="L341">            return Optional.of(bestUB);</span>
         } else {
-<span class="fc" id="L305">            return Optional.empty();</span>
+<span class="fc" id="L343">            return Optional.empty();</span>
         }
     }
 
@@ -314,7 +352,40 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      */
     @Override
     public Optional&lt;Set&lt;Decision&gt;&gt; bestSolution() {
-<span class="fc" id="L317">        return bestSol;</span>
+<span class="fc" id="L355">        return bestSol;</span>
+    }
+
+    /**
+     * Returns a lower bound on the value of the solutions reachable through the given node:
+     * {@code f = g + h} when the model provides a fast lower bound. Otherwise, the cost of the
+     * path {@code g} is a lower bound only if the remaining costs cannot be negative (see {@link
+     * Problem#hasNonNegativeCosts()}); if they can, no lower bound is known.
+     *
+     * @param node an open node
+     * @return a lower bound through the node, or {@link Double#NEGATIVE_INFINITY} if unknown
+     */
+    private double nodeLowerBound(SubProblem&lt;T&gt; node) {
+<span class="fc bfc" id="L368" title="All 2 branches covered.">        if (!defaultLowerBoundValue) {</span>
+<span class="fc" id="L369">            return node.f();</span>
+        }
+<span class="fc bfc" id="L371" title="All 2 branches covered.">        return problem.hasNonNegativeCosts() ? node.getValue() : Double.NEGATIVE_INFINITY;</span>
+    }
+
+    /**
+     * Returns a lower bound on the optimal value: the smallest {@code f = g + h} of the open
+     * nodes over all the depths, capped by the incumbent. When no node is open, the incumbent is
+     * optimal.
+     *
+     * @return a lower bound on the optimal value
+     */
+    private double bestBound() {
+<span class="fc" id="L382">        double minF =</span>
+<span class="fc" id="L383">                open.stream()</span>
+<span class="fc bfc" id="L384" title="All 2 branches covered.">                        .filter(pq -&gt; !pq.isEmpty())</span>
+<span class="fc" id="L385">                        .mapToDouble(pq -&gt; nodeLowerBound(pq.peek()))</span>
+<span class="fc" id="L386">                        .min()</span>
+<span class="fc" id="L387">                        .orElse(bestUB);</span>
+<span class="fc" id="L388">        return Math.min(bestUB, minF);</span>
     }
 
     /**
@@ -324,19 +395,20 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      * @return gap as a percentage
      */
     private double gap() {
-<span class="fc bfc" id="L327" title="All 2 branches covered.">        if (Double.isInfinite(bestUB)) {</span>
-<span class="fc" id="L328">            return Double.POSITIVE_INFINITY;</span>
+<span class="fc bfc" id="L398" title="All 2 branches covered.">        if (Double.isInfinite(bestUB)) {</span>
+<span class="fc" id="L399">            return Double.POSITIVE_INFINITY;</span>
         }
 
-<span class="fc" id="L331">        double globalLB =</span>
-<span class="fc" id="L332">                open.stream()</span>
-<span class="fc bfc" id="L333" title="All 2 branches covered.">                        .filter(pq -&gt; !pq.isEmpty())</span>
-<span class="fc" id="L334">                        .mapToDouble(</span>
-<span class="fc bfc" id="L335" title="All 2 branches covered.">                                pq -&gt; defaultLowerBoundValue ? pq.peek().getValue() : pq.peek().f())</span>
-<span class="fc" id="L336">                        .min()</span>
-<span class="fc" id="L337">                        .orElse(bestUB);</span>
+<span class="fc" id="L402">        double globalLB =</span>
+<span class="fc" id="L403">                open.stream()</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">                        .filter(pq -&gt; !pq.isEmpty())</span>
+<span class="fc" id="L405">                        .mapToDouble(</span>
+<span class="fc" id="L406">                                pq -&gt; nodeLowerBound(pq.peek()))</span>
+<span class="fc" id="L407">                        .min()</span>
+<span class="fc" id="L408">                        .orElse(bestUB);</span>
+<span class="fc" id="L409">        globalLB = Math.min(bestUB, globalLB);</span>
 
-<span class="fc" id="L339">        return 100 * Math.abs((bestUB - globalLB) / bestUB);</span>
+<span class="fc" id="L411">        return 100 * Math.abs((bestUB - globalLB) / bestUB);</span>
     }
 
     /**
@@ -348,17 +420,17 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      * @return a {@link SubProblem} representing the root
      */
     private SubProblem&lt;T&gt; constructRoot(T state, double value, int depth) {
-<span class="fc" id="L351">        Set&lt;Integer&gt; vars =</span>
-<span class="fc" id="L352">                IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L423">        Set&lt;Integer&gt; vars =</span>
+<span class="fc" id="L424">                IntStream.range(depth, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
 
-<span class="fc" id="L354">        Set&lt;Decision&gt; nullDecisions = new HashSet&lt;&gt;(); // needed for debug mode</span>
-<span class="fc bfc" id="L355" title="All 2 branches covered.">        if (depth != 0) {</span>
-<span class="fc bfc" id="L356" title="All 2 branches covered.">            for (int i = 0; i &lt; depth; i++) {</span>
-<span class="fc" id="L357">                nullDecisions.add(new Decision(i, 0));</span>
+<span class="fc" id="L426">        Set&lt;Decision&gt; nullDecisions = new HashSet&lt;&gt;(); // needed for debug mode</span>
+<span class="fc bfc" id="L427" title="All 2 branches covered.">        if (depth != 0) {</span>
+<span class="fc bfc" id="L428" title="All 2 branches covered.">            for (int i = 0; i &lt; depth; i++) {</span>
+<span class="fc" id="L429">                nullDecisions.add(new Decision(i, 0));</span>
             }
         }
 
-<span class="fc" id="L361">        return new SubProblem&lt;&gt;(state, value, lb.fastLowerBound(state, vars), nullDecisions);</span>
+<span class="fc" id="L433">        return new SubProblem&lt;&gt;(state, value, lb.fastLowerBound(state, vars), nullDecisions);</span>
     }
 
     /**
@@ -367,90 +439,92 @@ public final class AcsSolver&lt;T&gt; implements Solver {
      * @param subProblem the parent subproblem
      */
     private void addChildren(SubProblem&lt;T&gt; subProblem) {
-<span class="fc" id="L370">        T state = subProblem.getState();</span>
-<span class="fc" id="L371">        int var = subProblem.getPath().size();</span>
-<span class="fc" id="L372">        final Iterator&lt;Integer&gt; domain = problem.domain(state, var);</span>
-<span class="fc" id="L373">        int nbGeneratedChildren = 0;</span>
-<span class="fc" id="L374">        int nbSelectedChildren = 0;</span>
-<span class="fc bfc" id="L375" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
-<span class="fc" id="L376">            final int val = domain.next();</span>
-<span class="fc" id="L377">            final Decision decision = new Decision(var, val);</span>
-<span class="fc bfc" id="L378" title="All 2 branches covered.">            if (debugLevel != DebugLevel.OFF) {</span>
-<span class="fc" id="L379">                DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);</span>
+<span class="fc" id="L442">        T state = subProblem.getState();</span>
+<span class="fc" id="L443">        int var = subProblem.getPath().size();</span>
+<span class="fc" id="L444">        final Iterator&lt;Integer&gt; domain = problem.domain(state, var);</span>
+<span class="fc" id="L445">        nbExpanded++;</span>
+<span class="fc" id="L446">        int nbGeneratedChildren = 0;</span>
+<span class="fc" id="L447">        int nbSelectedChildren = 0;</span>
+<span class="fc bfc" id="L448" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
+<span class="fc" id="L449">            final int val = domain.next();</span>
+<span class="fc" id="L450">            final Decision decision = new Decision(var, val);</span>
+<span class="fc bfc" id="L451" title="All 2 branches covered.">            if (debugLevel != DebugLevel.OFF) {</span>
+<span class="fc" id="L452">                DebugUtil.checkHashCodeAndEquality(state, decision, problem::transition);</span>
             }
-<span class="fc" id="L381">            T newState = problem.transition(state, decision);</span>
-<span class="fc" id="L382">            double cost = problem.transitionCost(state, decision);</span>
-<span class="fc" id="L383">            nbGeneratedChildren++;</span>
+<span class="fc" id="L454">            T newState = problem.transition(state, decision);</span>
+<span class="fc" id="L455">            double cost = problem.transitionCost(state, decision);</span>
+<span class="fc" id="L456">            nbGeneratedChildren++;</span>
 
-<span class="fc" id="L385">            double g = subProblem.getValue() + cost;</span>
-<span class="fc" id="L386">            Set&lt;Decision&gt; path = new HashSet&lt;&gt;(subProblem.getPath());</span>
-<span class="fc" id="L387">            path.add(decision);</span>
-<span class="fc" id="L388">            double h =</span>
-<span class="fc" id="L389">                    lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));</span>
-<span class="fc" id="L390">            double f = g + h;</span>
+<span class="fc" id="L458">            double g = subProblem.getValue() + cost;</span>
+<span class="fc" id="L459">            Set&lt;Decision&gt; path = new HashSet&lt;&gt;(subProblem.getPath());</span>
+<span class="fc" id="L460">            path.add(decision);</span>
+<span class="fc" id="L461">            double h =</span>
+<span class="fc" id="L462">                    lb.fastLowerBound(newState, SolverUtil.unassignedVars(problem.nbVars(), path));</span>
+<span class="fc" id="L463">            double f = g + h;</span>
 
             // this child can only lead to less good solution
-<span class="fc bfc" id="L393" title="All 2 branches covered.">            if (f + 1e-10 &gt; bestUB) {</span>
-<span class="fc" id="L394">                statistics = statistics.incrementNbFastLowerBoundPruning();</span>
-<span class="fc" id="L395">                continue;</span>
+<span class="fc bfc" id="L466" title="All 2 branches covered.">            if (f + 1e-10 &gt; bestUB) {</span>
+<span class="fc" id="L467">                statistics = statistics.incrementNbFastLowerBoundPruning();</span>
+<span class="fc" id="L468">                continue;</span>
             }
 
-<span class="fc" id="L398">            SubProblem&lt;T&gt; newSub = new SubProblem&lt;&gt;(newState, g, h, path);</span>
-<span class="pc bpc" id="L399" title="1 of 2 branches missed.">            if (debugLevel == DebugLevel.EXTENDED) {</span>
-<span class="nc" id="L400">                DebugUtil.checkFlbConsistency(subProblem, newSub, cost);</span>
+<span class="fc" id="L471">            SubProblem&lt;T&gt; newSub = new SubProblem&lt;&gt;(newState, g, h, path);</span>
+<span class="pc bpc" id="L472" title="1 of 2 branches missed.">            if (debugLevel == DebugLevel.EXTENDED) {</span>
+<span class="nc" id="L473">                DebugUtil.checkFlbConsistency(subProblem, newSub, cost);</span>
             }
-<span class="fc" id="L402">            StateAndDepth&lt;T&gt; newKey = new StateAndDepth&lt;&gt;(newState, newSub.getDepth());</span>
-<span class="fc" id="L403">            Double presentValue = present.get(newKey);</span>
-<span class="fc bfc" id="L404" title="All 4 branches covered.">            if (presentValue != null &amp;&amp; presentValue &gt; newSub.f()) {</span>
-<span class="fc" id="L405">                open.get(newSub.getDepth()).add(newSub);</span>
-<span class="fc" id="L406">                present.put(newKey, newSub.f());</span>
-<span class="fc" id="L407">                nbSelectedChildren++;</span>
-<span class="fc bfc" id="L408" title="All 2 branches covered.">            } else if (presentValue == null) {</span>
-<span class="fc" id="L409">                Double closedValue = closed.get(newKey);</span>
-<span class="fc bfc" id="L410" title="All 4 branches covered.">                if (closedValue != null &amp;&amp; closedValue &gt; newSub.f()) {</span>
-<span class="fc" id="L411">                    open.get(newSub.getDepth()).add(newSub);</span>
-<span class="fc" id="L412">                    closed.remove(newKey);</span>
-<span class="fc" id="L413">                    present.put(newKey, newSub.f());</span>
-<span class="fc" id="L414">                    nbSelectedChildren++;</span>
-<span class="fc bfc" id="L415" title="All 2 branches covered.">                } else if (closedValue == null) {</span>
-<span class="fc" id="L416">                    open.get(newSub.getDepth()).add(newSub);</span>
-<span class="fc" id="L417">                    present.put(newKey, newSub.f());</span>
-<span class="fc" id="L418">                    nbSelectedChildren++;</span>
+<span class="fc" id="L475">            StateAndDepth&lt;T&gt; newKey = new StateAndDepth&lt;&gt;(newState, newSub.getDepth());</span>
+<span class="fc" id="L476">            Double presentValue = present.get(newKey);</span>
+<span class="fc bfc" id="L477" title="All 4 branches covered.">            if (presentValue != null &amp;&amp; presentValue &gt; newSub.f()) {</span>
+<span class="fc" id="L478">                open.get(newSub.getDepth()).add(newSub);</span>
+<span class="fc" id="L479">                present.put(newKey, newSub.f());</span>
+<span class="fc" id="L480">                nbSelectedChildren++;</span>
+<span class="fc bfc" id="L481" title="All 2 branches covered.">            } else if (presentValue == null) {</span>
+<span class="fc" id="L482">                Double closedValue = closed.get(newKey);</span>
+<span class="fc bfc" id="L483" title="All 4 branches covered.">                if (closedValue != null &amp;&amp; closedValue &gt; newSub.f()) {</span>
+<span class="fc" id="L484">                    open.get(newSub.getDepth()).add(newSub);</span>
+<span class="fc" id="L485">                    closed.remove(newKey);</span>
+<span class="fc" id="L486">                    present.put(newKey, newSub.f());</span>
+<span class="fc" id="L487">                    nbSelectedChildren++;</span>
+<span class="fc bfc" id="L488" title="All 2 branches covered.">                } else if (closedValue == null) {</span>
+<span class="fc" id="L489">                    open.get(newSub.getDepth()).add(newSub);</span>
+<span class="fc" id="L490">                    present.put(newKey, newSub.f());</span>
+<span class="fc" id="L491">                    nbSelectedChildren++;</span>
                 }
             }
-<span class="fc" id="L421">        }</span>
-<span class="fc" id="L422">        statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);</span>
-<span class="fc" id="L423">    }</span>
+<span class="fc" id="L494">        }</span>
+<span class="fc" id="L495">        nbGenerated += nbGeneratedChildren;</span>
+<span class="fc" id="L496">        statistics = statistics.updateValidChildrenPercent(nbGeneratedChildren, nbSelectedChildren);</span>
+<span class="fc" id="L497">    }</span>
 
     private void checkAdmissibility() {
-<span class="fc" id="L426">        Set&lt;StateAndDepth&lt;T&gt;&gt; toCheck = new HashSet&lt;&gt;(closed.keySet());</span>
-<span class="fc" id="L427">        toCheck.addAll(present.keySet());</span>
+<span class="fc" id="L500">        Set&lt;StateAndDepth&lt;T&gt;&gt; toCheck = new HashSet&lt;&gt;(closed.keySet());</span>
+<span class="fc" id="L501">        toCheck.addAll(present.keySet());</span>
 
-<span class="fc" id="L429">        AcsModel&lt;T&gt; model =</span>
-<span class="fc" id="L430">                new AcsModel&lt;&gt;() {</span>
+<span class="fc" id="L503">        AcsModel&lt;T&gt; model =</span>
+<span class="fc" id="L504">                new AcsModel&lt;&gt;() {</span>
 
                     @Override
                     public Problem&lt;T&gt; problem() {
-<span class="fc" id="L434">                        return problem;</span>
+<span class="fc" id="L508">                        return problem;</span>
                     }
 
                     @Override
                     public FastLowerBound&lt;T&gt; lowerBound() {
-<span class="fc" id="L439">                        return lb;</span>
+<span class="fc" id="L513">                        return lb;</span>
                     }
 
                     @Override
                     public DominanceChecker&lt;T&gt; dominance() {
-<span class="fc" id="L444">                        return dominance;</span>
+<span class="fc" id="L518">                        return dominance;</span>
                     }
 
                     @Override
                     public int columnWidth() {
-<span class="fc" id="L449">                        return columnWidth;</span>
+<span class="fc" id="L523">                        return columnWidth;</span>
                     }
                 };
 
-<span class="fc" id="L453">        DebugUtil.checkFlbAdmissibility(toCheck, model, key -&gt; new AcsSolver&lt;&gt;(model, key));</span>
-<span class="fc" id="L454">    }</span>
+<span class="fc" id="L527">        DebugUtil.checkFlbAdmissibility(toCheck, model, key -&gt; new AcsSolver&lt;&gt;(model, key));</span>
+<span class="fc" id="L528">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

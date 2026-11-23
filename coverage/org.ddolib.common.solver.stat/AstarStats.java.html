@@ -86,8 +86,32 @@ public class AstarStats extends SearchStatistics {
      * {@inheritDoc}
      */
     @Override
+    public AstarStats updateNodeCounts(long nbExpanded, long nbGenerated) {
+<span class="fc" id="L90">        return (AstarStats) super.updateNodeCounts(nbExpanded, nbGenerated);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats addNodeCounts(long nbExpanded, long nbGenerated) {
+<span class="nc" id="L98">        return (AstarStats) super.addNodeCounts(nbExpanded, nbGenerated);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public AstarStats updateBestBound(double bound) {
+<span class="fc" id="L106">        return (AstarStats) super.updateBestBound(bound);</span>
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     public AstarStats updateTime(long time) {
-<span class="fc" id="L90">        return (AstarStats) super.updateTime(time);</span>
+<span class="fc" id="L114">        return (AstarStats) super.updateTime(time);</span>
     }
 
 
@@ -96,7 +120,7 @@ public class AstarStats extends SearchStatistics {
      */
     @Override
     public AstarStats incrementNbFastLowerBoundPruning() {
-<span class="fc" id="L99">        return (AstarStats) super.incrementNbFastLowerBoundPruning();</span>
+<span class="fc" id="L123">        return (AstarStats) super.incrementNbFastLowerBoundPruning();</span>
     }
 
     /**
@@ -104,7 +128,7 @@ public class AstarStats extends SearchStatistics {
      */
     @Override
     public AstarStats incrementNbDominancePruning() {
-<span class="fc" id="L107">        return (AstarStats) super.incrementNbDominancePruning();</span>
+<span class="fc" id="L131">        return (AstarStats) super.incrementNbDominancePruning();</span>
     }
 
     /**
@@ -112,7 +136,7 @@ public class AstarStats extends SearchStatistics {
      */
     @Override
     public AstarStats addNbFastLowerBoundPruning(int nbPruning) {
-<span class="fc" id="L115">        return (AstarStats) super.addNbFastLowerBoundPruning(nbPruning);</span>
+<span class="fc" id="L139">        return (AstarStats) super.addNbFastLowerBoundPruning(nbPruning);</span>
     }
 
     /**
@@ -120,7 +144,7 @@ public class AstarStats extends SearchStatistics {
      */
     @Override
     public AstarStats addNbDominancePruning(int nbPruning) {
-<span class="nc" id="L123">        return (AstarStats) super.addNbDominancePruning(nbPruning);</span>
+<span class="nc" id="L147">        return (AstarStats) super.addNbDominancePruning(nbPruning);</span>
     }
 
     /**
@@ -131,7 +155,7 @@ public class AstarStats extends SearchStatistics {
      * @return the smoothed ratio value (theoretically between 0 % and 100 %)
      */
     public double validChildrenPercent() {
-<span class="fc" id="L134">        return 100 * validChildrenRatio;</span>
+<span class="fc" id="L158">        return 100 * validChildrenRatio;</span>
     }
 
     /**
@@ -152,15 +176,15 @@ public class AstarStats extends SearchStatistics {
      * @return a new instance with updated validChildrenRatio
      */
     public AstarStats updateValidChildrenPercent(int nbGeneratedChildren, int nbSelectedChildren) {
-<span class="fc bfc" id="L155" title="All 2 branches covered.">        if (nbGeneratedChildren == 0) {</span>
-<span class="fc" id="L156">            return this;</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">        if (nbGeneratedChildren == 0) {</span>
+<span class="fc" id="L180">            return this;</span>
         }
 
-<span class="fc" id="L159">        AstarStats toReturn = this.copy();</span>
-<span class="fc" id="L160">        double r = (double) nbSelectedChildren / nbGeneratedChildren;</span>
-<span class="fc" id="L161">        double alpha = 0.05;</span>
-<span class="fc" id="L162">        toReturn.validChildrenRatio = alpha * r + (1 - alpha) * this.validChildrenRatio;</span>
-<span class="fc" id="L163">        return toReturn;</span>
+<span class="fc" id="L183">        AstarStats toReturn = this.copy();</span>
+<span class="fc" id="L184">        double r = (double) nbSelectedChildren / nbGeneratedChildren;</span>
+<span class="fc" id="L185">        double alpha = 0.05;</span>
+<span class="fc" id="L186">        toReturn.validChildrenRatio = alpha * r + (1 - alpha) * this.validChildrenRatio;</span>
+<span class="fc" id="L187">        return toReturn;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

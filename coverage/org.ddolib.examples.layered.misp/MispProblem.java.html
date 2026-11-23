@@ -38,10 +38,10 @@ public class MispProblem implements Problem&lt;BitSet&gt; {
     public final int[] weight;
 
     /** Optional value of the optimal solution, if known. */
-<span class="pc" id="L41">    private Optional&lt;Double&gt; optimal = Optional.empty();</span>
+<span class="fc" id="L41">    private Optional&lt;Double&gt; optimal = Optional.empty();</span>
 
     /** Optional name for readability of tests and outputs. */
-<span class="pc" id="L44">    private Optional&lt;String&gt; name = Optional.empty();</span>
+<span class="fc" id="L44">    private Optional&lt;String&gt; name = Optional.empty();</span>
 
     /**
      * Constructs a MISP problem with a given state, adjacency lists, weights, and known optimal
@@ -53,12 +53,12 @@ public class MispProblem implements Problem&lt;BitSet&gt; {
      * @param optimal known optimal solution value
      */
     public MispProblem(
-<span class="nc" id="L56">            BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional&lt;Double&gt; optimal) {</span>
-<span class="nc" id="L57">        this.remainingNodes = remainingNodes;</span>
-<span class="nc" id="L58">        this.neighbors = neighbors;</span>
-<span class="nc" id="L59">        this.weight = weight;</span>
-<span class="nc" id="L60">        this.optimal = optimal;</span>
-<span class="nc" id="L61">    }</span>
+<span class="fc" id="L56">            BitSet remainingNodes, BitSet[] neighbors, int[] weight, Optional&lt;Double&gt; optimal) {</span>
+<span class="fc" id="L57">        this.remainingNodes = remainingNodes;</span>
+<span class="fc" id="L58">        this.neighbors = neighbors;</span>
+<span class="fc" id="L59">        this.weight = weight;</span>
+<span class="fc" id="L60">        this.optimal = optimal;</span>
+<span class="fc" id="L61">    }</span>
 
     /**
      * Loads a MISP problem from a DOT file.

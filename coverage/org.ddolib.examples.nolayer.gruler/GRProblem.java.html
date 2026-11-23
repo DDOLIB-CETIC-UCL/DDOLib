@@ -119,9 +119,19 @@ import org.ddolib.nolayer.modeling.Problem;
 <span class="fc" id="L119">        return solution.get(solution.size() - 1);</span>
     }
 
+    /**
+     * The transition costs are non-negative: each new mark is placed after the last one.
+     *
+     * @return {@code true}
+     */
+    @Override
+    public boolean hasNonNegativeCosts() {
+<span class="fc" id="L129">        return true;</span>
+    }
+
     @Override
     public String toString() {
-<span class="fc" id="L124">        return &quot;GRProblem(order:&quot; + order + &quot;)&quot;;</span>
+<span class="fc" id="L134">        return &quot;GRProblem(order:&quot; + order + &quot;)&quot;;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

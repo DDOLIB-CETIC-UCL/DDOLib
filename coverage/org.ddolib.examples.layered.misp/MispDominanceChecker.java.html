@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MispDominanceChecker.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">io.github.ddolib-cetic-ucl:ddolib</a> &gt; <a href="index.source.html" class="el_package">org.ddolib.examples.layered.misp</a> &gt; <span class="el_source">MispDominanceChecker.java</span></div><h1>MispDominanceChecker.java</h1><pre class="source lang-java linenums">package org.ddolib.examples.layered.misp;
+
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import org.ddolib.layered.modeling.DominanceChecker;
+import org.ddolib.layered.modeling.SimpleDominanceChecker;
+
+/**
+ * Dominance checker of the Maximum Independent Set Problem (MISP), for the {@link MispDominance}
+ * relation: a state is dominated by a state with a better or equal value whose set of remaining
+ * vertices includes its own.
+ *
+ * &lt;p&gt;The dominance by inclusion forbids grouping the states by a key (see {@link
+ * MispDominance#getKey}), so that a {@link SimpleDominanceChecker} compares each new state with
+ * all the states of its layer. This checker groups the states of a layer by their number of
+ * remaining vertices instead: a set can only be included in a set with at least as many
+ * vertices. A new state is thus only compared with the states having at least as many remaining
+ * vertices to know if it is dominated, and with the states having at most as many remaining
+ * vertices to remove the ones it dominates.
+ *
+ * &lt;p&gt;It prunes exactly the same states as a {@link SimpleDominanceChecker} with a {@link
+ * MispDominance}. The states are not copied: they must not be modified after their creation,
+ * which is the case of the states built by {@link MispProblem#transition}.
+ */
+public class MispDominanceChecker extends DominanceChecker&lt;BitSet&gt; {
+
+    /** For each depth, the non-dominated states indexed by their number of remaining vertices. */
+    private final List&lt;TreeMap&lt;Integer, List&lt;Entry&gt;&gt;&gt; fronts;
+
+    /**
+     * Creates a dominance checker for a problem with the given number of variables.
+     *
+     * @param nbVars the number of variables of the problem
+     */
+    public MispDominanceChecker(int nbVars) {
+<span class="fc" id="L39">        super(new MispDominance());</span>
+<span class="fc" id="L40">        this.fronts = new ArrayList&lt;&gt;(nbVars + 1);</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (int i = 0; i &lt;= nbVars; i++) {</span>
+<span class="fc" id="L42">            fronts.add(new TreeMap&lt;&gt;());</span>
+        }
+<span class="fc" id="L44">    }</span>
+
+    @Override
+    public boolean updateDominance(BitSet state, int depth, double objValue) {
+<span class="fc" id="L48">        TreeMap&lt;Integer, List&lt;Entry&gt;&gt; front = fronts.get(depth);</span>
+<span class="fc" id="L49">        int card = state.cardinality();</span>
+        // only a state with at least as many remaining vertices can dominate the new one
+<span class="fc bfc" id="L51" title="All 2 branches covered.">        for (List&lt;Entry&gt; entries : front.tailMap(card, true).values()) {</span>
+<span class="fc bfc" id="L52" title="All 2 branches covered.">            for (Entry e : entries) {</span>
+<span class="fc bfc" id="L53" title="All 4 branches covered.">                if (e.value &lt;= objValue &amp;&amp; dominance.isDominatedOrEqual(state, e.state)) {</span>
+<span class="fc" id="L54">                    return true;</span>
+                }
+<span class="fc" id="L56">            }</span>
+<span class="fc" id="L57">        }</span>
+        // the new state can only dominate the states with at most as many remaining vertices
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        for (List&lt;Entry&gt; entries : front.headMap(card, true).values()) {</span>
+<span class="fc" id="L60">            entries.removeIf(</span>
+<span class="fc bfc" id="L61" title="All 4 branches covered.">                    e -&gt; objValue &lt;= e.value &amp;&amp; dominance.isDominatedOrEqual(e.state, state));</span>
+<span class="fc" id="L62">        }</span>
+<span class="fc" id="L63">        front.computeIfAbsent(card, k -&gt; new ArrayList&lt;&gt;()).add(new Entry(state, objValue));</span>
+<span class="fc" id="L64">        return false;</span>
+    }
+
+    @Override
+    public void clear() {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        for (Map&lt;Integer, List&lt;Entry&gt;&gt; front : fronts) {</span>
+<span class="fc" id="L70">            front.clear();</span>
+<span class="fc" id="L71">        }</span>
+<span class="fc" id="L72">    }</span>
+
+    /** A non-dominated state and its value. */
+<span class="fc" id="L75">    private record Entry(BitSet state, double value) {}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

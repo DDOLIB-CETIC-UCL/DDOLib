@@ -3,9 +3,12 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import org.ddolib.common.util.InvalidSolutionException;
 import org.ddolib.layered.modeling.Problem;
@@ -52,7 +55,7 @@ public class TSProblem implements Problem&lt;TSState&gt; {
     final BitSet[] actors;
 
     /** Optional descriptive name for the instance. */
-<span class="pc" id="L55">    private Optional&lt;String&gt; name = Optional.empty();</span>
+<span class="pc" id="L58">    private Optional&lt;String&gt; name = Optional.empty();</span>
 
     /**
      * Constructs a TSP instance from explicit parameters.
@@ -70,197 +73,202 @@ public class TSProblem implements Problem&lt;TSState&gt; {
             int[] costs,
             int[] duration,
             BitSet[] actors,
-<span class="nc" id="L73">            Optional&lt;Double&gt; optimal) {</span>
-<span class="nc" id="L74">        this.nbScene = nbScene;</span>
-<span class="nc" id="L75">        this.nbActors = nbActors;</span>
-<span class="nc" id="L76">        this.costs = costs;</span>
-<span class="nc" id="L77">        this.duration = duration;</span>
-<span class="nc" id="L78">        this.actors = actors;</span>
-<span class="nc" id="L79">        this.optimal = optimal;</span>
-<span class="nc" id="L80">    }</span>
+<span class="nc" id="L76">            Optional&lt;Double&gt; optimal) {</span>
+<span class="nc" id="L77">        this.nbScene = nbScene;</span>
+<span class="nc" id="L78">        this.nbActors = nbActors;</span>
+<span class="nc" id="L79">        this.costs = costs;</span>
+<span class="nc" id="L80">        this.duration = duration;</span>
+<span class="nc" id="L81">        this.actors = actors;</span>
+<span class="nc" id="L82">        this.optimal = optimal;</span>
+<span class="nc" id="L83">    }</span>
 
     /**
      * Constructs a TSP instance by reading a file in the standard dataset format.
      *
+     * &lt;p&gt;The first line gives the name of the instance, optionally followed by two tokens, the last
+     * one being the optimal value. The rest of the file is read as a sequence of integers separated
+     * by any whitespace, so that the line breaks, the blank lines and the leading spaces do not
+     * matter: the number of scenes and the number of actors (on one line or on two lines, both
+     * forms are used by the datasets), then for each actor one 0/1 value per scene followed by the
+     * cost of the actor, then the duration of each scene.
+     *
      * @param fname path to the input file
-     * @throws IOException if an I/O error occurs while reading the file
+     * @throws IOException if an I/O error occurs while reading the file, or if the file does not
+     *     contain the expected numbers
      */
-<span class="fc" id="L88">    public TSProblem(String fname) throws IOException {</span>
-<span class="fc" id="L89">        int nbScenes = 0;</span>
-<span class="fc" id="L90">        int nbActors = 0;</span>
-<span class="fc" id="L91">        int[] cost = new int[0];</span>
-<span class="fc" id="L92">        int[] duration = new int[0];</span>
-<span class="fc" id="L93">        BitSet[] actors = new BitSet[0];</span>
-<span class="fc" id="L94">        Optional&lt;Double&gt; opti = Optional.empty();</span>
-
-<span class="fc" id="L96">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
+<span class="fc" id="L99">    public TSProblem(String fname) throws IOException {</span>
+<span class="fc" id="L100">        Optional&lt;Double&gt; opti = Optional.empty();</span>
+<span class="fc" id="L101">        List&lt;String&gt; numbers = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L102">        try (BufferedReader br = new BufferedReader(new FileReader(fname))) {</span>
             String line;
-
-<span class="fc" id="L99">            int lineCount = 0;</span>
-<span class="fc" id="L100">            int skip = 0;</span>
-<span class="fc bfc" id="L101" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
-<span class="fc bfc" id="L102" title="All 2 branches covered.">                if (line.isEmpty()) {</span>
-<span class="fc" id="L103">                    skip++;</span>
-<span class="fc bfc" id="L104" title="All 2 branches covered.">                } else if (lineCount == 0) {</span>
-<span class="fc" id="L105">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc bfc" id="L106" title="All 2 branches covered.">                    if (tokens.length == 3) {</span>
-<span class="fc" id="L107">                        opti = Optional.of(Double.parseDouble(tokens[2]));</span>
+<span class="fc" id="L104">            boolean header = true;</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">            while ((line = br.readLine()) != null) {</span>
+<span class="fc" id="L106">                String trimmed = line.trim();</span>
+<span class="fc bfc" id="L107" title="All 2 branches covered.">                if (trimmed.isEmpty()) {</span>
+<span class="fc" id="L108">                    continue;</span>
+                }
+<span class="fc" id="L110">                String[] tokens = trimmed.split(&quot;\\s+&quot;);</span>
+<span class="fc bfc" id="L111" title="All 2 branches covered.">                if (header) {</span>
+<span class="fc" id="L112">                    header = false;</span>
+<span class="fc bfc" id="L113" title="All 2 branches covered.">                    if (tokens.length == 3) {</span>
+<span class="fc" id="L114">                        opti = Optional.of(Double.parseDouble(tokens[2]));</span>
                     }
-<span class="fc bfc" id="L109" title="All 2 branches covered.">                } else if (lineCount == 1) {</span>
-<span class="fc" id="L110">                    nbScenes = Integer.parseInt(line);</span>
-<span class="fc" id="L111">                    duration = new int[nbScenes];</span>
-<span class="fc bfc" id="L112" title="All 2 branches covered.">                } else if (lineCount == 2) {</span>
-<span class="fc" id="L113">                    nbActors = Integer.parseInt(line);</span>
-<span class="fc" id="L114">                    cost = new int[nbActors];</span>
-<span class="fc" id="L115">                    actors = new BitSet[nbScenes];</span>
-<span class="fc bfc" id="L116" title="All 2 branches covered.">                    for (int i = 0; i &lt; nbScenes; i++) {</span>
-<span class="fc" id="L117">                        actors[i] = new BitSet(nbActors);</span>
-                    }
-<span class="fc bfc" id="L119" title="All 2 branches covered.">                } else if (lineCount - skip - 3 &lt; nbActors) {</span>
-<span class="fc" id="L120">                    int actor = lineCount - skip - 3;</span>
-<span class="fc" id="L121">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc" id="L122">                    cost[actor] = Integer.parseInt(tokens[nbScenes]);</span>
-<span class="fc bfc" id="L123" title="All 2 branches covered.">                    for (int i = 0; i &lt; nbScenes; i++) {</span>
-<span class="fc bfc" id="L124" title="All 2 branches covered.">                        if (Integer.parseInt(tokens[i]) == 1) {</span>
-<span class="fc" id="L125">                            actors[i].set(actor);</span>
-                        }
-                    }
-<span class="fc" id="L128">                } else {</span>
-<span class="fc" id="L129">                    String[] tokens = line.split(&quot;\\s+&quot;);</span>
-<span class="fc bfc" id="L130" title="All 2 branches covered.">                    for (int i = 0; i &lt; nbScenes; i++) {</span>
-<span class="fc" id="L131">                        duration[i] = Integer.parseInt(tokens[i]);</span>
+                } else {
+<span class="fc" id="L117">                    numbers.addAll(Arrays.asList(tokens));</span>
+                }
+<span class="fc" id="L119">            }</span>
+        }
+<span class="fc" id="L121">        Iterator&lt;String&gt; it = numbers.iterator();</span>
+        try {
+<span class="fc" id="L123">            int nbScenes = Integer.parseInt(it.next());</span>
+<span class="fc" id="L124">            int nbActors = Integer.parseInt(it.next());</span>
+<span class="fc" id="L125">            int[] cost = new int[nbActors];</span>
+<span class="fc" id="L126">            int[] duration = new int[nbScenes];</span>
+<span class="fc" id="L127">            BitSet[] actors = new BitSet[nbScenes];</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">            for (int i = 0; i &lt; nbScenes; i++) {</span>
+<span class="fc" id="L129">                actors[i] = new BitSet(nbActors);</span>
+            }
+<span class="fc bfc" id="L131" title="All 2 branches covered.">            for (int actor = 0; actor &lt; nbActors; actor++) {</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">                for (int i = 0; i &lt; nbScenes; i++) {</span>
+<span class="fc bfc" id="L133" title="All 2 branches covered.">                    if (Integer.parseInt(it.next()) == 1) {</span>
+<span class="fc" id="L134">                        actors[i].set(actor);</span>
                     }
                 }
-<span class="fc" id="L134">                lineCount++;</span>
+<span class="fc" id="L137">                cost[actor] = Integer.parseInt(it.next());</span>
             }
-        }
-<span class="fc" id="L137">        this.nbScene = nbScenes;</span>
-<span class="fc" id="L138">        this.nbActors = nbActors;</span>
-<span class="fc" id="L139">        this.costs = cost;</span>
-<span class="fc" id="L140">        this.duration = duration;</span>
-<span class="fc" id="L141">        this.actors = actors;</span>
-<span class="fc" id="L142">        this.optimal = opti;</span>
-<span class="fc" id="L143">        this.name = Optional.of(fname);</span>
-<span class="fc" id="L144">    }</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">            for (int i = 0; i &lt; nbScenes; i++) {</span>
+<span class="fc" id="L140">                duration[i] = Integer.parseInt(it.next());</span>
+            }
+<span class="fc" id="L142">            this.nbScene = nbScenes;</span>
+<span class="fc" id="L143">            this.nbActors = nbActors;</span>
+<span class="fc" id="L144">            this.costs = cost;</span>
+<span class="fc" id="L145">            this.duration = duration;</span>
+<span class="fc" id="L146">            this.actors = actors;</span>
+<span class="fc" id="L147">        } catch (NoSuchElementException | NumberFormatException e) {</span>
+<span class="fc" id="L148">            throw new IOException(&quot;Invalid talent scheduling instance: &quot; + fname, e);</span>
+<span class="fc" id="L149">        }</span>
+<span class="fc" id="L150">        this.optimal = opti;</span>
+<span class="fc" id="L151">        this.name = Optional.of(fname);</span>
+<span class="fc" id="L152">    }</span>
 
     @Override
     public int nbVars() {
-<span class="fc" id="L148">        return nbScene;</span>
+<span class="fc" id="L156">        return nbScene;</span>
     }
 
     @Override
     public TSState initialState() {
-<span class="fc" id="L153">        BitSet scenes = new BitSet(nbScene);</span>
-<span class="fc" id="L154">        scenes.set(0, nbScene, true); // All scenes must be performed</span>
+<span class="fc" id="L161">        BitSet scenes = new BitSet(nbScene);</span>
+<span class="fc" id="L162">        scenes.set(0, nbScene, true); // All scenes must be performed</span>
         // return new TSState(scenes, new BitSet(nbScene));
-<span class="fc" id="L156">        return new TSState(</span>
-<span class="fc" id="L157">                scenes, new BitSet(nbScene), onLocationActors(scenes, new BitSet(nbScene)));</span>
+<span class="fc" id="L164">        return new TSState(</span>
+<span class="fc" id="L165">                scenes, new BitSet(nbScene), onLocationActors(scenes, new BitSet(nbScene)));</span>
     }
 
     @Override
     public double initialValue() {
-<span class="fc" id="L162">        int cost = 0;</span>
-<span class="fc bfc" id="L163" title="All 2 branches covered.">        for (int scene = 0; scene &lt; nbScene; scene++) {</span>
-<span class="fc" id="L164">            for (int actor = actors[scene].nextSetBit(0);</span>
-<span class="fc bfc" id="L165" title="All 2 branches covered.">                    actor &gt;= 0;</span>
-<span class="fc" id="L166">                    actor = actors[scene].nextSetBit(actor + 1)) {</span>
-<span class="fc" id="L167">                cost += costs[actor] * duration[scene];</span>
+<span class="fc" id="L170">        int cost = 0;</span>
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        for (int scene = 0; scene &lt; nbScene; scene++) {</span>
+<span class="fc" id="L172">            for (int actor = actors[scene].nextSetBit(0);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">                    actor &gt;= 0;</span>
+<span class="fc" id="L174">                    actor = actors[scene].nextSetBit(actor + 1)) {</span>
+<span class="fc" id="L175">                cost += costs[actor] * duration[scene];</span>
             }
         }
-<span class="fc" id="L170">        return cost;</span>
+<span class="fc" id="L178">        return cost;</span>
     }
 
     @Override
     public Iterator&lt;Integer&gt; domain(TSState state, int var) {
-<span class="fc" id="L175">        BitSet toReturn = new BitSet(nbVars());</span>
-<span class="fc" id="L176">        toReturn.or(state.remainingScenes());</span>
+<span class="fc" id="L183">        BitSet toReturn = new BitSet(nbVars());</span>
+<span class="fc" id="L184">        toReturn.or(state.remainingScenes());</span>
 
         // state inherits from a merged state. There is not enough remaining scenes to assign each
         // variable.
         // So, we select scene form maybeScenes
-<span class="fc bfc" id="L181" title="All 2 branches covered.">        if (var + toReturn.cardinality() &lt; nbVars()) {</span>
-<span class="fc" id="L182">            toReturn.or(state.maybeScenes());</span>
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (var + toReturn.cardinality() &lt; nbVars()) {</span>
+<span class="fc" id="L190">            toReturn.or(state.maybeScenes());</span>
         }
 
-<span class="fc" id="L185">        return toReturn.stream().iterator();</span>
+<span class="fc" id="L193">        return toReturn.stream().iterator();</span>
     }
 
     @Override
     public TSState transition(TSState state, Decision decision) {
-<span class="fc" id="L190">        BitSet newRemaining = (BitSet) state.remainingScenes().clone();</span>
-<span class="fc" id="L191">        BitSet newMaybe = (BitSet) state.maybeScenes().clone();</span>
-<span class="fc" id="L192">        newRemaining.set(decision.value(), false);</span>
-<span class="fc" id="L193">        newMaybe.set(decision.value(), false);</span>
+<span class="fc" id="L198">        BitSet newRemaining = (BitSet) state.remainingScenes().clone();</span>
+<span class="fc" id="L199">        BitSet newMaybe = (BitSet) state.maybeScenes().clone();</span>
+<span class="fc" id="L200">        newRemaining.set(decision.value(), false);</span>
+<span class="fc" id="L201">        newMaybe.set(decision.value(), false);</span>
 
         // return new TSState(newRemaining, newMaybe);
-<span class="fc" id="L196">        return new TSState(newRemaining, newMaybe, onLocationActors(newRemaining, newMaybe));</span>
+<span class="fc" id="L204">        return new TSState(newRemaining, newMaybe, onLocationActors(newRemaining, newMaybe));</span>
     }
 
     @Override
     public double transitionCost(TSState state, Decision decision) {
-<span class="fc" id="L201">        int scene = decision.value();</span>
+<span class="fc" id="L209">        int scene = decision.value();</span>
 
         // All the already present actors (playing for this scene or waiting)
         // Actors no longer needed are discarded from this BitSet.
-<span class="fc" id="L205">        BitSet toPay = onLocationActors(state);</span>
-<span class="fc" id="L206">        toPay.andNot(actors[scene]); // Add new actors</span>
+<span class="fc" id="L213">        BitSet toPay = onLocationActors(state);</span>
+<span class="fc" id="L214">        toPay.andNot(actors[scene]); // Add new actors</span>
 
-<span class="fc" id="L208">        int cost = 0;</span>
-<span class="fc bfc" id="L209" title="All 2 branches covered.">        for (int actor = toPay.nextSetBit(0); actor &gt;= 0; actor = toPay.nextSetBit(actor + 1)) {</span>
-<span class="fc" id="L210">            cost += costs[actor] * duration[scene];</span>
+<span class="fc" id="L216">        int cost = 0;</span>
+<span class="fc bfc" id="L217" title="All 2 branches covered.">        for (int actor = toPay.nextSetBit(0); actor &gt;= 0; actor = toPay.nextSetBit(actor + 1)) {</span>
+<span class="fc" id="L218">            cost += costs[actor] * duration[scene];</span>
         }
 
-<span class="fc" id="L213">        return cost;</span>
+<span class="fc" id="L221">        return cost;</span>
     }
 
     @Override
     public Optional&lt;Double&gt; optimalValue() {
-<span class="fc" id="L218">        return optimal;</span>
+<span class="fc" id="L226">        return optimal;</span>
     }
 
     @Override
     public double evaluate(int[] solution) throws InvalidSolutionException {
-<span class="pc bpc" id="L223" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
-<span class="nc" id="L224">            throw new InvalidSolutionException(</span>
-<span class="nc" id="L225">                    String.format(</span>
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">        if (solution.length != nbVars()) {</span>
+<span class="nc" id="L232">            throw new InvalidSolutionException(</span>
+<span class="nc" id="L233">                    String.format(</span>
                             &quot;The solution %s does not cover all &quot; + &quot;the %d variables&quot;,
-<span class="nc" id="L227">                            Arrays.toString(solution), nbVars()));</span>
+<span class="nc" id="L235">                            Arrays.toString(solution), nbVars()));</span>
         }
 
         // For each actor, return the position in the solution of the first scene in which he is
         // present.
-<span class="fc" id="L232">        int[] firstScenePos = new int[nbActors];</span>
-<span class="fc" id="L233">        Arrays.fill(firstScenePos, -1);</span>
+<span class="fc" id="L240">        int[] firstScenePos = new int[nbActors];</span>
+<span class="fc" id="L241">        Arrays.fill(firstScenePos, -1);</span>
         // For each actor, return the position in the solution of the last scene in which he is
         // present.
-<span class="fc" id="L236">        int[] lastScenePos = new int[nbActors];</span>
-<span class="fc" id="L237">        Arrays.fill(lastScenePos, -1);</span>
-<span class="fc bfc" id="L238" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
-<span class="fc" id="L239">            int scene = solution[i];</span>
-<span class="fc" id="L240">            BitSet neededActors = actors[scene];</span>
-<span class="fc" id="L241">            for (int actor = neededActors.nextSetBit(0);</span>
-<span class="fc bfc" id="L242" title="All 2 branches covered.">                    actor &gt;= 0;</span>
-<span class="fc" id="L243">                    actor = neededActors.nextSetBit(actor + 1)) {</span>
-<span class="fc bfc" id="L244" title="All 2 branches covered.">                if (firstScenePos[actor] == -1) {</span>
-<span class="fc" id="L245">                    firstScenePos[actor] = i;</span>
+<span class="fc" id="L244">        int[] lastScenePos = new int[nbActors];</span>
+<span class="fc" id="L245">        Arrays.fill(lastScenePos, -1);</span>
+<span class="fc bfc" id="L246" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L247">            int scene = solution[i];</span>
+<span class="fc" id="L248">            BitSet neededActors = actors[scene];</span>
+<span class="fc" id="L249">            for (int actor = neededActors.nextSetBit(0);</span>
+<span class="fc bfc" id="L250" title="All 2 branches covered.">                    actor &gt;= 0;</span>
+<span class="fc" id="L251">                    actor = neededActors.nextSetBit(actor + 1)) {</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">                if (firstScenePos[actor] == -1) {</span>
+<span class="fc" id="L253">                    firstScenePos[actor] = i;</span>
                 }
-<span class="pc bpc" id="L247" title="1 of 2 branches missed.">                if (firstScenePos[actor] != -1) {</span>
-<span class="fc" id="L248">                    lastScenePos[actor] = i;</span>
-                }
-            }
-        }
-
-<span class="fc" id="L253">        double value = 0;</span>
-<span class="fc bfc" id="L254" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
-<span class="fc" id="L255">            int scene = solution[i];</span>
-<span class="fc bfc" id="L256" title="All 2 branches covered.">            for (int actor = 0; actor &lt; nbActors; actor++) {</span>
-<span class="fc bfc" id="L257" title="All 4 branches covered.">                if (firstScenePos[actor] &lt;= i &amp;&amp; i &lt;= lastScenePos[actor]) { // The actor is present</span>
-<span class="fc" id="L258">                    value += costs[actor] * duration[scene];</span>
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">                if (firstScenePos[actor] != -1) {</span>
+<span class="fc" id="L256">                    lastScenePos[actor] = i;</span>
                 }
             }
         }
 
-<span class="fc" id="L263">        return value;</span>
+<span class="fc" id="L261">        double value = 0;</span>
+<span class="fc bfc" id="L262" title="All 2 branches covered.">        for (int i = 0; i &lt; nbVars(); i++) {</span>
+<span class="fc" id="L263">            int scene = solution[i];</span>
+<span class="fc bfc" id="L264" title="All 2 branches covered.">            for (int actor = 0; actor &lt; nbActors; actor++) {</span>
+<span class="fc bfc" id="L265" title="All 4 branches covered.">                if (firstScenePos[actor] &lt;= i &amp;&amp; i &lt;= lastScenePos[actor]) { // The actor is present</span>
+<span class="fc" id="L266">                    value += costs[actor] * duration[scene];</span>
+                }
+            }
+        }
+
+<span class="fc" id="L271">        return value;</span>
     }
 
     /**
@@ -270,13 +278,13 @@ public class TSProblem implements Problem&lt;TSState&gt; {
      * @return the sum of the daily costs of the actors involved in {@code scene}
      */
     public int sceneCost(int scene) {
-<span class="nc" id="L273">        int sum = 0;</span>
-<span class="nc" id="L274">        for (int actor = this.actors[scene].nextSetBit(0);</span>
-<span class="nc bnc" id="L275" title="All 2 branches missed.">                actor &gt;= 0;</span>
-<span class="nc" id="L276">                actor = this.actors[scene].nextSetBit(actor + 1)) {</span>
-<span class="nc" id="L277">            sum += costs[actor];</span>
+<span class="nc" id="L281">        int sum = 0;</span>
+<span class="nc" id="L282">        for (int actor = this.actors[scene].nextSetBit(0);</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">                actor &gt;= 0;</span>
+<span class="nc" id="L284">                actor = this.actors[scene].nextSetBit(actor + 1)) {</span>
+<span class="nc" id="L285">            sum += costs[actor];</span>
         }
-<span class="nc" id="L279">        return sum;</span>
+<span class="nc" id="L287">        return sum;</span>
     }
 
     /**
@@ -287,20 +295,20 @@ public class TSProblem implements Problem&lt;TSState&gt; {
      * @return BitSet of actors currently on location
      */
     public BitSet onLocationActors(TSState state) {
-<span class="fc" id="L290">        BitSet before = new BitSet(); // Actors for past scenes</span>
-<span class="fc" id="L291">        BitSet after = new BitSet(); // Actors for future scenes</span>
+<span class="fc" id="L298">        BitSet before = new BitSet(); // Actors for past scenes</span>
+<span class="fc" id="L299">        BitSet after = new BitSet(); // Actors for future scenes</span>
 
-<span class="fc bfc" id="L293" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
-<span class="fc bfc" id="L294" title="All 2 branches covered.">            if (!state.maybeScenes().get(i)) {</span>
-<span class="fc bfc" id="L295" title="All 2 branches covered.">                if (state.remainingScenes().get(i)) {</span>
-<span class="fc" id="L296">                    after.or(actors[i]);</span>
+<span class="fc bfc" id="L301" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
+<span class="fc bfc" id="L302" title="All 2 branches covered.">            if (!state.maybeScenes().get(i)) {</span>
+<span class="fc bfc" id="L303" title="All 2 branches covered.">                if (state.remainingScenes().get(i)) {</span>
+<span class="fc" id="L304">                    after.or(actors[i]);</span>
                 } else {
-<span class="fc" id="L298">                    before.or(actors[i]);</span>
+<span class="fc" id="L306">                    before.or(actors[i]);</span>
                 }
             }
         }
-<span class="fc" id="L302">        after.and(before); // Already present actors</span>
-<span class="fc" id="L303">        return after;</span>
+<span class="fc" id="L310">        after.and(before); // Already present actors</span>
+<span class="fc" id="L311">        return after;</span>
     }
 
     /**
@@ -312,37 +320,37 @@ public class TSProblem implements Problem&lt;TSState&gt; {
      * @return the BitSet of actors currently on location
      */
     public BitSet onLocationActors(BitSet remainingScenes, BitSet maybeScenes) {
-<span class="fc" id="L315">        BitSet before = new BitSet(); // Actors for past scenes</span>
-<span class="fc" id="L316">        BitSet after = new BitSet(); // Actors for future scenes</span>
+<span class="fc" id="L323">        BitSet before = new BitSet(); // Actors for past scenes</span>
+<span class="fc" id="L324">        BitSet after = new BitSet(); // Actors for future scenes</span>
 
-<span class="fc bfc" id="L318" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
-<span class="fc bfc" id="L319" title="All 2 branches covered.">            if (!maybeScenes.get(i)) {</span>
-<span class="fc bfc" id="L320" title="All 2 branches covered.">                if (remainingScenes.get(i)) {</span>
-<span class="fc" id="L321">                    after.or(actors[i]);</span>
+<span class="fc bfc" id="L326" title="All 2 branches covered.">        for (int i = 0; i &lt; nbScene; i++) {</span>
+<span class="fc bfc" id="L327" title="All 2 branches covered.">            if (!maybeScenes.get(i)) {</span>
+<span class="fc bfc" id="L328" title="All 2 branches covered.">                if (remainingScenes.get(i)) {</span>
+<span class="fc" id="L329">                    after.or(actors[i]);</span>
                 } else {
-<span class="fc" id="L323">                    before.or(actors[i]);</span>
+<span class="fc" id="L331">                    before.or(actors[i]);</span>
                 }
             }
         }
-<span class="fc" id="L327">        after.and(before); // Already present actors</span>
-<span class="fc" id="L328">        return after;</span>
+<span class="fc" id="L335">        after.and(before); // Already present actors</span>
+<span class="fc" id="L336">        return after;</span>
     }
 
     @Override
     public String toString() {
-<span class="pc bpc" id="L333" title="1 of 2 branches missed.">        if (name.isPresent()) {</span>
-<span class="fc" id="L334">            return name.get();</span>
+<span class="pc bpc" id="L341" title="1 of 2 branches missed.">        if (name.isPresent()) {</span>
+<span class="fc" id="L342">            return name.get();</span>
         } else {
-<span class="nc" id="L336">            String nbSceneStr = String.format(&quot;Nb Scene: %d%n&quot;, nbScene);</span>
-<span class="nc" id="L337">            String nbActorsStr = String.format(&quot;Nb Actors: %d%n&quot;, nbActors);</span>
-<span class="nc" id="L338">            String costStr = String.format(&quot;Costs: %s%n&quot;, Arrays.toString(costs));</span>
-<span class="nc" id="L339">            String durationStr = String.format(&quot;Duration: %s%n&quot;, Arrays.toString(duration));</span>
-<span class="nc" id="L340">            StringBuilder actorsStr = new StringBuilder();</span>
-<span class="nc bnc" id="L341" title="All 2 branches missed.">            for (int i = 0; i &lt; actors.length; i++) {</span>
-<span class="nc" id="L342">                actorsStr.append(String.format(&quot;Scene %d needs actors: %s%n&quot;, i, actors[i]));</span>
+<span class="nc" id="L344">            String nbSceneStr = String.format(&quot;Nb Scene: %d%n&quot;, nbScene);</span>
+<span class="nc" id="L345">            String nbActorsStr = String.format(&quot;Nb Actors: %d%n&quot;, nbActors);</span>
+<span class="nc" id="L346">            String costStr = String.format(&quot;Costs: %s%n&quot;, Arrays.toString(costs));</span>
+<span class="nc" id="L347">            String durationStr = String.format(&quot;Duration: %s%n&quot;, Arrays.toString(duration));</span>
+<span class="nc" id="L348">            StringBuilder actorsStr = new StringBuilder();</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">            for (int i = 0; i &lt; actors.length; i++) {</span>
+<span class="nc" id="L350">                actorsStr.append(String.format(&quot;Scene %d needs actors: %s%n&quot;, i, actors[i]));</span>
             }
 
-<span class="nc" id="L345">            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;</span>
+<span class="nc" id="L353">            return nbSceneStr + nbActorsStr + costStr + durationStr + actorsStr;</span>
         }
     }
 }

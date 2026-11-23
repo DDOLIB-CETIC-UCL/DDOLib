@@ -67,23 +67,43 @@ public abstract class SearchStatistics {
 <span class="fc" id="L67">    protected double _gap = Double.POSITIVE_INFINITY;</span>
 
     /**
+     * Best lower bound on the optimal value proved so far (the problems are minimized).
+     */
+<span class="fc" id="L72">    protected double _bestBound = Double.NEGATIVE_INFINITY;</span>
+
+    /**
+     * Number of nodes expanded so far (nodes whose successors were computed).
+     */
+<span class="fc" id="L77">    protected long _nbExpandedNodes = 0;</span>
+
+    /**
+     * Number of nodes generated so far (successors computed, before any pruning).
+     */
+<span class="fc" id="L82">    protected long _nbGeneratedNodes = 0;</span>
+
+    /**
      * Maximum size reached by the search frontier.
      */
-<span class="fc" id="L72">    protected int _frontierMaxSize = 0;</span>
+<span class="fc" id="L87">    protected int _frontierMaxSize = 0;</span>
 
     /**
      * Relative improvement of the incumbent value.
      */
-<span class="fc" id="L77">    protected double _relativeImprovement = 1.0;</span>
+<span class="fc" id="L92">    protected double _relativeImprovement = 1.0;</span>
 
     /**
      * Iteration during which the last gap improvement was found.
      */
-<span class="fc" id="L82">    protected int _lastIterationOfGapImprovement = 0;</span>
+<span class="fc" id="L97">    protected int _lastIterationOfGapImprovement = 0;</span>
 
-<span class="fc" id="L84">    protected int _nbFastLowerBoundPruning = 0;</span>
+    /**
+     * Number of nodes pruned because their fast lower bound shows that they cannot improve the
+     * best solution found so far.
+     */
+<span class="fc" id="L103">    protected int _nbFastLowerBoundPruning = 0;</span>
 
-<span class="fc" id="L86">    protected int _nbDominancePruning = 0;</span>
+    /** Number of nodes pruned because their state is dominated by the state of another node. */
+<span class="fc" id="L106">    protected int _nbDominancePruning = 0;</span>
 
     /**
      * Constructs a new SearchStatistics instance.
@@ -91,12 +111,12 @@ public abstract class SearchStatistics {
      * @param startTime the start time of the search (in milliseconds)
      * @param initValue the initial value for the incumbent
      */
-<span class="fc" id="L94">    public SearchStatistics(long startTime, double initValue) {</span>
-<span class="fc" id="L95">        _startTime = startTime;</span>
-<span class="fc" id="L96">        _lastTimeOfImprovement = startTime;</span>
-<span class="fc" id="L97">        _currentTime = startTime;</span>
-<span class="fc" id="L98">        _incumbent = initValue;</span>
-<span class="fc" id="L99">    }</span>
+<span class="fc" id="L114">    public SearchStatistics(long startTime, double initValue) {</span>
+<span class="fc" id="L115">        _startTime = startTime;</span>
+<span class="fc" id="L116">        _lastTimeOfImprovement = startTime;</span>
+<span class="fc" id="L117">        _currentTime = startTime;</span>
+<span class="fc" id="L118">        _incumbent = initValue;</span>
+<span class="fc" id="L119">    }</span>
 
     /**
      * Creates a new instance of the specific subclass with initial values. This is used by the copy
@@ -112,7 +132,7 @@ public abstract class SearchStatistics {
      * @return the last time of improvement (in milliseconds)
      */
     public long lastTimeOfImprovement() {
-<span class="fc" id="L115">        return _lastTimeOfImprovement;</span>
+<span class="fc" id="L135">        return _lastTimeOfImprovement;</span>
     }
 
     /**
@@ -121,7 +141,7 @@ public abstract class SearchStatistics {
      * @return the runtime (in milliseconds)
      */
     public long runtime() {
-<span class="fc" id="L124">        return _currentTime - _startTime;</span>
+<span class="fc" id="L144">        return _currentTime - _startTime;</span>
     }
 
     /**
@@ -130,7 +150,7 @@ public abstract class SearchStatistics {
      * @return the current time (in milliseconds)
      */
     public long currentTime() {
-<span class="fc" id="L133">        return _currentTime;</span>
+<span class="fc" id="L153">        return _currentTime;</span>
     }
 
     /**
@@ -139,7 +159,7 @@ public abstract class SearchStatistics {
      * @return the number of iterations
      */
     public int nbIterations() {
-<span class="fc" id="L142">        return _nbIterations;</span>
+<span class="fc" id="L162">        return _nbIterations;</span>
     }
 
     /**
@@ -148,7 +168,7 @@ public abstract class SearchStatistics {
      * @return the last iteration of improvement
      */
     public int lastIterationOfImprovement() {
-<span class="fc" id="L151">        return _lastIterationOfImprovement;</span>
+<span class="fc" id="L171">        return _lastIterationOfImprovement;</span>
     }
 
     /**
@@ -157,7 +177,7 @@ public abstract class SearchStatistics {
      * @return the last iteration of gap improvement
      */
     public int lastIterationOfGapImprovement() {
-<span class="fc" id="L160">        return _lastIterationOfGapImprovement;</span>
+<span class="fc" id="L180">        return _lastIterationOfGapImprovement;</span>
     }
 
     /**
@@ -166,7 +186,57 @@ public abstract class SearchStatistics {
      * @return the gap (percentage)
      */
     public double gap() {
-<span class="fc" id="L169">        return _gap;</span>
+<span class="fc" id="L189">        return _gap;</span>
+    }
+
+    /**
+     * Returns the number of nodes expanded so far: the nodes whose successors were computed. For
+     * A*, AWA*, ACS and DFS, a node removed from the open list but then discarded (dominated,
+     * already closed or pruned by the bound) is not expanded. For the DD-based solvers (DDO, LNS,
+     * exact), it is the number of DD nodes whose children were generated, over all the compiled
+     * DDs (restricted and relaxed).
+     *
+     * &lt;p&gt;With {@link #nbGeneratedNodes()}, it allows to compare the search effort of different
+     * solvers, for instance with the {@code expanded} and {@code generated} counts of DIDP.
+     *
+     * @return the number of expanded nodes
+     */
+    public long nbExpandedNodes() {
+<span class="fc" id="L205">        return _nbExpandedNodes;</span>
+    }
+
+    /**
+     * Returns the number of nodes generated so far: one per successor computed when a node is
+     * expanded (one per transition applied), before any pruning by the bound, the dominance or a
+     * duplicate. For the DD-based solvers, a transition leading to an existing node of the next
+     * layer is also counted. The root is not counted.
+     *
+     * @return the number of generated nodes
+     */
+    public long nbGeneratedNodes() {
+<span class="fc" id="L217">        return _nbGeneratedNodes;</span>
+    }
+
+    /**
+     * Returns the best lower bound on the optimal value proved so far (all the problems are
+     * minimized). It is known even when the search is stopped before the end, for instance by a
+     * time limit, and does not require an incumbent.
+     *
+     * &lt;ul&gt;
+     *   &lt;li&gt;When the search is {@link SearchStatus#OPTIMAL}, it is the incumbent value.
+     *   &lt;li&gt;When the problem is {@link SearchStatus#UNSAT}, it is {@link Double#POSITIVE_INFINITY}.
+     *   &lt;li&gt;When no bound is known, it is {@link Double#NEGATIVE_INFINITY}.
+     * &lt;/ul&gt;
+     *
+     * @return the best lower bound on the optimal value
+     */
+    public double bestBound() {
+<span class="fc bfc" id="L234" title="All 2 branches covered.">        if (_status == SearchStatus.OPTIMAL) {</span>
+<span class="fc" id="L235">            return _incumbent;</span>
+<span class="pc bpc" id="L236" title="1 of 2 branches missed.">        } else if (_status == SearchStatus.UNSAT) {</span>
+<span class="nc" id="L237">            return Double.POSITIVE_INFINITY;</span>
+        }
+<span class="fc" id="L239">        return _bestBound;</span>
     }
 
     /**
@@ -175,7 +245,7 @@ public abstract class SearchStatistics {
      * @return the incumbent value
      */
     public double incumbent() {
-<span class="fc" id="L178">        return _incumbent;</span>
+<span class="fc" id="L248">        return _incumbent;</span>
     }
 
     /**
@@ -184,7 +254,7 @@ public abstract class SearchStatistics {
      * @return the previous incumbent value
      */
     public double prevIncumbent() {
-<span class="nc" id="L187">        return _prevIncumbent;</span>
+<span class="nc" id="L257">        return _prevIncumbent;</span>
     }
 
     /**
@@ -193,7 +263,7 @@ public abstract class SearchStatistics {
      * @return the {@link SearchStatus}
      */
     public SearchStatus status() {
-<span class="fc" id="L196">        return _status;</span>
+<span class="fc" id="L266">        return _status;</span>
     }
 
     /**
@@ -202,7 +272,7 @@ public abstract class SearchStatistics {
      * @return the maximum frontier size
      */
     public int frontierMaxSize() {
-<span class="fc" id="L205">        return _frontierMaxSize;</span>
+<span class="fc" id="L275">        return _frontierMaxSize;</span>
     }
 
     /**
@@ -211,15 +281,27 @@ public abstract class SearchStatistics {
      * @return the relative improvement in percent
      */
     public double relativeImprovement() {
-<span class="fc" id="L214">        return 100 * _relativeImprovement;</span>
+<span class="fc" id="L284">        return 100 * _relativeImprovement;</span>
     }
 
+    /**
+     * Returns the number of nodes pruned because their fast lower bound shows that they cannot
+     * improve the best solution found so far.
+     *
+     * @return the number of nodes pruned by the fast lower bound
+     */
     public int nbFastLowerBoundPruning() {
-<span class="nc" id="L218">        return _nbFastLowerBoundPruning;</span>
+<span class="fc" id="L294">        return _nbFastLowerBoundPruning;</span>
     }
 
+    /**
+     * Returns the number of nodes pruned because their state is dominated by the state of another
+     * node.
+     *
+     * @return the number of nodes pruned by the dominance
+     */
     public int nbDominancePruning() {
-<span class="nc" id="L222">        return _nbDominancePruning;</span>
+<span class="fc" id="L304">        return _nbDominancePruning;</span>
     }
 
     /**
@@ -228,22 +310,25 @@ public abstract class SearchStatistics {
      * @return a copy of the current statistics
      */
     public SearchStatistics copy() {
-<span class="fc" id="L231">        SearchStatistics clone = createSpecificInstance();</span>
+<span class="fc" id="L313">        SearchStatistics clone = createSpecificInstance();</span>
 
-<span class="fc" id="L233">        clone._currentTime = this._currentTime;</span>
-<span class="fc" id="L234">        clone._lastTimeOfImprovement = this._lastTimeOfImprovement;</span>
-<span class="fc" id="L235">        clone._status = this._status;</span>
-<span class="fc" id="L236">        clone._nbIterations = this._nbIterations;</span>
-<span class="fc" id="L237">        clone._lastIterationOfImprovement = this._lastIterationOfImprovement;</span>
-<span class="fc" id="L238">        clone._lastIterationOfGapImprovement = this._lastIterationOfGapImprovement;</span>
-<span class="fc" id="L239">        clone._prevIncumbent = this._prevIncumbent;</span>
-<span class="fc" id="L240">        clone._gap = this._gap;</span>
-<span class="fc" id="L241">        clone._frontierMaxSize = this._frontierMaxSize;</span>
-<span class="fc" id="L242">        clone._relativeImprovement = this._relativeImprovement;</span>
-<span class="fc" id="L243">        clone._nbFastLowerBoundPruning = this._nbFastLowerBoundPruning;</span>
-<span class="fc" id="L244">        clone._nbDominancePruning = this._nbDominancePruning;</span>
+<span class="fc" id="L315">        clone._currentTime = this._currentTime;</span>
+<span class="fc" id="L316">        clone._lastTimeOfImprovement = this._lastTimeOfImprovement;</span>
+<span class="fc" id="L317">        clone._status = this._status;</span>
+<span class="fc" id="L318">        clone._nbIterations = this._nbIterations;</span>
+<span class="fc" id="L319">        clone._lastIterationOfImprovement = this._lastIterationOfImprovement;</span>
+<span class="fc" id="L320">        clone._lastIterationOfGapImprovement = this._lastIterationOfGapImprovement;</span>
+<span class="fc" id="L321">        clone._prevIncumbent = this._prevIncumbent;</span>
+<span class="fc" id="L322">        clone._gap = this._gap;</span>
+<span class="fc" id="L323">        clone._bestBound = this._bestBound;</span>
+<span class="fc" id="L324">        clone._nbExpandedNodes = this._nbExpandedNodes;</span>
+<span class="fc" id="L325">        clone._nbGeneratedNodes = this._nbGeneratedNodes;</span>
+<span class="fc" id="L326">        clone._frontierMaxSize = this._frontierMaxSize;</span>
+<span class="fc" id="L327">        clone._relativeImprovement = this._relativeImprovement;</span>
+<span class="fc" id="L328">        clone._nbFastLowerBoundPruning = this._nbFastLowerBoundPruning;</span>
+<span class="fc" id="L329">        clone._nbDominancePruning = this._nbDominancePruning;</span>
 
-<span class="fc" id="L246">        return clone;</span>
+<span class="fc" id="L331">        return clone;</span>
     }
 
     /**
@@ -254,23 +339,23 @@ public abstract class SearchStatistics {
      * @return a new instance with updated incumbent and gap
      */
     public SearchStatistics updateIncumbent(double incumbent, double gap) {
-<span class="fc" id="L257">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L258">        toReturn._incumbent = incumbent;</span>
-<span class="fc" id="L259">        toReturn._prevIncumbent = this._incumbent;</span>
-<span class="fc" id="L260">        toReturn._currentTime = System.currentTimeMillis();</span>
-<span class="fc" id="L261">        toReturn._lastTimeOfImprovement = toReturn._currentTime;</span>
-<span class="fc" id="L262">        toReturn._lastIterationOfImprovement = this._nbIterations;</span>
-<span class="fc bfc" id="L263" title="All 2 branches covered.">        if (gap &lt; this._gap) {</span>
-<span class="fc" id="L264">            toReturn._lastIterationOfGapImprovement = this._nbIterations;</span>
-<span class="fc" id="L265">            toReturn._gap = gap;</span>
+<span class="fc" id="L342">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L343">        toReturn._incumbent = incumbent;</span>
+<span class="fc" id="L344">        toReturn._prevIncumbent = this._incumbent;</span>
+<span class="fc" id="L345">        toReturn._currentTime = System.currentTimeMillis();</span>
+<span class="fc" id="L346">        toReturn._lastTimeOfImprovement = toReturn._currentTime;</span>
+<span class="fc" id="L347">        toReturn._lastIterationOfImprovement = this._nbIterations;</span>
+<span class="fc bfc" id="L348" title="All 2 branches covered.">        if (gap &lt; this._gap) {</span>
+<span class="fc" id="L349">            toReturn._lastIterationOfGapImprovement = this._nbIterations;</span>
+<span class="fc" id="L350">            toReturn._gap = gap;</span>
         }
-<span class="fc bfc" id="L267" title="All 4 branches covered.">        if (Double.isInfinite(this._incumbent) || this._incumbent == 0) {</span>
-<span class="fc" id="L268">            toReturn._relativeImprovement = 1.0;</span>
+<span class="fc bfc" id="L352" title="All 4 branches covered.">        if (Double.isInfinite(this._incumbent) || this._incumbent == 0) {</span>
+<span class="fc" id="L353">            toReturn._relativeImprovement = 1.0;</span>
         } else {
-<span class="fc" id="L270">            toReturn._relativeImprovement = abs(incumbent - this._incumbent) / abs(this._incumbent);</span>
+<span class="fc" id="L355">            toReturn._relativeImprovement = abs(incumbent - this._incumbent) / abs(this._incumbent);</span>
         }
 
-<span class="fc" id="L273">        return toReturn;</span>
+<span class="fc" id="L358">        return toReturn;</span>
     }
 
     /**
@@ -280,9 +365,9 @@ public abstract class SearchStatistics {
      * @return a new instance with the updated status
      */
     public SearchStatistics updateStatus(SearchStatus status) {
-<span class="fc" id="L283">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L284">        toReturn._status = status;</span>
-<span class="fc" id="L285">        return toReturn;</span>
+<span class="fc" id="L368">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L369">        toReturn._status = status;</span>
+<span class="fc" id="L370">        return toReturn;</span>
     }
 
     /**
@@ -291,9 +376,9 @@ public abstract class SearchStatistics {
      * @return a new instance with incremented iterations
      */
     public SearchStatistics incrementNbIter() {
-<span class="fc" id="L294">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L295">        toReturn._nbIterations++;</span>
-<span class="fc" id="L296">        return toReturn;</span>
+<span class="fc" id="L379">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L380">        toReturn._nbIterations++;</span>
+<span class="fc" id="L381">        return toReturn;</span>
     }
 
     /**
@@ -303,9 +388,9 @@ public abstract class SearchStatistics {
      * @return a new instance with the updated maximum frontier size
      */
     public SearchStatistics updateFrontierMaxSize(int frontierSize) {
-<span class="fc" id="L306">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L307">        toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);</span>
-<span class="fc" id="L308">        return toReturn;</span>
+<span class="fc" id="L391">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L392">        toReturn._frontierMaxSize = Integer.max(this._frontierMaxSize, frontierSize);</span>
+<span class="fc" id="L393">        return toReturn;</span>
     }
 
     /**
@@ -315,12 +400,55 @@ public abstract class SearchStatistics {
      * @return a new instance with the updated gap
      */
     public SearchStatistics updateGap(double gap) {
-<span class="fc" id="L318">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc bfc" id="L319" title="All 2 branches covered.">        if (gap &lt; this._gap) {</span>
-<span class="fc" id="L320">            toReturn._lastIterationOfGapImprovement = this._nbIterations;</span>
-<span class="fc" id="L321">            toReturn._gap = gap;</span>
+<span class="fc" id="L403">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc bfc" id="L404" title="All 2 branches covered.">        if (gap &lt; this._gap) {</span>
+<span class="fc" id="L405">            toReturn._lastIterationOfGapImprovement = this._nbIterations;</span>
+<span class="fc" id="L406">            toReturn._gap = gap;</span>
         }
-<span class="fc" id="L323">        return toReturn;</span>
+<span class="fc" id="L408">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with an updated best bound. Any valid lower bound on
+     * the optimal value can be given: the best one seen so far is kept.
+     *
+     * @param bound a lower bound on the optimal value
+     * @return a new instance with the updated best bound
+     */
+    public SearchStatistics updateBestBound(double bound) {
+<span class="fc" id="L419">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc bfc" id="L420" title="All 2 branches covered.">        if (bound &gt; this._bestBound) {</span>
+<span class="fc" id="L421">            toReturn._bestBound = bound;</span>
+        }
+<span class="fc" id="L423">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with the given numbers of expanded and generated
+     * nodes (totals since the beginning of the search).
+     *
+     * @param nbExpanded the number of expanded nodes
+     * @param nbGenerated the number of generated nodes
+     * @return a new instance with the updated node counts
+     */
+    public SearchStatistics updateNodeCounts(long nbExpanded, long nbGenerated) {
+<span class="fc" id="L435">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L436">        toReturn._nbExpandedNodes = nbExpanded;</span>
+<span class="fc" id="L437">        toReturn._nbGeneratedNodes = nbGenerated;</span>
+<span class="fc" id="L438">        return toReturn;</span>
+    }
+
+    /**
+     * Returns a new SearchStatistics instance with the given numbers of expanded and generated
+     * nodes added to the current ones.
+     *
+     * @param nbExpanded the number of expanded nodes to add
+     * @param nbGenerated the number of generated nodes to add
+     * @return a new instance with the updated node counts
+     */
+    public SearchStatistics addNodeCounts(long nbExpanded, long nbGenerated) {
+<span class="fc" id="L450">        return updateNodeCounts(</span>
+                _nbExpandedNodes + nbExpanded, _nbGeneratedNodes + nbGenerated);
     }
 
     /**
@@ -330,78 +458,112 @@ public abstract class SearchStatistics {
      * @return a new instance with the updated time
      */
     public SearchStatistics updateTime(long time) {
-<span class="fc" id="L333">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L334">        toReturn._currentTime = time;</span>
-<span class="fc" id="L335">        return toReturn;</span>
+<span class="fc" id="L461">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L462">        toReturn._currentTime = time;</span>
+<span class="fc" id="L463">        return toReturn;</span>
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with one more node pruned by the fast
+     * lower bound.
+     *
+     * @return a new instance with the incremented number of fast lower bound prunings
+     */
     public SearchStatistics incrementNbFastLowerBoundPruning() {
-<span class="fc" id="L339">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L340">        toReturn._nbFastLowerBoundPruning++;</span>
-<span class="fc" id="L341">        return toReturn;</span>
+<span class="fc" id="L473">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L474">        toReturn._nbFastLowerBoundPruning++;</span>
+<span class="fc" id="L475">        return toReturn;</span>
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with one more node pruned by the
+     * dominance.
+     *
+     * @return a new instance with the incremented number of dominance prunings
+     */
     public SearchStatistics incrementNbDominancePruning() {
-<span class="fc" id="L345">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L346">        toReturn._nbDominancePruning++;</span>
-<span class="fc" id="L347">        return toReturn;</span>
+<span class="fc" id="L485">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L486">        toReturn._nbDominancePruning++;</span>
+<span class="fc" id="L487">        return toReturn;</span>
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with additional nodes pruned by the
+     * fast lower bound, for instance those pruned during the compilation of a decision diagram.
+     *
+     * @param nbPruning the number of nodes pruned by the fast lower bound to add
+     * @return a new instance with the updated number of fast lower bound prunings
+     */
     public SearchStatistics addNbFastLowerBoundPruning(int nbPruning) {
-<span class="fc" id="L351">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L352">        toReturn._nbFastLowerBoundPruning += nbPruning;</span>
-<span class="fc" id="L353">        return toReturn;</span>
+<span class="fc" id="L498">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L499">        toReturn._nbFastLowerBoundPruning += nbPruning;</span>
+<span class="fc" id="L500">        return toReturn;</span>
     }
 
+    /**
+     * Creates and returns a copy of this statistics instance with additional nodes pruned by the
+     * dominance, for instance those pruned during the compilation of a decision diagram.
+     *
+     * @param nbPruning the number of nodes pruned by the dominance to add
+     * @return a new instance with the updated number of dominance prunings
+     */
     public SearchStatistics addNbDominancePruning(int nbPruning) {
-<span class="fc" id="L357">        SearchStatistics toReturn = this.copy();</span>
-<span class="fc" id="L358">        toReturn._nbDominancePruning += nbPruning;</span>
-<span class="fc" id="L359">        return toReturn;</span>
+<span class="fc" id="L511">        SearchStatistics toReturn = this.copy();</span>
+<span class="fc" id="L512">        toReturn._nbDominancePruning += nbPruning;</span>
+<span class="fc" id="L513">        return toReturn;</span>
     }
 
     @Override
     public String toString() {
-<span class="nc" id="L364">        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);</span>
-<span class="nc" id="L365">        symbols.setGroupingSeparator(' ');</span>
-<span class="nc" id="L366">        DecimalFormat df = new DecimalFormat(&quot;#,##0.##########&quot;, symbols);</span>
-<span class="nc" id="L367">        DecimalFormat gapFormat = new DecimalFormat(&quot;#,##0.####&quot;, symbols);</span>
+<span class="fc" id="L518">        DecimalFormatSymbols symbols = new DecimalFormatSymbols(Locale.US);</span>
+<span class="fc" id="L519">        symbols.setGroupingSeparator(' ');</span>
+<span class="fc" id="L520">        DecimalFormat df = new DecimalFormat(&quot;#,##0.##########&quot;, symbols);</span>
+<span class="fc" id="L521">        DecimalFormat gapFormat = new DecimalFormat(&quot;#,##0.####&quot;, symbols);</span>
 
-<span class="nc" id="L369">        List&lt;String&gt; labels =</span>
-<span class="nc" id="L370">                List.of(</span>
+<span class="fc" id="L523">        List&lt;String&gt; labels =</span>
+<span class="fc" id="L524">                List.of(</span>
                         &quot;Status&quot;,
                         &quot;Iterations&quot;,
                         &quot;Frontier Max Size&quot;,
                         &quot;Runtime&quot;,
                         &quot;Incumbent&quot;,
                         &quot;Gap&quot;,
+                        &quot;Best bound&quot;,
+                        &quot;Expanded nodes&quot;,
+                        &quot;Generated nodes&quot;,
                         &quot;Relative improvement&quot;,
                         &quot;Nb FastLowerBound pruning&quot;,
                         &quot;Nb Dominance pruning&quot;);
 
-<span class="nc" id="L381">        List&lt;String&gt; values =</span>
-<span class="nc" id="L382">                List.of(</span>
-<span class="nc" id="L383">                        _status.toString(),</span>
-<span class="nc" id="L384">                        df.format(_nbIterations),</span>
-<span class="nc" id="L385">                        df.format(_frontierMaxSize),</span>
-<span class="nc" id="L386">                        PrettyPrint.formatMs(runtime()),</span>
-<span class="nc bnc" id="L387" title="All 2 branches missed.">                        Double.isInfinite(_incumbent) ? &quot;∞&quot; : df.format(_incumbent),</span>
-<span class="nc bnc" id="L388" title="All 2 branches missed.">                        Double.isInfinite(_gap) ? &quot;∞&quot; : gapFormat.format(_gap) + &quot; %&quot;,</span>
-<span class="nc" id="L389">                        df.format(relativeImprovement()) + &quot; %&quot;,</span>
-<span class="nc" id="L390">                        df.format(nbFastLowerBoundPruning()),</span>
-<span class="nc" id="L391">                        df.format(nbDominancePruning()));</span>
+<span class="fc" id="L538">        List&lt;String&gt; values =</span>
+<span class="fc" id="L539">                List.of(</span>
+<span class="fc" id="L540">                        _status.toString(),</span>
+<span class="fc" id="L541">                        df.format(_nbIterations),</span>
+<span class="fc" id="L542">                        df.format(_frontierMaxSize),</span>
+<span class="fc" id="L543">                        PrettyPrint.formatMs(runtime()),</span>
+<span class="pc bpc" id="L544" title="1 of 2 branches missed.">                        Double.isInfinite(_incumbent) ? &quot;∞&quot; : df.format(_incumbent),</span>
+<span class="pc bpc" id="L545" title="1 of 2 branches missed.">                        Double.isInfinite(_gap) ? &quot;∞&quot; : gapFormat.format(_gap) + &quot; %&quot;,</span>
+<span class="pc bpc" id="L546" title="1 of 2 branches missed.">                        Double.isInfinite(bestBound())</span>
+<span class="nc bnc" id="L547" title="All 2 branches missed.">                                ? (bestBound() &gt; 0 ? &quot;∞&quot; : &quot;-∞&quot;)</span>
+<span class="fc" id="L548">                                : df.format(bestBound()),</span>
+<span class="fc" id="L549">                        df.format(_nbExpandedNodes),</span>
+<span class="fc" id="L550">                        df.format(_nbGeneratedNodes),</span>
+<span class="fc" id="L551">                        df.format(relativeImprovement()) + &quot; %&quot;,</span>
+<span class="fc" id="L552">                        df.format(nbFastLowerBoundPruning()),</span>
+<span class="fc" id="L553">                        df.format(nbDominancePruning()));</span>
 
-<span class="nc" id="L393">        int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;</span>
-<span class="nc" id="L394">        int valueSize = values.stream().mapToInt(String::length).max().orElse(1) + 1;</span>
-<span class="nc" id="L395">        StringBuilder sb = new StringBuilder();</span>
+<span class="fc" id="L555">        int labelSize = labels.stream().mapToInt(String::length).max().orElse(1) + 1;</span>
+<span class="fc" id="L556">        int valueSize = values.stream().mapToInt(String::length).max().orElse(1) + 1;</span>
+<span class="fc" id="L557">        StringBuilder sb = new StringBuilder();</span>
 
-<span class="nc bnc" id="L397" title="All 2 branches missed.">        for (int i = 0; i &lt; labels.size(); i++) {</span>
-<span class="nc" id="L398">            sb.append(&quot;\t&quot;);</span>
-<span class="nc" id="L399">            sb.append((&quot;%-&quot; + labelSize + &quot;s &quot;).formatted(labels.get(i) + &quot;:&quot;));</span>
-<span class="nc" id="L400">            sb.append((&quot;%&quot; + valueSize + &quot;s&quot;).formatted(values.get(i)));</span>
-<span class="nc" id="L401">            sb.append(&quot;\n&quot;);</span>
+<span class="fc bfc" id="L559" title="All 2 branches covered.">        for (int i = 0; i &lt; labels.size(); i++) {</span>
+<span class="fc" id="L560">            sb.append(&quot;\t&quot;);</span>
+<span class="fc" id="L561">            sb.append((&quot;%-&quot; + labelSize + &quot;s &quot;).formatted(labels.get(i) + &quot;:&quot;));</span>
+<span class="fc" id="L562">            sb.append((&quot;%&quot; + valueSize + &quot;s&quot;).formatted(values.get(i)));</span>
+<span class="fc" id="L563">            sb.append(&quot;\n&quot;);</span>
         }
 
-<span class="nc" id="L404">        return sb.toString();</span>
+<span class="fc" id="L566">        return sb.toString();</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

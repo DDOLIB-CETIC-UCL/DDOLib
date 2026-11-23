@@ -71,7 +71,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution minimizeDdo(DdoModel&lt;T&gt; model, Predicate&lt;SearchStatistics&gt; limit) {
-<span class="nc" id="L74">        return minimizeDdo(model, limit, (sol, s) -&gt; {});</span>
+<span class="fc" id="L74">        return minimizeDdo(model, limit, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -121,7 +121,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution relaxedDdo(DdoModel&lt;T&gt; model) {
-<span class="nc" id="L124">        return relaxedDdo(model, stats -&gt; false, (sol, s) -&gt; {});</span>
+<span class="pc" id="L124">        return relaxedDdo(model, stats -&gt; false, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -170,7 +170,7 @@ public class Solvers {
             DdoModel&lt;T&gt; model,
             Predicate&lt;SearchStatistics&gt; limit,
             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L173">        return new RelaxationSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L173">        return new RelaxationSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
     /**
@@ -185,7 +185,7 @@ public class Solvers {
      *     performance
      */
     public static &lt;T&gt; Solution restrictedDdo(DdoModel&lt;T&gt; model) {
-<span class="nc" id="L188">        return restrictedDdo(model, stats -&gt; false, (sol, s) -&gt; {});</span>
+<span class="pc" id="L188">        return restrictedDdo(model, stats -&gt; false, (sol, s) -&gt; {});</span>
     }
 
     /**
@@ -234,7 +234,7 @@ public class Solvers {
             DdoModel&lt;T&gt; model,
             Predicate&lt;SearchStatistics&gt; limit,
             BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L237">        return new RestrictionSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
+<span class="fc" id="L237">        return new RestrictionSolver&lt;&gt;(model).minimize(limit, onSolution);</span>
     }
 
     // =============================================================
@@ -460,7 +460,7 @@ public class Solvers {
      */
     public static &lt;T&gt; Solution minimizeExact(
             ExactModel&lt;T&gt; model, BiConsumer&lt;int[], SearchStatistics&gt; onSolution) {
-<span class="nc" id="L463">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
+<span class="pc" id="L463">        return new ExactSolver&lt;&gt;(model).minimize(s -&gt; false, onSolution);</span>
     }
 
     /**

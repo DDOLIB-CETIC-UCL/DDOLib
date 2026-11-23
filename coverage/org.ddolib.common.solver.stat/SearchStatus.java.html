@@ -9,6 +9,13 @@
     /** The search found a feasible solution but did not prove its optimality. */
 <span class="fc" id="L10">    SAT,</span>
     /** The search status is unknown (e.g., interrupted before finding any solution). */
-<span class="fc" id="L12">    UNKNOWN</span>
+<span class="fc" id="L12">    UNKNOWN,</span>
+    /**
+     * The search was stopped because it ran out of memory: either the JVM threw an {@link
+     * OutOfMemoryError} or the frontier reached the size given to {@link
+     * org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize(int)}. The solution, if
+     * any, is the best one found before; it is not proved optimal.
+     */
+<span class="fc" id="L19">    MEMOUT</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>

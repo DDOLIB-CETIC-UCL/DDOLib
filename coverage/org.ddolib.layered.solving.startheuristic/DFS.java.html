@@ -3,6 +3,7 @@
 import org.ddolib.common.solver.stat.AstarStats;
 import org.ddolib.common.solver.stat.SearchStatistics;
 import org.ddolib.common.solver.stat.SearchStatus;
+import org.ddolib.common.solver.stopcriterion.MemoryLimitException;
 import org.ddolib.common.util.StateAndDepth;
 import org.ddolib.layered.modeling.DominanceChecker;
 import org.ddolib.layered.modeling.FastLowerBound;
@@ -43,11 +44,11 @@ public final class DFS&lt;T&gt; {
      *
      * @param model the model of the problem to solve
      */
-<span class="fc" id="L46">    public DFS(Model&lt;T&gt; model) {</span>
-<span class="fc" id="L47">        this.problem = model.problem();</span>
-<span class="fc" id="L48">        this.lb = model.lowerBound();</span>
-<span class="fc" id="L49">        this.dominance = model.dominance();</span>
-<span class="fc" id="L50">    }</span>
+<span class="fc" id="L47">    public DFS(Model&lt;T&gt; model) {</span>
+<span class="fc" id="L48">        this.problem = model.problem();</span>
+<span class="fc" id="L49">        this.lb = model.lowerBound();</span>
+<span class="fc" id="L50">        this.dominance = model.dominance();</span>
+<span class="fc" id="L51">    }</span>
 
     /**
      * Searches the first feasible solution without any stopping criterion.
@@ -56,7 +57,7 @@ public final class DFS&lt;T&gt; {
      * problem has none
      */
     public Solution findSolution() {
-<span class="fc" id="L59">        return findSolution(s -&gt; false);</span>
+<span class="fc" id="L60">        return findSolution(s -&gt; false);</span>
     }
 
     /**
@@ -64,95 +65,121 @@ public final class DFS&lt;T&gt; {
      *
      * @param limit stopping criterion tested at each iteration
      * @return the first solution found (status {@code SAT}), an empty solution with status {@code
-     * UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
-     * limit was reached first
+     *     UNSAT} if the problem has none, or an empty solution with status {@code UNKNOWN} if the
+     *     limit was reached first, or an empty solution with status {@code MEMOUT} if the memory
+     *     ran out (see {@link
+     *     org.ddolib.common.solver.stopcriterion.StopCriterion#maxFrontierSize})
      */
     public Solution findSolution(Predicate&lt;SearchStatistics&gt; limit) {
-<span class="fc" id="L71">        SearchStatistics statistics =</span>
-<span class="fc" id="L72">                new AstarStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);</span>
-<span class="fc" id="L73">        Deque&lt;Node&lt;T&gt;&gt; frontier = new ArrayDeque&lt;&gt;();</span>
-<span class="fc" id="L74">        Set&lt;StateAndDepth&lt;T&gt;&gt; explored = new HashSet&lt;&gt;();</span>
+<span class="fc" id="L74">        SearchStatistics statistics =</span>
+<span class="fc" id="L75">                new AstarStats(System.currentTimeMillis(), Double.POSITIVE_INFINITY);</span>
+<span class="fc" id="L76">        Deque&lt;Node&lt;T&gt;&gt; frontier = new ArrayDeque&lt;&gt;();</span>
+<span class="fc" id="L77">        Set&lt;StateAndDepth&lt;T&gt;&gt; explored = new HashSet&lt;&gt;();</span>
 
-<span class="fc" id="L76">        frontier.push(new Node&lt;&gt;(problem.initialState(), problem.initialValue(), 0, null, null));</span>
+<span class="fc" id="L79">        long nbExpanded = 0;</span>
+<span class="fc" id="L80">        long nbGenerated = 0;</span>
+<span class="fc" id="L81">        frontier.push(new Node&lt;&gt;(problem.initialState(), problem.initialValue(), 0, null, null));</span>
 
-<span class="fc bfc" id="L78" title="All 2 branches covered.">        while (!frontier.isEmpty()) {</span>
-<span class="fc" id="L79">            statistics =</span>
+        try {
+<span class="fc bfc" id="L84" title="All 2 branches covered.">            while (!frontier.isEmpty()) {</span>
+<span class="fc" id="L85">                statistics =</span>
+                        statistics
+<span class="fc" id="L87">                                .incrementNbIter()</span>
+<span class="fc" id="L88">                                .updateFrontierMaxSize(frontier.size())</span>
+<span class="fc" id="L89">                                .updateTime(System.currentTimeMillis());</span>
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">                if (limit.test(statistics)) {</span>
+<span class="fc" id="L92">                    statistics =</span>
+                            statistics
+<span class="fc" id="L94">                                    .updateNodeCounts(nbExpanded, nbGenerated)</span>
+<span class="fc" id="L95">                                    .updateStatus(SearchStatus.UNKNOWN);</span>
+<span class="fc" id="L96">                    return new Solution(Optional.empty(), statistics);</span>
+                }
+
+<span class="fc" id="L99">                Node&lt;T&gt; current = frontier.pop();</span>
+
+<span class="fc bfc" id="L101" title="All 2 branches covered.">                if (current.depth() == problem.nbVars()) {</span>
+<span class="fc" id="L102">                    statistics = statistics</span>
+<span class="fc" id="L103">                            .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L104">                            .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)</span>
+<span class="fc" id="L105">                            .updateStatus(SearchStatus.SAT);</span>
+<span class="fc" id="L106">                    statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);</span>
+<span class="fc" id="L107">                    return new Solution(Optional.of(buildPath(current)), statistics);</span>
+                }
+
+                // Every node popped before at the same depth has had its whole subtree explored
+                // without reaching a solution. Skipping states equal to, or dominated by, such a
+                // node assumes that a dominating state is at least as feasible as the dominated
+                // one.
+<span class="fc bfc" id="L114" title="All 2 branches covered.">                if (!explored.add(new StateAndDepth&lt;&gt;(current.state(), current.depth()))</span>
+<span class="pc bpc" id="L115" title="1 of 2 branches missed.">                        || dominance.updateDominance(</span>
+<span class="fc" id="L116">                        current.state(), current.depth(), current.value())) {</span>
+<span class="nc" id="L117">                    continue;</span>
+                }
+
+<span class="fc" id="L120">                nbExpanded++; // its successors are computed</span>
+<span class="fc" id="L121">                int sizeBefore = frontier.size();</span>
+<span class="fc" id="L122">                pushChildren(current, frontier);</span>
+<span class="fc" id="L123">                nbGenerated += frontier.size() - sizeBefore; // every successor is pushed</span>
+<span class="fc" id="L124">            }</span>
+<span class="fc" id="L125">        } catch (OutOfMemoryError | MemoryLimitException e) {</span>
+            // free the memory of the search before building the result
+<span class="fc" id="L127">            frontier.clear();</span>
+<span class="fc" id="L128">            explored.clear();</span>
+<span class="fc" id="L129">            statistics =</span>
                     statistics
-<span class="fc" id="L81">                            .incrementNbIter()</span>
-<span class="fc" id="L82">                            .updateFrontierMaxSize(frontier.size())</span>
-<span class="fc" id="L83">                            .updateTime(System.currentTimeMillis());</span>
+<span class="fc" id="L131">                            .updateTime(System.currentTimeMillis())</span>
+<span class="fc" id="L132">                            .updateNodeCounts(nbExpanded, nbGenerated)</span>
+<span class="fc" id="L133">                            .updateStatus(SearchStatus.MEMOUT);</span>
+<span class="fc" id="L134">            return new Solution(Optional.empty(), statistics);</span>
+<span class="fc" id="L135">        }</span>
 
-<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (limit.test(statistics)) {</span>
-<span class="fc" id="L86">                return new Solution(Optional.empty(), statistics.updateStatus(SearchStatus.UNKNOWN));</span>
-            }
-
-<span class="fc" id="L89">            Node&lt;T&gt; current = frontier.pop();</span>
-
-<span class="fc bfc" id="L91" title="All 2 branches covered.">            if (current.depth() == problem.nbVars()) {</span>
-<span class="fc" id="L92">                statistics = statistics</span>
-<span class="fc" id="L93">                        .updateTime(System.currentTimeMillis())</span>
-<span class="fc" id="L94">                        .updateIncumbent(current.value(), Double.POSITIVE_INFINITY)</span>
-<span class="fc" id="L95">                        .updateStatus(SearchStatus.SAT);</span>
-<span class="fc" id="L96">                return new Solution(Optional.of(buildPath(current)), statistics);</span>
-            }
-
-            // Every node popped before at the same depth has had its whole subtree explored
-            // without reaching a solution. Skipping states equal to, or dominated by, such a node
-            // assumes that a dominating state is at least as feasible as the dominated one.
-<span class="fc bfc" id="L102" title="All 2 branches covered.">            if (!explored.add(new StateAndDepth&lt;&gt;(current.state(), current.depth()))</span>
-<span class="pc bpc" id="L103" title="1 of 2 branches missed.">                    || dominance.updateDominance(</span>
-<span class="fc" id="L104">                    current.state(), current.depth(), current.value())) {</span>
-<span class="nc" id="L105">                continue;</span>
-            }
-
-<span class="fc" id="L108">            pushChildren(current, frontier);</span>
-<span class="fc" id="L109">        }</span>
-
-<span class="fc" id="L111">        return new Solution(Optional.empty(), statistics.updateStatus(SearchStatus.UNSAT));</span>
+<span class="fc" id="L137">        statistics = statistics.updateNodeCounts(nbExpanded, nbGenerated);</span>
+<span class="fc" id="L138">        return new Solution(Optional.empty(), statistics.updateStatus(SearchStatus.UNSAT));</span>
     }
 
     private void pushChildren(Node&lt;T&gt; node, Deque&lt;Node&lt;T&gt;&gt; frontier) {
-<span class="fc" id="L115">        T state = node.state();</span>
-<span class="fc" id="L116">        int var = node.depth();</span>
-<span class="fc" id="L117">        Set&lt;Integer&gt; unassigned =</span>
-<span class="fc" id="L118">                IntStream.range(var + 1, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
+<span class="fc" id="L142">        T state = node.state();</span>
+<span class="fc" id="L143">        int var = node.depth();</span>
+<span class="fc" id="L144">        Set&lt;Integer&gt; unassigned =</span>
+<span class="fc" id="L145">                IntStream.range(var + 1, problem.nbVars()).boxed().collect(Collectors.toSet());</span>
 
-<span class="fc" id="L120">        List&lt;Candidate&lt;T&gt;&gt; children = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L121">        var domain = problem.domain(state, var);</span>
-<span class="fc bfc" id="L122" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
-<span class="fc" id="L123">            Decision decision = new Decision(var, domain.next());</span>
-<span class="fc" id="L124">            T newState = problem.transition(state, decision);</span>
-<span class="fc" id="L125">            double g = node.value() + problem.transitionCost(state, decision);</span>
-<span class="fc" id="L126">            double h = lb.fastLowerBound(newState, unassigned);</span>
-<span class="fc" id="L127">            children.add(new Candidate&lt;&gt;(new Node&lt;&gt;(newState, g, var + 1, decision, node), g + h));</span>
-<span class="fc" id="L128">        }</span>
+<span class="fc" id="L147">        List&lt;Candidate&lt;T&gt;&gt; children = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L148">        var domain = problem.domain(state, var);</span>
+<span class="fc bfc" id="L149" title="All 2 branches covered.">        while (domain.hasNext()) {</span>
+<span class="fc" id="L150">            Decision decision = new Decision(var, domain.next());</span>
+<span class="fc" id="L151">            T newState = problem.transition(state, decision);</span>
+<span class="fc" id="L152">            double g = node.value() + problem.transitionCost(state, decision);</span>
+<span class="fc" id="L153">            double h = lb.fastLowerBound(newState, unassigned);</span>
+<span class="fc" id="L154">            children.add(new Candidate&lt;&gt;(new Node&lt;&gt;(newState, g, var + 1, decision, node), g + h));</span>
+<span class="fc" id="L155">        }</span>
 
         // Pushed from the worst to the best estimate, so the best child is popped first.
-<span class="fc" id="L131">        children.sort(Comparator.comparingDouble(Candidate&lt;T&gt;::f).reversed());</span>
-<span class="fc bfc" id="L132" title="All 2 branches covered.">        for (Candidate&lt;T&gt; child : children) {</span>
-<span class="fc" id="L133">            frontier.push(child.node());</span>
-<span class="fc" id="L134">        }</span>
-<span class="fc" id="L135">    }</span>
+<span class="fc" id="L158">        children.sort(Comparator.comparingDouble(Candidate&lt;T&gt;::f).reversed());</span>
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        for (Candidate&lt;T&gt; child : children) {</span>
+<span class="fc" id="L160">            frontier.push(child.node());</span>
+<span class="fc" id="L161">        }</span>
+<span class="fc" id="L162">    }</span>
 
     private Set&lt;Decision&gt; buildPath(Node&lt;T&gt; leaf) {
-<span class="fc" id="L138">        Set&lt;Decision&gt; path = new HashSet&lt;&gt;();</span>
-<span class="fc bfc" id="L139" title="All 2 branches covered.">        for (Node&lt;T&gt; n = leaf; n.decision() != null; n = n.parent()) {</span>
-<span class="fc" id="L140">            path.add(n.decision());</span>
+<span class="fc" id="L165">        Set&lt;Decision&gt; path = new HashSet&lt;&gt;();</span>
+<span class="fc bfc" id="L166" title="All 2 branches covered.">        for (Node&lt;T&gt; n = leaf; n.decision() != null; n = n.parent()) {</span>
+<span class="fc" id="L167">            path.add(n.decision());</span>
         }
-<span class="fc" id="L142">        return path;</span>
+<span class="fc" id="L169">        return path;</span>
     }
 
     /**
      * A node of the search tree. The path is stored through the parent link to avoid copying it
      * for each child.
      */
-<span class="fc" id="L149">    private record Node&lt;T&gt;(T state, double value, int depth, Decision decision, Node&lt;T&gt; parent) {</span>
+<span class="fc" id="L176">    private record Node&lt;T&gt;(T state, double value, int depth, Decision decision, Node&lt;T&gt; parent) {</span>
     }
 
     /**
      * A child waiting to be pushed, with its estimated cost {@code g + h}.
      */
-<span class="fc" id="L155">    private record Candidate&lt;T&gt;(Node&lt;T&gt; node, double f) {</span>
+<span class="fc" id="L182">    private record Candidate&lt;T&gt;(Node&lt;T&gt; node, double f) {</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span></div></body></html>
